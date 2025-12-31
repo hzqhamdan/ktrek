@@ -1,0 +1,139 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\xampp\\htdocs\\ktrek\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\xampp\\htdocs\\ktrek\\frontend\\src\\pages\\HomePage.jsx||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:frontend\\src\\pages\\HomePage.jsx||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\xampp\\htdocs\\ktrek\\frontend\\src\\components\\ui\\scroll-expansion-hero.tsx||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:frontend\\src\\components\\ui\\scroll-expansion-hero.tsx||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\xampp\\htdocs\\ktrek\\frontend\\src\\components\\ui\\floating-nav.tsx||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:frontend\\src\\components\\ui\\floating-nav.tsx||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\xampp\\htdocs\\ktrek\\frontend\\src\\pages\\ProgressPage.jsx||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:frontend\\src\\pages\\ProgressPage.jsx||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\xampp\\htdocs\\ktrek\\frontend\\src\\pages\\AttractionsPage.jsx||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:frontend\\src\\pages\\AttractionsPage.jsx||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\xampp\\htdocs\\ktrek\\frontend\\src\\pages\\ProfilePage.jsx||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:frontend\\src\\pages\\ProfilePage.jsx||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\xampp\\htdocs\\ktrek\\frontend\\src\\pages\\RewardsPage.jsx||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:frontend\\src\\pages\\RewardsPage.jsx||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "HomePage.jsx",
+              "DocumentMoniker": "D:\\xampp\\htdocs\\ktrek\\frontend\\src\\pages\\HomePage.jsx",
+              "RelativeDocumentMoniker": "frontend\\src\\pages\\HomePage.jsx",
+              "ToolTip": "D:\\xampp\\htdocs\\ktrek\\frontend\\src\\pages\\HomePage.jsx",
+              "RelativeToolTip": "frontend\\src\\pages\\HomePage.jsx",
+              "ViewState": "AgIAABoAAAAAAAAAAAAowCYAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
+              "WhenOpened": "2025-12-30T10:19:35.693Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "scroll-expansion-hero.tsx",
+              "DocumentMoniker": "D:\\xampp\\htdocs\\ktrek\\frontend\\src\\components\\ui\\scroll-expansion-hero.tsx",
+              "RelativeDocumentMoniker": "frontend\\src\\components\\ui\\scroll-expansion-hero.tsx",
+              "ToolTip": "D:\\xampp\\htdocs\\ktrek\\frontend\\src\\components\\ui\\scroll-expansion-hero.tsx",
+              "RelativeToolTip": "frontend\\src\\components\\ui\\scroll-expansion-hero.tsx",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-12-30T10:19:00.4Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "floating-nav.tsx",
+              "DocumentMoniker": "D:\\xampp\\htdocs\\ktrek\\frontend\\src\\components\\ui\\floating-nav.tsx",
+              "RelativeDocumentMoniker": "frontend\\src\\components\\ui\\floating-nav.tsx",
+              "ToolTip": "D:\\xampp\\htdocs\\ktrek\\frontend\\src\\components\\ui\\floating-nav.tsx",
+              "RelativeToolTip": "frontend\\src\\components\\ui\\floating-nav.tsx",
+              "ViewState": "AgIAACQAAAAAAAAAAAAAACcAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2025-12-29T19:48:17.161Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "AttractionsPage.jsx",
+              "DocumentMoniker": "D:\\xampp\\htdocs\\ktrek\\frontend\\src\\pages\\AttractionsPage.jsx",
+              "RelativeDocumentMoniker": "frontend\\src\\pages\\AttractionsPage.jsx",
+              "ToolTip": "D:\\xampp\\htdocs\\ktrek\\frontend\\src\\pages\\AttractionsPage.jsx",
+              "RelativeToolTip": "frontend\\src\\pages\\AttractionsPage.jsx",
+              "ViewState": "AgIAAK4AAAAAAAAAAADwv3EAAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
+              "WhenOpened": "2025-12-14T18:10:34.459Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ProgressPage.jsx",
+              "DocumentMoniker": "D:\\xampp\\htdocs\\ktrek\\frontend\\src\\pages\\ProgressPage.jsx",
+              "RelativeDocumentMoniker": "frontend\\src\\pages\\ProgressPage.jsx",
+              "ToolTip": "D:\\xampp\\htdocs\\ktrek\\frontend\\src\\pages\\ProgressPage.jsx",
+              "RelativeToolTip": "frontend\\src\\pages\\ProgressPage.jsx",
+              "ViewState": "AgIAAHIAAAAAAAAAAAAAAIYAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
+              "WhenOpened": "2025-12-29T17:59:47.117Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "RewardsPage.jsx",
+              "DocumentMoniker": "D:\\xampp\\htdocs\\ktrek\\frontend\\src\\pages\\RewardsPage.jsx",
+              "RelativeDocumentMoniker": "frontend\\src\\pages\\RewardsPage.jsx",
+              "ToolTip": "D:\\xampp\\htdocs\\ktrek\\frontend\\src\\pages\\RewardsPage.jsx",
+              "RelativeToolTip": "frontend\\src\\pages\\RewardsPage.jsx",
+              "ViewState": "AgIAACQAAAAAAAAAAAAAAD4AAABRAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
+              "WhenOpened": "2025-12-29T18:01:11.069Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ProfilePage.jsx",
+              "DocumentMoniker": "D:\\xampp\\htdocs\\ktrek\\frontend\\src\\pages\\ProfilePage.jsx",
+              "RelativeDocumentMoniker": "frontend\\src\\pages\\ProfilePage.jsx",
+              "ToolTip": "D:\\xampp\\htdocs\\ktrek\\frontend\\src\\pages\\ProfilePage.jsx",
+              "RelativeToolTip": "frontend\\src\\pages\\ProfilePage.jsx",
+              "ViewState": "AgIAAHkAAAAAAAAAAAAAAIUAAABUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
+              "WhenOpened": "2025-12-29T17:53:31.44Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,381 @@
+/* admin/assets/css/sidebar.css
+   Why separate files?
+   - UI component (sidebar.php) stays focused on markup/data.
+   - Styles (sidebar.css) stay reusable and easier to tweak without touching PHP.
+   - Scripts (sidebar.js) keep behavior isolated and maintainable.
+*/
+
+/* Overrides for legacy admin sidebar styles
+   ---------------------------------------
+   The existing `admin/styles/styles.css` defines broad styles for `.sidebar`,
+   `.sidebar-nav a`, etc. Our new component intentionally keeps the `sidebar`
+   class (so the rest of the admin code continues to work), but we override
+   the legacy presentation here so collapse/expand + mobile overlay work.
+*/
+.kt-sidebar.sidebar {
+  width: auto;
+  /* When inside `.dashboard-container` (flex), do not stretch */
+  align-self: stretch;
+  background: transparent;
+  box-shadow: none;
+  border-right: none;
+  display: block;
+  flex: 0 0 auto;
+  justify-content: initial;
+}
+
+/* Make sure our link styles win over `.sidebar-nav a` */
+.kt-sidebar .sidebar-nav a.kt-sidebar-link {
+  padding: 10px 10px;
+  font-weight: 500;
+  font-size: 16px; /* +2px */
+  line-height: 1.2;
+}
+
+/* Legacy `.sidebar-nav li` uses horizontal margins that push items to the right.
+   Remove those margins within the new component so icons center correctly. */
+.kt-sidebar .sidebar-nav li {
+  margin: 0;
+}
+
+/* Namespace everything to avoid clashing with existing admin/styles/styles.css */
+.kt-sidebar {
+  --kt-sidebar-expanded: 300px;
+  --kt-sidebar-collapsed: 120px;
+  --kt-sidebar-bg: #ffffff;
+  --kt-sidebar-text: #111827;
+  --kt-sidebar-text-muted: #4b5563;
+  --kt-sidebar-border: rgba(0, 0, 0, 0.08);
+
+  position: relative;
+}
+
+/* Desktop sidebar container */
+.kt-sidebar .kt-sidebar-desktop {
+  height: 100%;
+  display: none; /* enabled via media query */
+  flex-direction: column;
+  background: var(--kt-sidebar-bg);
+  border-right: 1px solid var(--kt-sidebar-border);
+  width: var(--kt-sidebar-collapsed);
+  transition: width 220ms ease;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.kt-sidebar[data-collapsed="false"] .kt-sidebar-desktop {
+  width: var(--kt-sidebar-expanded);
+}
+
+/* Collapsed-state centering */
+.kt-sidebar[data-collapsed="true"] .kt-sidebar-nav {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.kt-sidebar[data-collapsed="true"] .kt-sidebar-link {
+  justify-content: center;
+}
+
+.kt-sidebar[data-collapsed="true"] .kt-sidebar-footer {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.kt-sidebar[data-collapsed="true"] .kt-sidebar-user {
+  justify-content: center;
+}
+
+/* (Removed sidebar header block: logo/title now live in the shared top bar) */
+
+.kt-sidebar-nav {
+  padding: 22px 8px; /* add top padding since logo header is removed */
+}
+
+.kt-sidebar-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.kt-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 8px;
+  color: var(--kt-sidebar-text-muted);
+  text-decoration: none;
+  user-select: none;
+  font-size: 16px; /* +2px (ensures even without legacy override) */
+}
+
+.kt-sidebar-link:hover {
+  background: rgba(94, 53, 177, 0.10);
+  color: #5E35B1;
+}
+
+.kt-sidebar-icon {
+  width: 25px;
+  height: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.kt-sidebar-icon svg {
+  width: 25px;
+  height: 25px;
+  fill: currentColor;
+}
+
+.kt-sidebar-label {
+  white-space: nowrap;
+  display: none;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.kt-sidebar[data-collapsed="false"] .kt-sidebar-label {
+  display: inline;
+  opacity: 1;
+}
+
+.kt-sidebar-footer {
+  margin-top: auto;
+  padding: 10px;
+  border-top: 1px solid var(--kt-sidebar-border);
+  position: relative;
+  z-index: 2;
+}
+
+.kt-sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  pointer-events: auto;
+  text-decoration: none;
+  color: var(--kt-sidebar-text);
+  padding: 10px;
+  border-radius: 10px;
+  position: relative;
+  z-index: 3;
+}
+
+.kt-sidebar-user:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.kt-sidebar-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  object-fit: cover;
+  flex: 0 0 auto;
+}
+
+.kt-sidebar-username {
+  white-space: nowrap;
+  display: none;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.kt-sidebar[data-collapsed="false"] .kt-sidebar-username {
+  display: inline;
+  opacity: 1;
+}
+
+/* Mobile: top bar + overlay */
+.kt-sidebar-mobilebar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 44px;
+  padding: 8px 12px;
+  background: var(--kt-sidebar-bg);
+  border-right: 1px solid var(--kt-sidebar-border);
+}
+
+.kt-sidebar-mobilebtn,
+.kt-sidebar-close {
+  background: transparent;
+  border: 0;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--kt-sidebar-text);
+}
+
+.kt-sidebar-mobilebtn svg,
+.kt-sidebar-close svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.kt-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.kt-sidebar-overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.kt-sidebar-overlay-inner {
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  transform: translateX(-100%);
+  transition: transform 220ms ease;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.kt-sidebar-overlay.is-open .kt-sidebar-overlay-inner {
+  transform: translateX(0);
+}
+
+.kt-sidebar-close {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+}
+
+.kt-sidebar-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Responsive behavior */
+@media (min-width: 768px) {
+  .kt-sidebar .kt-sidebar-mobilebar,
+  .kt-sidebar .kt-sidebar-overlay {
+    display: none;
+  }
+
+  .kt-sidebar .kt-sidebar-desktop {
+    display: flex;
+  }
+
+  /* Ensure main-content is level with dashboard-container (top-aligned in the flex row) */
+  .dashboard-container {
+    align-items: stretch; /* explicit, prevents any accidental baseline alignment */
+  }
+
+  .dashboard-container .main-content {
+    align-self: stretch;
+    margin-top: 0;
+    height: 100%;
+  }
+
+}
+
+@media (max-width: 767px) {
+  /* In the existing layout, the sidebar sits beside main content.
+     On mobile we only show the top bar; the menu becomes the overlay. */
+  .kt-sidebar {
+    width: 100%;
+  }
+}
+
+/* Optional: active state helper (sidebar.js sets aria-current) */
+.kt-sidebar-link[aria-current="page"] {
+  background: rgba(94, 53, 177, 0.14);
+  color: #5E35B1;
+}
+
+/* -------- Option A shared top bar -------- */
+.kt-topbar {
+  height: 74px !important; /* lock height so logo can't shift title vertically */
+  min-height: 74px;
+  overflow: visible;
+  background: #ffffff;
+  border-bottom: 2px solid #EDE7F6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  /* 2-column grid:
+     - col 1 matches the collapsed sidebar width (60px)
+     - col 2 is the main content header area */
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  align-items: center;
+  padding: 12px 30px;
+
+  position: sticky;
+  top: 0;
+  z-index: 1002; /* above content + dropdown */
+}
+
+.kt-topbar-sidebar-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  /* You can safely resize the logo via --kt-topbar-logo-scale
+     without affecting title positioning */
+  --kt-topbar-logo-scale: 1.5;
+}
+
+.kt-topbar-main-slot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.kt-topbar-logo {
+  height: 48px; /* base layout size; keep stable */
+  width: auto;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  object-fit: contain;
+
+  /* Visual scaling that does NOT affect layout flow (won't move the title) */
+  transform: scale(var(--kt-topbar-logo-scale));
+  transform-origin: center;
+}
+
+.kt-topbar-title {
+  color: #5E35B1;
+  font-size: 25px !important; /* prevent global h1 rules from affecting size */
+  font-weight: 600;
+  line-height: 1 !important;
+  white-space: nowrap;
+  margin: 0;
+  padding-left: 83px; /* moves title right without affecting logo */
+}
+
+/* After adding a separate top bar, the legacy `.dashboard-container { height: 100vh; }`
+   would overflow the viewport. Override it here to account for the top bar. */
+#adminDashboard .dashboard-container {
+  height: calc(100vh - 74px);
+}
+
+@media (max-width: 767px) {
+  .kt-topbar {
+    padding: 12px 16px;
+    height: auto;
+    grid-template-columns: 48px 1fr;
+  }
+
+  .kt-topbar-title {
+    font-size: 20px;
+  }
+
+  #adminDashboard .dashboard-container {
+    height: calc(100vh - 72px);
+  }
+}

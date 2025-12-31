@@ -1,0 +1,12 @@
+tunnel: YOUR_TUNNEL_ID
+credentials-file: /path/to/credentials.json
+
+ingress:
+  # Frontend (React app)
+  - hostname: your-frontend-domain.trycloudflare.com
+    service: http://localhost:5175
+  # Backend API
+  - hostname: your-backend-domain.trycloudflare.com
+    service: http://localhost:80
+  # Catch-all rule (required)
+  - service: http_status:404

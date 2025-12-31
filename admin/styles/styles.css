@@ -1,0 +1,690 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Playfair Display, Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #E3F2FD 0%, #EDE7F6 50%, #E8F5E9 100%);
+    min-height: 100vh;
+    color: #333333;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.login-container {
+    max-width: 400px;
+    margin: 100px auto;
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border: 2px solid #EDE7F6;
+}
+
+.login-container h2 {
+    text-align: center;
+    color: #9575CD;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #E3F2FD;
+    border-radius: 5px;
+    font-size: 14px;
+    background: #ffffff;
+    color: #333;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.btn {
+    width: 100%;
+    padding: 12px;
+    background: #EDE7F6;
+    color: #5E35B1;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn:hover {
+    background: #D1C4E9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(123, 31, 162, 0.2);
+}
+
+/* Dashboard Layout */
+.dashboard-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    background: linear-gradient(135deg, #E3F2FD 0%, #EDE7F6 100%);
+}
+
+.sidebar {
+    width: 250px;
+    background: #ffffff;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 100;
+    border-right: 3px solid #EDE7F6;
+}
+
+.sidebar-header {
+    padding: 11.5px;
+    border-bottom: 2px solid #EDE7F6;
+    background: #ffffff;
+	display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar-logo {
+    height: 50px;
+    width: auto;
+    border: 2px solid #FFFFFF;
+    background: #FFFFFF;
+    padding: 0px;
+    border-radius: 4px;
+}
+
+.sidebar-header h3 {
+    color: #5E35B1;
+    font-size: 25px;
+    font-weight: 600;
+}
+
+.sidebar-nav {
+    padding: 15px 0;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-nav li {
+    margin: 5px 15px;
+}
+
+.sidebar-nav a {
+    display: block;
+    padding: 12px 20px; /* Increased vertical padding for spaciousness */
+    color: #555;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: all 0.2s ease;
+    font-weight: 600;
+    font-size: 16px; /* Slightly larger font for readability */
+    line-height: 1.4; /* Optional: Improve vertical alignment of text */
+    width: 100%; /* Ensure link takes full width of its container */
+    box-sizing: border-box; /* Ensure padding is included in width calculation */
+    display: flex; /* Add flex display to the link itself to align icon and text */
+    align-items: center; /* Align icon and text vertically within the link */
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+    background: #EDE7F6;
+    color: #5E35B1;
+	padding: 12px 20px;
+}
+
+.sidebar-nav i {
+    width: 20px; /* Keep width for consistent icon space */
+    text-align: center; /* Keep alignment */
+    /* flex-shrink: 0; */ /* Can keep this, but flex on parent link handles layout */
+    margin-right: 25px; /* Add margin to the right of the icon */
+    /* Ensure icon behaves well */
+    display: inline-block;
+}
+
+.sidebar-footer {
+    padding: 15px 20px;
+    border-top: 2px solid #FCE4EC;
+    background: #ffffff;
+}
+
+.logout-btn {
+    width: 100%;
+    background: #FCE4EC;
+    color: #C2185B;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.logout-btn:hover {
+    background: #F8BBD0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(194, 24, 91, 0.2);
+}
+
+.main-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    background: linear-gradient(135deg, #E3F2FD 0%, #E8F5E9 100%);
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background: #ffffff;
+    padding: 20px 30px;
+    border-bottom: 2px solid #EDE7F6;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+.header h1 {
+    color: #5E35B1;
+    font-size: 25px;
+    font-weight: 600;
+}
+
+/* Style the user profile container */
+.user-profile {
+    position: relative; /* Needed for dropdown positioning */
+    z-index: 2000; /* ensure profile dropdown appears above topbar content */
+}
+
+.user-info {
+    display: flex; /* Align name and icon horizontally */
+    align-items: center;
+    cursor: pointer;
+    padding: 5px 10px; /* Add some padding for easier clicking */
+    border-radius: 5px; /* Optional: round corners */
+    transition: background 0.2s ease; /* Smooth hover effect */
+}
+
+.user-info:hover {
+    background: #E8F5E9;
+}
+
+.user-info span {
+    margin-right: 8px;
+    color: #333;
+    font-weight: 500;
+}
+
+.user-info i {
+    color: #666;
+    font-size: 12px;
+}
+
+/* Style the dropdown menu */
+.dropdown-content {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: #ffffff;
+    min-width: 160px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    z-index: 3000;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid #EDE7F6;
+}
+
+.dropdown-content a {
+    color: #333;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    transition: background 0.2s ease;
+    font-size: 14px;
+}
+
+.dropdown-content a:hover {
+    background-color: #E8F5E9;
+}
+
+.content-sections {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.content-section {
+    display: none;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+    transition: opacity 0.2s ease;
+    border: 2px solid #EDE7F6;
+}
+
+.content-section.active {
+    display: block;
+    opacity: 1;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #E3F2FD;
+}
+
+.section-header h2 {
+    color: #5E35B1;
+    font-size: 1.8em;
+    font-weight: 600;
+}
+
+.add-btn {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border: 2px solid #4CAF50;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+/* Superadmin Attractions: keep default select styling; only fix alignment with buttons */
+#attractionSortGroup {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Override global .form-group label (block + margin-bottom) so the select sits on the same line */
+#attractionSortGroup label {
+    display: inline-block;
+    margin: 0;
+    white-space: nowrap;
+}
+
+#attractionSortBy {
+    margin: 0;
+}
+
+.add-btn:hover {
+    background: #C8E6C9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    overflow-x: auto;
+    display: block;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.data-table table {
+    width: 100%;
+    background: #ffffff;
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #E3F2FD;
+    color: #333;
+}
+
+.data-table th {
+    background: #D1C4E9;
+    font-weight: 600;
+    color: #5E35B1;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    text-align: center;
+}
+
+/* --- Superadmin Dashboard Typography & Table Alignment --- */
+#superadminDashboard {
+    font-family: Helvetica, Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#superadminDashboard h2,
+#superadminDashboard h3,
+#superadminDashboard h4 {
+    font-family: Playfair Display, Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Center all columns except the first (Name) for Managers table */
+#superadminDashboard .data-table th:first-child,
+#superadminDashboard .data-table td:first-child {
+    text-align: left;
+}
+
+#superadminDashboard .data-table th:not(:first-child),
+#superadminDashboard .data-table td:not(:first-child) {
+    text-align: center;
+}
+
+.data-table tr:hover {
+    background: #E8F5E9;
+}
+
+.action-btn {
+    padding: 6px 12px;
+    margin: 0 3px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    color: white; /* Ensure text is white */
+}
+
+.edit-btn {
+    background: #E3F2FD;
+    color: #1976D2;
+    border: 1px solid #64B5F6;
+}
+
+.edit-btn:hover {
+    background: #BBDEFB;
+    transform: scale(1.05);
+}
+
+.delete-btn {
+    background: #FCE4EC;
+    color: #C2185B;
+    border: 1px solid #F06292;
+}
+
+.delete-btn:hover {
+    background: #F8BBD0;
+    transform: scale(1.05);
+}
+
+.view-btn {
+    background: #EDE7F6;
+    color: #5E35B1;
+    border: 1px solid #9575CD;
+}
+
+.view-btn:hover {
+    background: #D1C4E9;
+    transform: scale(1.05);
+}
+
+.reply-btn {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border: 1px solid #66BB6A;
+}
+
+.reply-btn:hover {
+    background: #C8E6C9;
+    transform: scale(1.05);
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(94, 53, 177, 0.4);
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-content {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 2px solid #EDE7F6;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h3 {
+    color: #5E35B1;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+}
+
+.close-btn:hover {
+    color: #5E35B1;
+}
+
+.alert {
+    padding: 12px 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    display: none;
+}
+
+.alert.active {
+    display: block;
+}
+
+.alert.success {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border: 2px solid #4CAF50;
+}
+
+.alert.error {
+    background: #FCE4EC;
+    color: #C2185B;
+    border: 2px solid #F06292;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Adjusted minmax for smaller cards */
+    gap: 15px; /* Slightly reduced gap */
+    margin-bottom: 20px; /* Reduced margin */
+}
+
+.stat-card {
+    font-family: Helvetica, Tahoma, Geneva, Verdana, sans-serif;
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    color: #333;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease, transform 0.2s ease;
+    border: 2px solid #E3F2FD;
+    text-align: center;
+    position: relative;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(94, 53, 177, 0.2);
+    border-color: #EDE7F6;
+}
+
+.stat-card h3 {
+    font-size: 12px;
+    margin-bottom: 8px;
+    color: #666;
+    font-weight: 500;
+}
+
+.stat-card .number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #5E35B1;
+    margin-bottom: 5px;
+}
+
+/* Style for trend indicators */
+.stat-card .trend {
+    font-size: 10px;
+    color: #888; /* Default muted color */
+}
+
+.stat-card .trend.up {
+    color: #2E7D32;
+}
+
+.stat-card .trend.down {
+    color: #C2185B;
+}
+
+.stat-card .trend::before {
+    content: ""; /* Default empty */
+}
+
+.stat-card .trend.up::before {
+    content: "▲ "; /* Up arrow */
+}
+
+.stat-card .trend.down::before {
+    content: "▼ "; /* Down arrow */
+}
+
+#dashboard .chart-container {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border: 2px solid #E3F2FD;
+    /* Ensure it takes available width but constrain height if needed */
+    /* width: 100%; */
+    /* max-width: 600px; */ /* Optional max width */
+    /* height: 300px; */ /* Explicit height if needed, Chart.js can adapt */
+}
+
+/* Ensure canvas takes full width/height of its container */
+#dashboard .chart-container canvas {
+    width: 100% !important; /* Important to override Chart.js default sizing sometimes */
+    height: 100% !important;
+}
+
+.chart-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border: 2px solid #E3F2FD;
+    /* Ensure it takes available width but constrain height if needed */
+    width: 100%;
+    max-width: 300px; /* Optional max width */
+}
+
+/* Ensure canvas takes full width/height of its container */
+.chart-container canvas {
+    width: 100% !important; /* Important to override Chart.js default sizing */
+    height: auto !important; /* Let height be determined by aspect ratio or parent */
+}
+
+.hidden {
+    display: none;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #5E35B1;
+    position: relative;
+}
+
+.loading::after {
+    content: '';
+    display: block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #E3F2FD;
+    border-top: 3px solid #5E35B1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+}
+
+.form-group input:disabled,
+.form-group input:read-only {
+    background-color: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Style the button container in the new modal */
+#taskAndGuideModal .modal-content form > div:last-child { /* Target the div containing the buttons */
+    margin-top: 20px; /* Add space above the buttons */

@@ -1,0 +1,13 @@
+# Ignore sensitive configuration files
+config/email-config.php
+
+# Ignore uploaded files
+uploads/
+uploads/photos/
+
+# Ignore logs
+*.log
+
+# Ignore environment files
+.env
+.env.local
