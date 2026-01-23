@@ -1,0 +1,24 @@
+# --- Global / IDE Rules ---
+.vs/
+.vscode/
+*.exe
+*.log
+
+# --- Frontend Rules ---
+frontend/node_modules/
+frontend/dist/
+# Note: You mentioned iscms was here earlier
+frontend/iscms/ 
+
+# --- Backend Rules ---
+backend/config/email-config.php
+backend/uploads/
+backend/uploads/photos/
+backend/.env
+backend/.env.local
+
+# --- General Safety ---
+# This ignores any node_modules anywhere, just in case
+**/node_modules/
+iscms/
+.env
