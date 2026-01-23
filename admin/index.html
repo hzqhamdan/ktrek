@@ -189,7 +189,7 @@
 
                         <!-- Quick Actions Panel -->
                         <h3 style="margin-top: 30px; margin-bottom: 15px; color: #5E35B1;">⚡ Quick Actions</h3>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                        <div class="quick-actions">
                             <button onclick="navigateTo('reports')" class="add-btn" style="padding: 15px; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;">
                                 📢 View Pending Reports
                             </button>
@@ -205,9 +205,9 @@
                         </div>
 
                         <!-- Analytics Charts -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 15px;">
+                        <div class="analytics-header">
                             <h3 style="color: #5E35B1; margin: 0;">📈 Analytics</h3>
-                            <div style="display: flex; gap: 10px;">
+                            <div class="analytics-period-buttons">
                                 <button id="toggle7Days" class="add-btn" onclick="toggleChartPeriod(7)" style="padding: 8px 15px; font-size: 14px; background: #5E35B1;">Last 7 Days</button>
                                 <button id="toggle30Days" class="add-btn" onclick="toggleChartPeriod(30)" style="padding: 8px 15px; font-size: 14px; background: #E0E0E0; color: #666;">Last 30 Days</button>
                             </div>
@@ -665,6 +665,13 @@
                         <option value="quiz">Quiz</option>
                         <option value="photo">Photo Upload</option>
                         <option value="checkin">Check-in</option>
+                        <option value="count_confirm">Count & Confirm</option>
+                        <option value="direction">Direction & Orientation</option>
+                        <option value="riddle">Riddle / Puzzle</option>
+                        <option value="memory_recall">Memory Recall</option>
+                        <option value="observation_match">Observation Match</option>
+                        <option value="route_completion">Route Completion</option>
+                        <option value="time_based">Time-Based Challenge</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -678,6 +685,158 @@
                     <div id="taskAndGuideQuizList"></div>
                     <button type="button" class="btn" onclick="addTaskAndGuideQuizQuestion()" style="background: #3b82f6; margin-top: 10px;">
                         <i class="fas fa-plus"></i> Add Question
+                    </button>
+                </div>
+
+                <!-- Count & Confirm Section for Task & Guide Modal -->
+                <div id="taskAndGuideCountConfirmSection" style="display: none; margin-top: 20px; padding: 15px; background: #2d3748; border-radius: 5px;">
+                    <h4 style="color: #e0e0e0; margin-top: 0;">Count & Confirm Configuration</h4>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">What should users count?*</label>
+                        <input type="text" id="taskAndGuideCountTargetObject" placeholder="e.g., Wooden pillars, Buddha statues, Steps" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;">
+                        <small style="color: #a0aec0; font-size: 12px;">Describe the object users need to count</small>
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">Correct Count*</label>
+                        <input type="number" id="taskAndGuideCountCorrectCount" min="1" placeholder="e.g., 12" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;">
+                        <small style="color: #a0aec0; font-size: 12px;">The actual number of objects</small>
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">Tolerance (±)</label>
+                        <input type="number" id="taskAndGuideCountTolerance" min="0" value="0" placeholder="0" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;">
+                        <small style="color: #a0aec0; font-size: 12px;">Allow ± this many for correct answer (default: 0 = exact count required)</small>
+                    </div>
+                </div>
+
+                <!-- Direction & Orientation Section for Task & Guide Modal -->
+                <div id="taskAndGuideDirectionSection" style="display: none; margin-top: 20px; padding: 15px; background: #2d3748; border-radius: 5px;">
+                    <h4 style="color: #e0e0e0; margin-top: 0;">Direction & Orientation Configuration</h4>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">Question*</label>
+                        <input type="text" id="taskAndGuideDirectionQuestion" placeholder="e.g., Which direction is the Buddha facing?" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;">
+                        <small style="color: #a0aec0; font-size: 12px;">Ask users to identify a direction</small>
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">Correct Direction*</label>
+                        <select id="taskAndGuideDirectionCorrect" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;">
+                            <option value="">Select Direction</option>
+                            <option value="North">North</option>
+                            <option value="Northeast">Northeast</option>
+                            <option value="East">East</option>
+                            <option value="Southeast">Southeast</option>
+                            <option value="South">South</option>
+                            <option value="Southwest">Southwest</option>
+                            <option value="West">West</option>
+                            <option value="Northwest">Northwest</option>
+                        </select>
+                        <small style="color: #a0aec0; font-size: 12px;">The correct direction</small>
+                    </div>
+                </div>
+
+                <!-- Time-Based Challenge Section for Task & Guide Modal -->
+                <div id="taskAndGuideTimeBasedSection" style="display: none; margin-top: 20px; padding: 15px; background: #2d3748; border-radius: 5px;">
+                    <h4 style="color: #e0e0e0; margin-top: 0;">Time-Based Challenge Configuration</h4>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">Start Time*</label>
+                        <input type="time" id="taskAndGuideTimeStartTime" value="17:30" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;">
+                        <small style="color: #a0aec0; font-size: 12px;">When can users start checking in</small>
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">End Time*</label>
+                        <input type="time" id="taskAndGuideTimeEndTime" value="19:00" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;">
+                        <small style="color: #a0aec0; font-size: 12px;">When does the time window close</small>
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">Minimum Duration (minutes)</label>
+                        <input type="number" id="taskAndGuideTimeMinDuration" value="10" min="1" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;">
+                        <small style="color: #a0aec0; font-size: 12px;">How long users must stay checked in (optional)</small>
+                    </div>
+                </div>
+
+                <!-- Riddle Section for Task & Guide Modal -->
+                <div id="taskAndGuideRiddleSection" style="display: none; margin-top: 20px; padding: 15px; background: #2d3748; border-radius: 5px;">
+                    <h4 style="color: #e0e0e0; margin-top: 0;">Riddle / Puzzle Configuration</h4>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">Riddle Question*</label>
+                        <textarea id="taskAndGuideRiddleQuestion" placeholder="Enter your riddle or puzzle question..." rows="3" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">Correct Answer*</label>
+                        <input type="text" id="taskAndGuideRiddleAnswer" placeholder="The answer to the riddle" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;">
+                        <small style="color: #a0aec0; font-size: 12px;">Case-insensitive matching will be used</small>
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">Hints (optional, one per line)</label>
+                        <textarea id="taskAndGuideRiddleHints" placeholder="Enter hints, one per line..." rows="3" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Memory Recall Section for Task & Guide Modal -->
+                <div id="taskAndGuideMemoryRecallSection" style="display: none; margin-top: 20px; padding: 15px; background: #2d3748; border-radius: 5px;">
+                    <h4 style="color: #e0e0e0; margin-top: 0;">Memory Recall Configuration</h4>
+                    <p style="color: #a0aec0; font-size: 13px;">Users will be shown information, then asked to recall it after a delay.</p>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">Information to Memorize*</label>
+                        <textarea id="taskAndGuideMemoryInfo" placeholder="Enter the information users need to memorize..." rows="3" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">Recall Question*</label>
+                        <input type="text" id="taskAndGuideMemoryQuestion" placeholder="What should users recall?" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;">
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">Correct Answer*</label>
+                        <input type="text" id="taskAndGuideMemoryAnswer" placeholder="The expected answer" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;">
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">Delay (seconds)</label>
+                        <input type="number" id="taskAndGuideMemoryDelay" value="30" min="5" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;">
+                        <small style="color: #a0aec0; font-size: 12px;">Time before showing the recall question</small>
+                    </div>
+                </div>
+
+                <!-- Observation Match Section for Task & Guide Modal -->
+                <div id="taskAndGuideObservationMatchSection" style="display: none; margin-top: 20px;">
+                    <div style="background: #1e293b; border-radius: 8px; padding: 20px; border: 2px solid #5E35B1;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div>
+                                <h4 style="color: #e0e0e0; margin: 0; display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-eye" style="color: #5E35B1;"></i>
+                                    Observation Match - Multiple Choice
+                                </h4>
+                                <p style="color: #9ca3af; font-size: 13px; margin: 5px 0 0 0;">
+                                    Add observable items, each with answer options (not the Quiz modal).
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div style="background: #0f172a; border-radius: 6px; padding: 12px; margin-bottom: 15px; border-left: 4px solid #3b82f6;">
+                            <p style="color: #93c5fd; font-size: 13px; margin: 0;">
+                                <i class="fas fa-info-circle"></i> <strong>Guidelines:</strong>
+                                Add at least one observable item and select the correct answer for each.
+                            </p>
+                        </div>
+                        
+                        <div id="taskAndGuideObservationQuestionsList"></div>
+                        <button type="button" class="btn" onclick="addTaskAndGuideObservationMatchQuestion()" 
+                                style="background: #3b82f6; color: white; margin-top: 10px; width: 100%;">
+                            <i class="fas fa-plus"></i> Add Observable Item
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Route Completion Section for Task & Guide Modal -->
+                <div id="taskAndGuideRouteCompletionSection" style="display: none; margin-top: 20px; padding: 15px; background: #2d3748; border-radius: 5px;">
+                    <h4 style="color: #e0e0e0; margin-top: 0;">Route Completion Configuration</h4>
+                    <p style="color: #a0aec0; font-size: 13px;">Users must visit checkpoints in order to complete the route.</p>
+                    <div class="form-group">
+                        <label style="color: #e0e0e0;">Route Name*</label>
+                        <input type="text" id="taskAndGuideRouteName" placeholder="e.g., Temple Discovery Trail" style="background: #1a202c; color: #e0e0e0; border: 1px solid #4a5568;">
+                    </div>
+                    <div id="taskAndGuideRouteCheckpoints">
+                        <!-- Checkpoints will be added here -->
+                    </div>
+                    <button type="button" class="btn" onclick="addTaskAndGuideRouteCheckpoint()" style="background: #3b82f6; margin-top: 10px;">
+                        <i class="fas fa-plus"></i> Add Checkpoint
                     </button>
                 </div>
                 
@@ -779,16 +938,16 @@
                 </div>
                 <div class="form-group">
                     <label>Full Name*</label>
-                    <input type="text" id="editProfileFullName" required>
+                    <input type="text" id="editProfileFullName" name="full_name" required>
                 </div>
                 <div class="form-group">
                     <label>New Password (Leave blank to keep current)</label>
-                    <input type="password" id="editProfilePassword" minlength="6">
+                    <input type="password" id="editProfilePassword" name="password" minlength="6">
                     <small style="color: #666; font-size: 12px;">Minimum 6 characters. Leave blank to keep current password.</small>
                 </div>
                 <div class="form-group">
                     <label>Confirm New Password</label>
-                    <input type="password" id="editProfileConfirmPassword">
+                    <input type="password" id="editProfileConfirmPassword" name="confirm_password">
                 </div>
                 <button type="submit" class="btn">Save Changes</button>
             </form>

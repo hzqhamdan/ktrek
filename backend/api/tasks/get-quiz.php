@@ -21,7 +21,7 @@ if ($task_id <= 0) {
 }
 
 try {
-    // Verify task is a quiz type
+    // Verify task exists and is a quiz-backed type
     $query = "SELECT type FROM tasks WHERE id = :task_id";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':task_id', $task_id);
@@ -32,8 +32,9 @@ try {
     }
     
     $task = $stmt->fetch();
-    if ($task['type'] !== 'quiz') {
-        Response::error("This task is not a quiz", 400);
+    $quizBackedTypes = ['quiz', 'observation_match', 'riddle', 'memory_recall', 'direction'];
+    if (!in_array($task['type'], $quizBackedTypes, true)) {
+        Response::error("This task does not use quiz questions", 400);
     }
 
     // Get quiz questions with options
@@ -55,7 +56,9 @@ try {
         $query = "SELECT 
                     id as option_id,
                     option_text,
-                    option_order
+                    option_order,
+                    is_correct,
+                    option_metadata
                   FROM quiz_options
                   WHERE question_id = :question_id
                   ORDER BY option_order ASC";

@@ -12,7 +12,8 @@ if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
 // Keep these sections EXACTLY as in the existing admin panel.
 // Role-based visibility: "Admin Users" is restricted to Superadmin.
 $adminRole = $_SESSION['admin_role'] ?? '';
-$isSuperadmin = strcasecmp($adminRole, 'Superadmin') === 0;
+// Case-insensitive check for superadmin role
+$isSuperadmin = strcasecmp($adminRole, 'Superadmin') === 0 || strcasecmp($adminRole, 'superadmin') === 0;
 
 $sidebarLinks = [
     [
@@ -40,12 +41,6 @@ $sidebarLinks = [
         'icon' => 'guides',
     ],
     [
-        'label' => 'Rewards',
-        'tab' => 'rewards',
-        'href' => '#',
-        'icon' => 'rewards',
-    ],
-    [
         'label' => 'Reports',
         'tab' => 'reports',
         'href' => '#',
@@ -58,6 +53,14 @@ $sidebarLinks = [
         'href' => '#',
         'icon' => 'userProgress',
     ],
+];
+
+// Rewards (visibility enforced client-side based on role)
+$sidebarLinks[] = [
+    'label' => 'Rewards',
+    'tab' => 'rewards',
+    'href' => '#',
+    'icon' => 'rewards',
 ];
 
 // Admin Users (Superadmin only)

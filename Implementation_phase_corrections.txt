@@ -1,0 +1,97 @@
+Implementation Phase – Accuracy Review and Corrections (Updated for feature removals)
+
+Summary
+- Generally accurate: React + Vite frontend, TailwindCSS, PHP + MySQL backend, REST-style APIs, Mapbox GL integration, Html5-QRCode usage, and a separate admin panel.
+- Notable mismatches: frontend auth/session model, rewards/EP system design, breadth of task types, testing claims, and Mapbox custom styling specifics.
+- Scope update (Docs only): Photo Upload tasks are being removed, and rewards for stamps, photo cards, and cosmetics are out of scope. Code remains unchanged for now; documentation is corrected to reflect the current intended scope.
+
+Key Inaccuracies and Corrections
+
+1) Frontend Authentication and Session Handling
+Original text: “Successful authentication establishes a PHP session that maintains the user's logged-in state across page navigation.”
+Reality in code:
+- Backend issues a generated session token and stores it in a sessions table; the frontend uses Bearer tokens, not classic PHP cookie sessions.
+  • backend/api/auth/login.php (generates token, inserts into sessions, returns token)
+  • backend/middleware/auth-middleware.php (validates Bearer token)
+  • frontend/src/store/authStore.js (persists token + user in localStorage)
+Correction:
+- “Successful authentication returns a session token stored in the sessions table. The frontend persists this token (localStorage) and sends it via Authorization: Bearer <token> on subsequent API calls. The backend validates the token via middleware.”
+
+2) Rewards System Structure and Logic
+Original text: “When 100% completion of an attraction is detected, the system queries the rewards table and inserts into a user_rewards junction for that reward.”
+Reality in code:
+- The project uses a generalized user_rewards table to capture multiple reward types (badges, stamps, photo cards, titles, cosmetics) with metadata, plus separate user_stats, user_category_progress, user_milestones.
+  • backend/api/rewards/get-user-rewards.php (reads user_rewards)
+  • backend/api/rewards/get-user-stats.php (reads user_stats, user_category_progress, user_milestones, leaderboard)
+  • admin/*.sql (fix_user_rewards_table.sql, install_ep_and_achievements.sql, update_category_tier_badges.sql, etc.)
+- The flow is more EP/XP- and category-tier-oriented than a simple per-attraction reward lookup.
+Scope change (Docs only):
+- Stamps, photo cards, and cosmetics are being removed from the product scope. Documentation should no longer present them as active rewards. Keep badges, titles, XP/EP, and category tiers.
+Correction:
+- “Rewards are tracked primarily via a generalized user_rewards ledger along with user_stats, user_category_progress, and user_milestones. Completing tasks contributes EP/XP and category progress; tier unlocks (bronze/silver/gold) and achievements are recorded, and the UI surfaces XP, EP, badges, and titles.”
+
+3) Breadth of Gamified Task Types
+Original text: Emphasizes quizzes, photo missions, and check-ins as the primary task types.
+Reality in code:
+- The app includes many task types: quiz, photo, check-in, plus direction, memory-recall, observation-match, riddle, route-completion, time-based, count-confirm.
+  • backend/api/tasks/* (submit-direction.php, submit-memory-recall.php, submit-observation-match.php, submit-riddle.php, submit-route-completion.php, submit-time-based.php, submit-count-confirm.php, etc.)
+  • frontend/src/components/tasks/* (DirectionTask.jsx, MemoryRecallTask.jsx, ObservationMatchTask.jsx, RiddleTask.jsx, RouteCompletionTask.jsx, TimeBasedTask.jsx, CountConfirmTask.jsx)
+Scope change (Docs only):
+- Photo Upload tasks are being removed. Documentation should describe the remaining task types (quiz, check-in, direction, memory recall, observation match, riddle, route completion, time-based, count confirm).
+Correction:
+- “Beyond quizzes and check-ins, the system implements additional task types (direction, memory recall, observation match, riddle, route completion, time-based, and count confirm), each with dedicated APIs and UI components.”
+
+4) Mapbox Styling Specifics
+Original text: “Custom styling reflecting Kelantan’s cultural aesthetic.”
+Reality in code:
+- The current integration uses the standard Mapbox Streets style.
+  • frontend/src/components/map/AttractionMap.jsx style: "mapbox://styles/mapbox/streets-v12"
+  • Tailored popup/control CSS exists, but base map style is not a custom map style.
+Correction:
+- “Mapbox GL JS is integrated with the default Streets style (v12). Custom popups and control styles are applied via CSS; a fully custom Mapbox style can be adopted later if needed.”
+
+5) Testing Practices
+Original text: “Unit testing of React components and integration testing are integrated through the implementation phase.”
+Reality in code:
+- No automated test harnesses or test files are present in the repo for frontend or backend.
+Correction:
+- “As of now, there are no automated unit or integration tests checked into the repository. Manual testing and SQL validation scripts exist under admin/*.sql. Introducing Jest/RTL for the frontend and request-level integration tests for the PHP API would align the codebase with the stated testing goals.”
+
+6) Admin Panel and Authentication
+Original text: “Separate admin panel with administrative authentication and dashboard.”
+Reality in code:
+- Accurate. The legacy admin panel uses PHP sessions and exposes admin-specific APIs.
+  • admin/api/login.php (PHP session-based auth)
+  • admin/api/dashboard_stats.php and other endpoints
+Clarification:
+- The admin panel’s auth model differs from the frontend app: it uses PHP sessions (not Bearer tokens) and maintains its own session state.
+
+7) Database Entities Mentioned
+Original text: Mentions attractions, tasks, users; reward lookup through a rewards table per attraction.
+Reality in code:
+- Those tables exist, but rewards are not strictly “per-attraction only”; user_rewards is the primary ledger for unlocked items, with additional user_stats and progress tables.
+  • admin/database.sql (users, attractions, tasks, progress, rewards tables)
+  • The evolved reward system relies on user_rewards + supporting analytics/progress tables.
+Scope change (Docs only):
+- Documentation should avoid mentioning stamps, photo cards, and cosmetics as part of rewards. Keep badges/titles and EP/XP.
+Correction:
+- “The schema includes users, sessions, attractions, tasks, progress, and a generic user_rewards ledger. Unlock flow is mediated via EP/XP accrual and category/tier milestones. The surfaced reward types are badges and titles.”
+
+Concise Corrected Paragraphs (drop-in replacements)
+
+Authentication (corrected):
+“The application uses token-based authentication. On login, the backend generates a session token stored in the sessions table and returns it to the client. The React frontend persists the token and attaches it as an Authorization: Bearer header for API calls. A PHP middleware validates the token and resolves the current user.”
+
+Gamification and Tasks (corrected):
+“Gamification spans multiple task types beyond quizzes and check-ins, including direction, memory recall, observation match, riddle, route completion, time-based, and count confirm. Each task type has a dedicated endpoint and React component, providing immediate feedback and contributing EP/XP and progress.”
+
+Rewards and Progress (corrected for scope):
+“Task completions update user progress and EP/XP. Rewards are recorded in a generalized user_rewards table with metadata and are complemented by user_stats, user_category_progress, and user_milestones. Category tiers (bronze/silver/gold) and achievements are unlocked as thresholds are met, and the frontend displays XP, EP, badges, and titles.”
+
+Map Integration (corrected):
+“Mapbox GL JS powers the interactive map. The current build uses the standard Streets v12 style with custom popup/control styling. A dedicated branded style can be applied via a Mapbox Studio style URL when available.”
+
+Testing (corrected):
+“Automated tests are not yet part of the repository. Recommended next steps are to add Jest + React Testing Library for the frontend and request-level integration tests for PHP endpoints, plus SQL migration tests for schema evolution.”
+
+End of report.

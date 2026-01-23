@@ -101,7 +101,7 @@ function setupEventListeners() {
     document.getElementById('taskForm').addEventListener('submit', handleTaskSubmit);
     document.getElementById('taskAndGuideForm').addEventListener('submit', handleTaskAndGuideSubmit);
     document.getElementById('guideForm').addEventListener('submit', handleGuideSubmit);
-    document.getElementById('rewardForm').addEventListener('submit', handleRewardSubmit);
+    // rewardForm is now handled in rewards.js
     document.getElementById('replyForm').addEventListener('submit', handleReplySubmit);
     
     // Add event listener for attraction change in guide modal to load tasks
@@ -229,9 +229,9 @@ function showDashboard() {
         document.getElementById('userNameDisplay').textContent = currentUser.full_name || currentUser.email || 'User'; // Show name if available, otherwise email, otherwise default
     }
 
-    // Hide Admin Users and Reports tabs/links for managers
+    // Hide Admin Users, Reports, and Rewards tabs/links for managers
     if (currentUser?.role === 'manager') {
-        console.log("showDashboard: Hiding Admin Users and Reports links for Manager.");
+        console.log("showDashboard: Hiding Admin Users, Reports, and Rewards links for Manager.");
         const adminUsersLink = document.getElementById('adminUsersNavLink');
         const reportsTabLink = document.getElementById('reportsTab');
 
@@ -241,6 +241,15 @@ function showDashboard() {
 
         if (reportsTabLink) {
             reportsTabLink.style.display = 'none'; // Hide Reports link (sidebar)
+        }
+
+        // Hide Rewards link (sidebar) and section
+        document.querySelectorAll('.nav-link[data-tab="rewards"]').forEach(link => {
+            link.style.display = 'none';
+        });
+        const rewardsSection = document.getElementById('rewards');
+        if (rewardsSection) {
+            rewardsSection.style.display = 'none';
         }
 
         // Hide Add Task and Add Guide buttons for managers
@@ -261,7 +270,7 @@ function showDashboard() {
         // }
 
     } else if (currentUser?.role === 'superadmin') {
-        console.log("showDashboard: Showing Admin Users and Reports links for SuperAdmin.");
+        console.log("showDashboard: Showing Admin Users, Reports, and Rewards links for SuperAdmin.");
         // Show them (in case they were hidden before) for superadmins
         const adminUsersLink = document.getElementById('adminUsersNavLink');
         const reportsTabLink = document.getElementById('reportsTab');
@@ -272,6 +281,15 @@ function showDashboard() {
 
         if (reportsTabLink) {
             reportsTabLink.style.display = ''; // Show Reports link
+        }
+
+        // Show Rewards link (sidebar) and section
+        document.querySelectorAll('.nav-link[data-tab="rewards"]').forEach(link => {
+            link.style.display = '';
+        });
+        const rewardsSection = document.getElementById('rewards');
+        if (rewardsSection) {
+            rewardsSection.style.display = '';
         }
 
         // Show Add Task and Add Guide buttons for superadmins (or leave them visible if they were)
@@ -301,6 +319,15 @@ function showDashboard() {
         if (reportsTabLink) {
             reportsTabLink.style.display = 'none';
         }
+
+        document.querySelectorAll('.nav-link[data-tab="rewards"]').forEach(link => {
+            link.style.display = 'none';
+        });
+        const rewardsSection = document.getElementById('rewards');
+        if (rewardsSection) {
+            rewardsSection.style.display = 'none';
+        }
+
         // COMMENTED OUT - Allow this role to add tasks/guides
         // if (addTaskBtn) {
         //     addTaskBtn.style.display = 'none';
@@ -327,7 +354,14 @@ function showManagerDashboard() {
         if (el && el.style) el.style.display = '';
     });
 
+    // Show Recent Changes section for managers
+    const recentChangesSection = document.getElementById('managerRecentChanges');
+    if (recentChangesSection) {
+        recentChangesSection.style.display = 'block';
+    }
+
     loadDashboardStats();
+    loadManagerRecentChanges();
 }
 
 function showSuperadminDashboard() {
@@ -338,6 +372,12 @@ function showSuperadminDashboard() {
     document.querySelectorAll('#dashboard > :not(#superadminDashboard)').forEach(el => {
         if (el && el.style) el.style.display = 'none';
     });
+
+    // Hide Recent Changes section for superadmins
+    const recentChangesSection = document.getElementById('managerRecentChanges');
+    if (recentChangesSection) {
+        recentChangesSection.style.display = 'none';
+    }
 
     loadSuperadminDashboard();
 }
@@ -549,10 +589,18 @@ function renderSaRecent(recent) {
 
 function logout() {
     currentUser = null;
-    sessionStorage.removeItem('adminUser');
-    document.getElementById('loginScreen').classList.remove('hidden');
-    document.getElementById('adminDashboard').classList.add('hidden');
+    sessionStorage.clear(); // Clear all session storage
+    
+    // Also clear any cached data
+    allTasks = [];
+    allGuides = [];
+    allAttractions = [];
+    
+    // Reset the login form
     document.getElementById('loginForm').reset();
+    
+    // Force page reload to clear all cached state
+    window.location.reload();
 }
 
 // Function to toggle the profile dropdown
@@ -826,6 +874,105 @@ function toggleChartPeriod(period) {
     
     // Reload dashboard stats with new period
     loadDashboardStats();
+}
+
+// Load Recent Changes for Managers
+async function loadManagerRecentChanges() {
+    try {
+        const response = await fetch(API_BASE + 'audit_log.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'get_recent_changes', limit: 20 })
+        });
+
+        const data = await response.json();
+        console.log('Recent Changes API Response:', data);
+
+        const container = document.getElementById('recentChangesContainer');
+        
+        if (data.success && data.data.changes && data.data.changes.length > 0) {
+            const changes = data.data.changes;
+            
+            let html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+            
+            changes.forEach(change => {
+                const actionIcon = {
+                    'create': '<i class="fas fa-plus-circle" style="color: #10b981;"></i>',
+                    'update': '<i class="fas fa-edit" style="color: #3b82f6;"></i>',
+                    'delete': '<i class="fas fa-trash-alt" style="color: #ef4444;"></i>'
+                };
+                
+                const entityIcon = {
+                    'attraction': '<i class="fas fa-map-marker-alt"></i>',
+                    'task': '<i class="fas fa-tasks"></i>',
+                    'guide': '<i class="fas fa-book"></i>',
+                    'reward': '<i class="fas fa-trophy"></i>'
+                };
+                
+                const actionColor = {
+                    'create': '#10b981',
+                    'update': '#3b82f6',
+                    'delete': '#ef4444'
+                };
+                
+                const timeAgo = getTimeAgo(change.created_at);
+                
+                html += `
+                    <div style="background: #f8f9fa; border-left: 4px solid ${actionColor[change.action_type] || '#6b7280'}; padding: 12px 16px; border-radius: 8px; transition: all 0.2s ease;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                ${actionIcon[change.action_type] || ''}
+                                <span style="font-weight: 700; color: #1f2937; text-transform: capitalize;">${change.action_type}</span>
+                                ${entityIcon[change.entity_type] || ''}
+                                <span style="color: #6b7280; font-weight: 500;">${change.entity_type}</span>
+                            </div>
+                            <span style="color: #9ca3af; font-size: 12px; white-space: nowrap;">${timeAgo}</span>
+                        </div>
+                        <div style="margin-left: 0px;">
+                            <div style="color: #374151; font-weight: 600; margin-bottom: 4px;">${change.entity_name || 'Unknown'}</div>
+                            ${change.attraction_name ? `<div style="color: #6b7280; font-size: 13px; margin-bottom: 4px;"><i class="fas fa-map-marker-alt" style="font-size: 11px;"></i> ${change.attraction_name}</div>` : ''}
+                            ${change.changes_summary ? `<div style="color: #6b7280; font-size: 13px; font-style: italic;">${change.changes_summary}</div>` : ''}
+                            <div style="color: #9ca3af; font-size: 12px; margin-top: 6px;">
+                                <i class="fas fa-user-shield"></i> by ${change.admin_name || 'Superadmin'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px 20px; color: #6b7280;">
+                    <i class="fas fa-history" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
+                    <p style="font-size: 16px; margin: 0;">No recent changes found</p>
+                    <p style="font-size: 13px; margin-top: 8px;">Changes made by superadmins to your attractions will appear here</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading recent changes:', error);
+        const container = document.getElementById('recentChangesContainer');
+        
+        // Check if it's a table not exists error
+        if (data && !data.success && data.message && data.message.includes('does not exist')) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #f59e0b;">
+                    <i class="fas fa-info-circle" style="font-size: 32px; margin-bottom: 12px;"></i>
+                    <p>Recent Changes feature is not set up yet.</p>
+                    <p style="font-size: 13px; margin-top: 8px;">Please contact your administrator to run the setup script.</p>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #ef4444;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 32px; margin-bottom: 12px;"></i>
+                    <p>Error loading recent changes. Please try again later.</p>
+                </div>
+            `;
+        }
+    }
 }
 
 // Dashboard stats (Modified to also load the chart)
@@ -1195,6 +1342,23 @@ async function loadAttractions() {
         const tbody = document.getElementById('attractionsTable');
         allAttractions = [];
         tbody.innerHTML = '<tr><td colspan="6">Connection error.</td></tr>';
+    }
+}
+
+// Helper function to fetch attractions list (for use in other functions)
+async function fetchAttractionsList() {
+    try {
+        const response = await fetch(API_BASE + 'attractions.php?action=list');
+        const data = await response.json();
+        if (data.success && data.attractions) {
+            return data.attractions;
+        } else {
+            console.error("Error fetching attractions list:", data.message);
+            return [];
+        }
+    } catch (error) {
+        console.error("Fetch error in fetchAttractionsList:", error);
+        return [];
     }
 }
 
@@ -1594,6 +1758,9 @@ async function openTaskModal(id = null) {
         loadTaskData(id);
     } else {
         document.getElementById('taskModalTitle').textContent = 'Add Task';
+        // Ensure this is a CREATE flow: clear hidden taskId if present
+        const taskIdInput = document.getElementById('taskId');
+        if (taskIdInput) taskIdInput.value = '';
         // Clear QR and media inputs
         document.getElementById('taskQRString').value = '';
         document.getElementById('taskMediaFile').value = '';
@@ -1609,27 +1776,107 @@ async function openTaskModal(id = null) {
 function handleTaskTypeChange() {
     const taskType = document.getElementById('taskType').value;
     const quizSection = document.getElementById('quizQuestionsSection');
+    const countConfirmSection = document.getElementById('countConfirmSection');
+    const directionSection = document.getElementById('directionSection');
+    const timeBasedSection = document.getElementById('timeBasedSection');
     const qrActionsContainer = document.getElementById('qrActionsContainer');
+    let observationMatchSection = document.getElementById('observationMatchSection');
+
+    // Hide all task-specific sections first
+    quizSection.style.display = 'none';
+    if (countConfirmSection) countConfirmSection.style.display = 'none';
+    if (directionSection) directionSection.style.display = 'none';
+    if (timeBasedSection) timeBasedSection.style.display = 'none';
+    if (qrActionsContainer) qrActionsContainer.style.display = 'none';
     
-    if (taskType === 'quiz') {
+    // Show relevant section based on task type
+    if (taskType === 'observation_match') {
+        if (!observationMatchSection) {
+            const sectionHTML = renderObservationMatchSection();
+            const taskForm = document.getElementById('taskForm');
+            const submitBtn = taskForm.querySelector('button[type="submit"]');
+            submitBtn.insertAdjacentHTML('beforebegin', sectionHTML);
+            observationMatchSection = document.getElementById('observationMatchSection');
+        }
+        observationMatchSection.style.display = 'block';
+        if (document.getElementById('observationQuestionsList').children.length === 0) {
+            observationQuestionCounter = 0;
+            addObservationMatchQuestion();
+        }
+    } else if (taskType === 'quiz' || taskType === 'riddle' || taskType === 'memory_recall' || taskType === 'route_completion') {
         quizSection.style.display = 'block';
         // Add at least one question by default
         if (document.getElementById('quizQuestionsList').children.length === 0) {
             addQuizQuestion();
         }
-    } else {
-        quizSection.style.display = 'none';
-    }
-    
-    // Show QR actions only for check-in tasks
-    if (taskType === 'checkin') {
-        qrActionsContainer.style.display = 'block';
-    } else {
-        qrActionsContainer.style.display = 'none';
+    } else if (taskType === 'count_confirm') {
+        if (countConfirmSection) countConfirmSection.style.display = 'block';
+    } else if (taskType === 'direction') {
+        if (directionSection) directionSection.style.display = 'block';
+    } else if (taskType === 'time_based') {
+        if (timeBasedSection) timeBasedSection.style.display = 'block';
+    } else if (taskType === 'checkin') {
+        if (qrActionsContainer) qrActionsContainer.style.display = 'block';
     }
 }
 
 let questionCounter = 0;
+let matchPairCounter = 0;
+let observationQuestionCounter = 0;
+
+function addObservationMatchQuestion() {
+    observationQuestionCounter++;
+    const list = document.getElementById('observationQuestionsList');
+    if (!list) return;
+
+    const questionDiv = document.createElement('div');
+    questionDiv.className = 'observation-question';
+    questionDiv.id = `observation-question-${observationQuestionCounter}`;
+    questionDiv.style.cssText = 'margin-bottom: 20px; padding: 15px; background: #1a202c; border-radius: 5px; border: 1px solid #4a5568;';
+
+    questionDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h5 style="color: #e0e0e0; margin: 0;">Observable Item ${observationQuestionCounter}</h5>
+            <button type="button" class="btn" onclick="removeObservationMatchQuestion(${observationQuestionCounter})" 
+                    style="background: #ef4444; padding: 5px 10px; font-size: 12px; width: auto; min-width: auto;">
+                <i class="fas fa-trash"></i> Remove
+            </button>
+        </div>
+        <div class="form-group">
+            <label>Observable Item*</label>
+            <textarea class="observation-question-text" required style="background: #2d3748; color: #e0e0e0; border: 1px solid #4a5568;"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Answer Options (select the correct answer)</label>
+            <div class="observation-options" id="observation-options-${observationQuestionCounter}">
+                ${createObservationOptionHTML(observationQuestionCounter, 1)}
+                ${createObservationOptionHTML(observationQuestionCounter, 2)}
+                ${createObservationOptionHTML(observationQuestionCounter, 3)}
+                ${createObservationOptionHTML(observationQuestionCounter, 4)}
+            </div>
+        </div>
+    `;
+
+    list.appendChild(questionDiv);
+}
+
+function createObservationOptionHTML(questionNum, optionNum) {
+    return `
+        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+            <input type="radio" name="observation-correct-${questionNum}" value="${optionNum}" 
+                   style="width: auto;">
+            <input type="text" class="observation-option" placeholder="Option ${optionNum}" required
+                   style="flex: 1; background: #2d3748; color: #e0e0e0; border: 1px solid #4a5568; padding: 8px; border-radius: 4px;">
+        </div>
+    `;
+}
+
+function removeObservationMatchQuestion(id) {
+    const questionDiv = document.getElementById(`observation-question-${id}`);
+    if (questionDiv) {
+        questionDiv.remove();
+    }
+}
 
 function addQuizQuestion() {
     questionCounter++;
@@ -1666,6 +1913,211 @@ function addQuizQuestion() {
     questionsList.appendChild(questionDiv);
 }
 
+// ============================================
+// OBSERVATION MATCH TASK FUNCTIONS
+// ============================================
+
+function addObservationMatchOption() {
+    matchPairCounter++;
+    const matchPairsList = document.getElementById('matchPairsList');
+    
+    const optionDiv = document.createElement('div');
+    optionDiv.className = 'match-pair observation-option';
+    optionDiv.id = `match-pair-${matchPairCounter}`;
+    optionDiv.dataset.pairId = matchPairCounter;
+    optionDiv.style.cssText = 'margin-bottom: 10px; padding: 12px; background: #1a202c; border-radius: 8px; border: 2px solid #4a5568;';
+    
+    optionDiv.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="flex-shrink: 0;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #9ca3af;">
+                    <input type="checkbox" class="observation-correct-checkbox" onchange="updateObservationMatchCount()"
+                           style="width: 20px; height: 20px; cursor: pointer;">
+                    <span style="font-size: 12px;">Correct</span>
+                </label>
+            </div>
+            <input type="text" class="match-item-text observation-option-text" placeholder="Option ${matchPairCounter} - e.g., A golden dragon statue" 
+                   style="flex: 1; background: #2d3748; color: #e0e0e0; border: 1px solid #4a5568; padding: 10px; border-radius: 4px;">
+            <button type="button" class="btn" onclick="removeObservationMatchOption(${matchPairCounter})" 
+                    style="background: #ef4444; padding: 8px 12px; font-size: 12px; width: auto; min-width: auto;">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+    
+    matchPairsList.appendChild(optionDiv);
+    updateObservationMatchCount();
+}
+
+function removeObservationMatchOption(id) {
+    const optionDiv = document.getElementById(`match-pair-${id}`);
+    if (optionDiv) {
+        optionDiv.remove();
+        updateObservationMatchCount();
+    }
+}
+
+function updateObservationMatchCount() {
+    const checkboxes = document.querySelectorAll('.observation-correct-checkbox:checked');
+    const countSpan = document.getElementById('matchPairCount');
+    if (countSpan) {
+        countSpan.textContent = checkboxes.length;
+        countSpan.style.color = checkboxes.length >= 2 ? '#10b981' : '#ef4444';
+    }
+}
+
+// Legacy function kept for backwards compatibility
+function addMatchPair() {
+    addObservationMatchOption();
+}
+
+function _legacyAddMatchPair() {
+    matchPairCounter++;
+    const matchPairsList = document.getElementById('matchPairsList');
+    
+    const pairDiv = document.createElement('div');
+    pairDiv.className = 'match-pair';
+    pairDiv.id = `match-pair-${matchPairCounter}`;
+    pairDiv.dataset.pairId = matchPairCounter;
+    pairDiv.style.cssText = 'margin-bottom: 15px; padding: 15px; background: #1a202c; border-radius: 8px; border: 2px solid #4a5568;';
+    
+    pairDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h5 style="color: #e0e0e0; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <span style="background: #5E35B1; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">Pair ${matchPairCounter}</span>
+            </h5>
+            <button type="button" class="btn" onclick="removeMatchPair(${matchPairCounter})" 
+                    style="background: #ef4444; padding: 5px 10px; font-size: 12px; width: auto; min-width: auto;">
+                <i class="fas fa-trash"></i> Remove
+            </button>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="color: #10b981; font-weight: 600;">
+                    <i class="fas fa-eye"></i> Observable Item*
+                </label>
+                <input type="text" class="match-item-text" placeholder="e.g., 🐉 Dragon carving on pillars" required
+                       style="background: #2d3748; color: #e0e0e0; border: 1px solid #4a5568; padding: 10px; border-radius: 4px;">
+                <small style="color: #9ca3af; font-size: 11px;">Use emojis 🏛️ or text descriptions</small>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="color: #3b82f6; font-weight: 600;">
+                    <i class="fas fa-info-circle"></i> Meaning/Function*
+                </label>
+                <input type="text" class="match-function-text" placeholder="e.g., Symbolizes imperial power" required
+                       style="background: #2d3748; color: #e0e0e0; border: 1px solid #4a5568; padding: 10px; border-radius: 4px;">
+                <small style="color: #9ca3af; font-size: 11px;">Cultural/historical explanation</small>
+            </div>
+        </div>
+    `;
+    
+    matchPairsList.appendChild(pairDiv);
+    updateMatchPairCount();
+}
+
+function removeMatchPair(id) {
+    const pairDiv = document.getElementById(`match-pair-${id}`);
+    if (pairDiv) {
+        pairDiv.remove();
+        updateMatchPairCount();
+    }
+}
+
+function updateMatchPairCount() {
+    const countSpan = document.getElementById('matchPairCount');
+    const pairCount = document.querySelectorAll('.match-pair').length;
+    if (countSpan) {
+        countSpan.textContent = pairCount;
+        // Update color based on count
+        if (pairCount < 3) {
+            countSpan.style.color = '#ef4444'; // Red - need more
+        } else if (pairCount <= 8) {
+            countSpan.style.color = '#10b981'; // Green - good
+        } else {
+            countSpan.style.color = '#f59e0b'; // Orange - too many
+        }
+    }
+}
+
+function collectMatchPairs() {
+    // Check if this is the new observation match format (with checkboxes)
+    const observationOptions = document.querySelectorAll('.observation-option');
+    
+    if (observationOptions.length > 0) {
+        // New format: collect options with is_correct flag
+        const options = [];
+        let optionOrder = 0;
+        
+        observationOptions.forEach((optionDiv) => {
+            const optionText = optionDiv.querySelector('.observation-option-text').value.trim();
+            const isCorrect = optionDiv.querySelector('.observation-correct-checkbox')?.checked || false;
+            
+            if (optionText) {
+                options.push({
+                    option_text: optionText,
+                    is_correct: isCorrect,
+                    option_order: optionOrder++
+                });
+            }
+        });
+        
+        return options;
+    }
+    
+    // Legacy format: match pairs (item + function)
+    const pairs = [];
+    const pairDivs = document.querySelectorAll('.match-pair:not(.observation-option)');
+    
+    pairDivs.forEach((pairDiv) => {
+        const pairId = parseInt(pairDiv.dataset.pairId);
+        const itemText = pairDiv.querySelector('.match-item-text')?.value?.trim();
+        const functionText = pairDiv.querySelector('.match-function-text')?.value?.trim();
+        
+        if (itemText && functionText) {
+            pairs.push({
+                pair_id: pairId,
+                item_text: itemText,
+                function_text: functionText
+            });
+        }
+    });
+    
+    return pairs;
+}
+
+function renderObservationMatchSection() {
+    return `
+        <div id="observationMatchSection" style="display: none; margin-top: 20px;">
+            <div style="background: #1e293b; border-radius: 8px; padding: 20px; border: 2px solid #5E35B1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <h4 style="color: #e0e0e0; margin: 0; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-eye" style="color: #5E35B1;"></i>
+                            Observation Match - Multiple Choice
+                        </h4>
+                        <p style="color: #9ca3af; font-size: 13px; margin: 5px 0 0 0;">
+                            Add observable items, each with answer options. This is a dedicated section (not the Quiz modal).
+                        </p>
+                    </div>
+                </div>
+
+                <div style="background: #0f172a; border-radius: 6px; padding: 12px; margin-bottom: 15px; border-left: 4px solid #3b82f6;">
+                    <p style="color: #93c5fd; font-size: 13px; margin: 0;">
+                        <i class="fas fa-info-circle"></i> <strong>Guidelines:</strong>
+                        Add at least one observable item and choose the correct answer for each.
+                    </p>
+                </div>
+
+                <div id="observationQuestionsList"></div>
+                <button type="button" class="btn" onclick="addObservationMatchQuestion()" 
+                        style="background: #3b82f6; color: white; margin-top: 10px; width: 100%;">
+                    <i class="fas fa-plus"></i> Add Observable Item
+                </button>
+            </div>
+        </div>
+    `;
+}
+
 function createOptionHTML(questionNum, optionNum) {
     return `
         <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
@@ -1690,34 +2142,88 @@ let taskAndGuideQuestionCounter = 0;
 function handleTaskAndGuideTypeChange() {
     const taskType = document.getElementById('taskAndGuideTaskType').value;
     const quizSection = document.getElementById('taskAndGuideQuizSection');
+    const countConfirmSection = document.getElementById('taskAndGuideCountConfirmSection');
+    const directionSection = document.getElementById('taskAndGuideDirectionSection');
+    const timeBasedSection = document.getElementById('taskAndGuideTimeBasedSection');
+    const riddleSection = document.getElementById('taskAndGuideRiddleSection');
+    const memoryRecallSection = document.getElementById('taskAndGuideMemoryRecallSection');
+    const routeCompletionSection = document.getElementById('taskAndGuideRouteCompletionSection');
     const guideTitleInput = document.getElementById('taskAndGuideGuideTitle');
     const guideContentInput = document.getElementById('taskAndGuideGuideContent');
     const guideTitleLabel = document.getElementById('guideTitleLabel');
     const guideContentLabel = document.getElementById('guideContentLabel');
     const guideInfoHeader = document.getElementById('guideInfoHeader');
     
+    // Hide all task-specific sections first
+    if (quizSection) quizSection.style.display = 'none';
+    if (countConfirmSection) countConfirmSection.style.display = 'none';
+    if (directionSection) directionSection.style.display = 'none';
+    if (timeBasedSection) timeBasedSection.style.display = 'none';
+    if (riddleSection) riddleSection.style.display = 'none';
+    if (memoryRecallSection) memoryRecallSection.style.display = 'none';
+    if (routeCompletionSection) routeCompletionSection.style.display = 'none';
+    
+    // Show the relevant section based on task type
+    switch (taskType) {
+        case 'quiz':
+            if (quizSection) {
+                quizSection.style.display = 'block';
+                // Add at least one question by default
+                if (document.getElementById('taskAndGuideQuizList').children.length === 0) {
+                    addTaskAndGuideQuizQuestion();
+                }
+            }
+            break;
+        case 'count_confirm':
+            if (countConfirmSection) countConfirmSection.style.display = 'block';
+            break;
+        case 'direction':
+            if (directionSection) directionSection.style.display = 'block';
+            break;
+        case 'time_based':
+            if (timeBasedSection) timeBasedSection.style.display = 'block';
+            break;
+        case 'riddle':
+            if (riddleSection) riddleSection.style.display = 'block';
+            break;
+        case 'memory_recall':
+            if (memoryRecallSection) memoryRecallSection.style.display = 'block';
+            break;
+        case 'observation_match':
+            if (observationMatchSection) {
+                observationMatchSection.style.display = 'block';
+                if (document.getElementById('taskAndGuideObservationQuestionsList').children.length === 0) {
+                    taskAndGuideObservationQuestionCounter = 0;
+                    addTaskAndGuideObservationMatchQuestion();
+                }
+            }
+            break;
+        case 'route_completion':
+            if (routeCompletionSection) {
+                routeCompletionSection.style.display = 'block';
+                // Reset checkpoints counter for this modal
+                taskAndGuideRouteCheckpointCounter = 0;
+                const checkpointsList = document.getElementById('taskAndGuideRouteCheckpoints');
+                if (checkpointsList) checkpointsList.innerHTML = '';
+            }
+            break;
+    }
+    
+    // Handle guide requirements
     if (taskType === 'quiz') {
-        quizSection.style.display = 'block';
-        // Add at least one question by default
-        if (document.getElementById('taskAndGuideQuizList').children.length === 0) {
-            addTaskAndGuideQuizQuestion();
-        }
-        
         // Make guide optional for quiz
-        guideTitleInput.removeAttribute('required');
-        guideContentInput.removeAttribute('required');
-        guideTitleLabel.textContent = 'Guide Title (Optional)';
-        guideContentLabel.textContent = 'Guide Content (Optional)';
-        guideInfoHeader.innerHTML = 'Guide Information <span style="color: #9ca3af; font-size: 14px;">(Optional for Quiz)</span>';
+        if (guideTitleInput) guideTitleInput.removeAttribute('required');
+        if (guideContentInput) guideContentInput.removeAttribute('required');
+        if (guideTitleLabel) guideTitleLabel.textContent = 'Guide Title (Optional)';
+        if (guideContentLabel) guideContentLabel.textContent = 'Guide Content (Optional)';
+        if (guideInfoHeader) guideInfoHeader.innerHTML = 'Guide Information <span style="color: #9ca3af; font-size: 14px;">(Optional for Quiz)</span>';
     } else {
-        quizSection.style.display = 'none';
-        
         // Make guide required for other types
-        guideTitleInput.setAttribute('required', 'required');
-        guideContentInput.setAttribute('required', 'required');
-        guideTitleLabel.textContent = 'Guide Title*';
-        guideContentLabel.textContent = 'Guide Content*';
-        guideInfoHeader.textContent = 'Guide Information';
+        if (guideTitleInput) guideTitleInput.setAttribute('required', 'required');
+        if (guideContentInput) guideContentInput.setAttribute('required', 'required');
+        if (guideTitleLabel) guideTitleLabel.textContent = 'Guide Title*';
+        if (guideContentLabel) guideContentLabel.textContent = 'Guide Content*';
+        if (guideInfoHeader) guideInfoHeader.textContent = 'Guide Information';
     }
 }
 
@@ -1772,6 +2278,191 @@ function removeTaskAndGuideQuizQuestion(id) {
     if (questionDiv) {
         questionDiv.remove();
     }
+}
+
+// Task & Guide Modal - Observation Match helper functions
+let taskAndGuideMatchPairCounter = 0;
+let taskAndGuideObservationQuestionCounter = 0;
+
+function addTaskAndGuideObservationMatchQuestion() {
+    taskAndGuideObservationQuestionCounter++;
+    const list = document.getElementById('taskAndGuideObservationQuestionsList');
+    if (!list) return;
+
+    const questionDiv = document.createElement('div');
+    questionDiv.className = 'taskguide-observation-question';
+    questionDiv.id = `taskguide-observation-question-${taskAndGuideObservationQuestionCounter}`;
+    questionDiv.style.cssText = 'margin-bottom: 20px; padding: 15px; background: #1a202c; border-radius: 5px; border: 1px solid #4a5568;';
+
+    questionDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h5 style="color: #e0e0e0; margin: 0;">Observable Item ${taskAndGuideObservationQuestionCounter}</h5>
+            <button type="button" class="btn" onclick="removeTaskAndGuideObservationMatchQuestion(${taskAndGuideObservationQuestionCounter})" 
+                    style="background: #ef4444; padding: 5px 10px; font-size: 12px; width: auto; min-width: auto;">
+                <i class="fas fa-trash"></i> Remove
+            </button>
+        </div>
+        <div class="form-group">
+            <label>Observable Item*</label>
+            <textarea class="taskguide-observation-question-text" required style="background: #2d3748; color: #e0e0e0; border: 1px solid #4a5568;"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Answer Options (select the correct answer)</label>
+            <div class="taskguide-observation-options" id="taskguide-observation-options-${taskAndGuideObservationQuestionCounter}">
+                ${createTaskAndGuideObservationOptionHTML(taskAndGuideObservationQuestionCounter, 1)}
+                ${createTaskAndGuideObservationOptionHTML(taskAndGuideObservationQuestionCounter, 2)}
+                ${createTaskAndGuideObservationOptionHTML(taskAndGuideObservationQuestionCounter, 3)}
+                ${createTaskAndGuideObservationOptionHTML(taskAndGuideObservationQuestionCounter, 4)}
+            </div>
+        </div>
+    `;
+
+    list.appendChild(questionDiv);
+}
+
+function createTaskAndGuideObservationOptionHTML(questionNum, optionNum) {
+    return `
+        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+            <input type="radio" name="taskguide-observation-correct-${questionNum}" value="${optionNum}" 
+                   style="width: auto;">
+            <input type="text" class="taskguide-observation-option" placeholder="Option ${optionNum}" required
+                   style="flex: 1; background: #2d3748; color: #e0e0e0; border: 1px solid #4a5568; padding: 8px; border-radius: 4px;">
+        </div>
+    `;
+}
+
+function removeTaskAndGuideObservationMatchQuestion(id) {
+    const questionDiv = document.getElementById(`taskguide-observation-question-${id}`);
+    if (questionDiv) {
+        questionDiv.remove();
+    }
+}
+
+function addTaskAndGuideObservationMatchOption() {
+    taskAndGuideMatchPairCounter++;
+    const matchPairsList = document.getElementById('taskAndGuideMatchPairsList');
+    
+    const optionDiv = document.createElement('div');
+    optionDiv.className = 'match-pair taskguide-observation-option';
+    optionDiv.id = `taskguide-match-pair-${taskAndGuideMatchPairCounter}`;
+    optionDiv.dataset.pairId = taskAndGuideMatchPairCounter;
+    optionDiv.style.cssText = 'margin-bottom: 10px; padding: 12px; background: #1a202c; border-radius: 8px; border: 2px solid #4a5568;';
+    
+    optionDiv.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="flex-shrink: 0;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #9ca3af;">
+                    <input type="checkbox" class="taskguide-observation-correct-checkbox" onchange="updateTaskAndGuideObservationMatchCount()"
+                           style="width: 20px; height: 20px; cursor: pointer;">
+                    <span style="font-size: 12px;">Correct</span>
+                </label>
+            </div>
+            <input type="text" class="taskguide-observation-option-text" placeholder="Option ${taskAndGuideMatchPairCounter} - e.g., A golden dragon statue" 
+                   style="flex: 1; background: #2d3748; color: #e0e0e0; border: 1px solid #4a5568; padding: 10px; border-radius: 4px;">
+            <button type="button" class="btn" onclick="removeTaskAndGuideObservationMatchOption(${taskAndGuideMatchPairCounter})" 
+                    style="background: #ef4444; padding: 8px 12px; font-size: 12px; width: auto; min-width: auto;">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+    
+    matchPairsList.appendChild(optionDiv);
+    updateTaskAndGuideObservationMatchCount();
+}
+
+function removeTaskAndGuideObservationMatchOption(id) {
+    const optionDiv = document.getElementById(`taskguide-match-pair-${id}`);
+    if (optionDiv) {
+        optionDiv.remove();
+        updateTaskAndGuideObservationMatchCount();
+    }
+}
+
+function updateTaskAndGuideObservationMatchCount() {
+    const checkboxes = document.querySelectorAll('.taskguide-observation-correct-checkbox:checked');
+    const countSpan = document.getElementById('taskAndGuideMatchPairCount');
+    if (countSpan) {
+        countSpan.textContent = checkboxes.length;
+        countSpan.style.color = checkboxes.length >= 2 ? '#10b981' : '#ef4444';
+    }
+}
+
+function collectTaskAndGuideObservationMatchOptions() {
+    const options = [];
+    let optionOrder = 0;
+    
+    const observationOptions = document.querySelectorAll('.taskguide-observation-option');
+    observationOptions.forEach((optionDiv) => {
+        const optionText = optionDiv.querySelector('.taskguide-observation-option-text').value.trim();
+        const isCorrect = optionDiv.querySelector('.taskguide-observation-correct-checkbox')?.checked || false;
+        
+        if (optionText) {
+            options.push({
+                option_text: optionText,
+                is_correct: isCorrect,
+                option_order: optionOrder++
+            });
+        }
+    });
+    
+    return options;
+}
+
+// Task & Guide Modal - Route Completion helper functions
+let taskAndGuideRouteCheckpointCounter = 0;
+
+function addTaskAndGuideRouteCheckpoint() {
+    taskAndGuideRouteCheckpointCounter++;
+    const checkpointsList = document.getElementById('taskAndGuideRouteCheckpoints');
+    
+    const checkpointDiv = document.createElement('div');
+    checkpointDiv.className = 'taskguide-route-checkpoint';
+    checkpointDiv.id = `taskguide-checkpoint-${taskAndGuideRouteCheckpointCounter}`;
+    checkpointDiv.style.cssText = 'margin-bottom: 10px; padding: 12px; background: #1a202c; border-radius: 8px; border: 1px solid #4a5568;';
+    
+    checkpointDiv.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="color: #9ca3af; font-weight: bold;">${taskAndGuideRouteCheckpointCounter}.</span>
+            <input type="text" class="taskguide-checkpoint-name" placeholder="Checkpoint name (e.g., Main Gate)" 
+                   style="flex: 1; background: #2d3748; color: #e0e0e0; border: 1px solid #4a5568; padding: 10px; border-radius: 4px;">
+            <input type="text" class="taskguide-checkpoint-qr" placeholder="QR Code" 
+                   style="width: 150px; background: #2d3748; color: #e0e0e0; border: 1px solid #4a5568; padding: 10px; border-radius: 4px;">
+            <button type="button" class="btn" onclick="removeTaskAndGuideRouteCheckpoint(${taskAndGuideRouteCheckpointCounter})" 
+                    style="background: #ef4444; padding: 8px 12px; font-size: 12px; width: auto; min-width: auto;">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+    
+    checkpointsList.appendChild(checkpointDiv);
+}
+
+function removeTaskAndGuideRouteCheckpoint(id) {
+    const checkpointDiv = document.getElementById(`taskguide-checkpoint-${id}`);
+    if (checkpointDiv) {
+        checkpointDiv.remove();
+    }
+}
+
+function collectTaskAndGuideRouteCheckpoints() {
+    const checkpoints = [];
+    let order = 0;
+    
+    const checkpointDivs = document.querySelectorAll('.taskguide-route-checkpoint');
+    checkpointDivs.forEach((div) => {
+        const name = div.querySelector('.taskguide-checkpoint-name').value.trim();
+        const qr = div.querySelector('.taskguide-checkpoint-qr').value.trim();
+        
+        if (name) {
+            checkpoints.push({
+                name: name,
+                qr_code: qr,
+                order: order++
+            });
+        }
+    });
+    
+    return checkpoints;
 }
 
 async function loadTaskData(id) {
@@ -1903,6 +2594,107 @@ async function handleTaskSubmit(e) {
         
         formData.questions = questions;
     }
+    
+    // If observation_match type, collect questions from dedicated section
+    if (type === 'observation_match') {
+        const questions = [];
+        const questionDivs = document.querySelectorAll('.observation-question');
+
+        questionDivs.forEach((questionDiv, index) => {
+            const questionText = questionDiv.querySelector('.observation-question-text').value;
+            const optionInputs = questionDiv.querySelectorAll('.observation-option');
+            const correctRadio = questionDiv.querySelector('input[type="radio"]:checked');
+
+            if (!correctRadio) {
+                showAlert(`Please select the correct answer for Observable Item ${index + 1}`, 'error');
+                throw new Error('Missing correct answer');
+            }
+
+            const options = [];
+            optionInputs.forEach((optionInput, optIndex) => {
+                if (optionInput.value.trim()) {
+                    options.push({
+                        option_text: optionInput.value,
+                        is_correct: correctRadio.value == (optIndex + 1) ? 1 : 0
+                    });
+                }
+            });
+
+            if (questionText && options.length >= 2) {
+                questions.push({
+                    question_text: questionText,
+                    options: options
+                });
+            }
+        });
+
+        if (questions.length === 0) {
+            showAlert('Please add at least one observable item for the Observation Match task', 'error');
+            return;
+        }
+
+        formData.questions = questions;
+    }
+    
+    if (type === 'count_confirm') {
+        const targetObject = document.getElementById('countTargetObject')?.value;
+        const correctCount = document.getElementById('countCorrectCount')?.value;
+        const tolerance = document.getElementById('countTolerance')?.value || 0;
+
+        if (!targetObject || !correctCount) {
+            showAlert('Please fill in all Count & Confirm fields', 'error');
+            return;
+        }
+
+        formData['task_config'] = JSON.stringify({
+            target_object: targetObject,
+            correct_count: parseInt(correctCount),
+            tolerance: parseInt(tolerance)
+        });
+    }
+	
+    if (type === 'direction') {
+        const question = document.getElementById('directionQuestion')?.value;
+        const correctDirection = document.getElementById('directionCorrect')?.value;
+
+        if (!question || !correctDirection) {
+            showAlert('Please fill in all Direction & Orientation fields', 'error');
+            return;
+        }
+
+        const allDirections = ['North', 'Northeast', 'East', 'Southeast', 'South', 'Southwest', 'West', 'Northwest'];
+
+        const questionData = {
+            question_text: question,
+            question_order: 1
+        };
+
+        const optionsData = allDirections.map((dir, index) => ({
+            option_text: dir,
+            is_correct: dir === correctDirection ? 1 : 0,
+            option_order: index + 1
+        }));
+
+        formData['questions'] = [questionData];
+        formData['options'] = optionsData;
+    }
+    
+    if (type === 'time_based') {
+        const startTime = document.getElementById('timeStartTime')?.value;
+        const endTime = document.getElementById('timeEndTime')?.value;
+        const minDuration = document.getElementById('timeMinDuration')?.value || 10;
+        
+        if (!startTime || !endTime) {
+            showAlert('Please fill in start and end times', 'error');
+            return;
+        }
+        
+        formData['task_config'] = JSON.stringify({
+            start_time: startTime + ':00',
+            end_time: endTime + ':00',
+            minimum_duration_minutes: parseInt(minDuration)
+        });
+    }
 
     try {
         const response = await fetch(API_BASE + 'tasks.php', {
@@ -1943,10 +2735,8 @@ async function handleTaskSubmit(e) {
 
             showAlert(id ? 'Task updated successfully' : 'Task added successfully', 'success');
             
-            // Don't close modal if it was a new task creation - user may want to generate QR
-            if (id) {
-                closeTaskModal();
-            }
+            // Close the modal after saving
+            closeTaskModal();
             
             loadTasks();
             loadDashboardStats();
@@ -2188,6 +2978,7 @@ async function deleteGuide(id) {
 }
 
 // Rewards functions
+/* === OLD REWARD FUNCTIONS - REPLACED BY rewards.js ===
 async function loadRewards() {
     showTableLoading('rewardsTable'); // Show loading before fetch
     try {
@@ -2352,6 +3143,8 @@ async function deleteReward(id) {
         showAlert('Connection error. Please try again.', 'error');
     }
 }
+=== END OLD REWARD FUNCTIONS === */
+
 
 // Reports functions
 async function loadReports() {
@@ -3031,10 +3824,13 @@ async function openTaskAndGuideModal(attractionId = null) {
              // Managers should have created an attraction.
              // Fetch the list of attractions to find the one created by this manager.
              try {
-                 const response = await fetch(API_BASE + 'attractions.php?action=list'); // Fetch all attractions accessible to the manager (which should be just theirs now)
+                 const response = await fetch(API_BASE + 'attractions.php?action=list'); // Fetch attractions accessible to this manager
+                 if (!response.ok) {
+                     throw new Error(`HTTP ${response.status}`);
+                 }
                  const data = await response.json();
 
-                 if (data.success && data.attractions && data.attractions.length > 0) {
+                 if (data?.success && Array.isArray(data.attractions) && data.attractions.length > 0) {
                      // The manager should only see attractions they created (based on updated attractions.php logic)
                      // So, there should be only one attraction in the list for them.
                      if (data.attractions.length === 1) {
@@ -3061,9 +3857,13 @@ async function openTaskAndGuideModal(attractionId = null) {
                               return; // Stop opening modal if invalid ID
                          }
                      }
-                 } else {
-                     // Handle API error or empty list
-                     console.warn("openTaskAndGuideModal: Error fetching attractions or list is empty.", data?.message);
+                 } else if (data?.success && Array.isArray(data.attractions) && data.attractions.length === 0) {
+                     console.warn("openTaskAndGuideModal: Manager has no attractions available.");
+                     showAlert("No attractions found for your account. Please create an attraction first.", "error");
+                     return;
+                } else {
+                     // Handle API error / unexpected payload
+                     console.warn("openTaskAndGuideModal: Error fetching attractions.", data?.message, data);
                      showAlert(data?.message || "Error fetching attractions. Please try again.", "error");
                      return; // Stop opening modal
                  }
@@ -3307,6 +4107,158 @@ async function handleTaskAndGuideSubmit(e) {
         }
         
         taskDataObject.questions = questions;
+    }
+    
+    // Handle count_confirm type
+    if (taskType === 'count_confirm') {
+        const targetObject = document.getElementById('taskAndGuideCountTargetObject')?.value?.trim();
+        const correctCount = document.getElementById('taskAndGuideCountCorrectCount')?.value;
+        const tolerance = document.getElementById('taskAndGuideCountTolerance')?.value || 0;
+        
+        if (!targetObject || !correctCount) {
+            showAlert('Please fill in all Count & Confirm fields', 'error');
+            return;
+        }
+        
+        taskDataObject.count_config = {
+            target_object: targetObject,
+            correct_count: parseInt(correctCount),
+            tolerance: parseInt(tolerance)
+        };
+    }
+    
+    // Handle direction type
+    if (taskType === 'direction') {
+        const question = document.getElementById('taskAndGuideDirectionQuestion')?.value?.trim();
+        const correctDirection = document.getElementById('taskAndGuideDirectionCorrect')?.value;
+        
+        if (!question || !correctDirection) {
+            showAlert('Please fill in all Direction & Orientation fields', 'error');
+            return;
+        }
+        
+        taskDataObject.direction_config = {
+            question: question,
+            correct_direction: correctDirection
+        };
+    }
+    
+    // Handle time_based type
+    if (taskType === 'time_based') {
+        const startTime = document.getElementById('taskAndGuideTimeStartTime')?.value;
+        const endTime = document.getElementById('taskAndGuideTimeEndTime')?.value;
+        const minDuration = document.getElementById('taskAndGuideTimeMinDuration')?.value || 10;
+        
+        if (!startTime || !endTime) {
+            showAlert('Please fill in all Time-Based Challenge fields', 'error');
+            return;
+        }
+        
+        taskDataObject.time_config = {
+            start_time: startTime,
+            end_time: endTime,
+            min_duration: parseInt(minDuration)
+        };
+    }
+    
+    // Handle riddle type
+    if (taskType === 'riddle') {
+        const riddleQuestion = document.getElementById('taskAndGuideRiddleQuestion')?.value?.trim();
+        const riddleAnswer = document.getElementById('taskAndGuideRiddleAnswer')?.value?.trim();
+        const riddleHints = document.getElementById('taskAndGuideRiddleHints')?.value?.trim();
+        
+        if (!riddleQuestion || !riddleAnswer) {
+            showAlert('Please fill in the Riddle question and answer', 'error');
+            return;
+        }
+        
+        taskDataObject.riddle_config = {
+            question: riddleQuestion,
+            answer: riddleAnswer,
+            hints: riddleHints ? riddleHints.split('\n').filter(h => h.trim()) : []
+        };
+    }
+    
+    // Handle memory_recall type
+    if (taskType === 'memory_recall') {
+        const memoryInfo = document.getElementById('taskAndGuideMemoryInfo')?.value?.trim();
+        const memoryQuestion = document.getElementById('taskAndGuideMemoryQuestion')?.value?.trim();
+        const memoryAnswer = document.getElementById('taskAndGuideMemoryAnswer')?.value?.trim();
+        const memoryDelay = document.getElementById('taskAndGuideMemoryDelay')?.value || 30;
+        
+        if (!memoryInfo || !memoryQuestion || !memoryAnswer) {
+            showAlert('Please fill in all Memory Recall fields', 'error');
+            return;
+        }
+        
+        taskDataObject.memory_config = {
+            info_to_memorize: memoryInfo,
+            question: memoryQuestion,
+            answer: memoryAnswer,
+            delay_seconds: parseInt(memoryDelay)
+        };
+    }
+    
+    // Handle observation_match type (dedicated section)
+    if (taskType === 'observation_match') {
+        const questions = [];
+        const questionDivs = document.querySelectorAll('.taskguide-observation-question');
+
+        questionDivs.forEach((questionDiv, index) => {
+            const questionText = questionDiv.querySelector('.taskguide-observation-question-text').value;
+            const optionInputs = questionDiv.querySelectorAll('.taskguide-observation-option');
+            const correctRadio = questionDiv.querySelector('input[type="radio"]:checked');
+
+            if (!correctRadio) {
+                showAlert(`Please select the correct answer for Observable Item ${index + 1}`, 'error');
+                throw new Error('Missing correct answer');
+            }
+
+            const options = [];
+            optionInputs.forEach((optionInput, optIndex) => {
+                if (optionInput.value.trim()) {
+                    options.push({
+                        option_text: optionInput.value,
+                        is_correct: correctRadio.value == (optIndex + 1) ? 1 : 0
+                    });
+                }
+            });
+
+            if (questionText && options.length >= 2) {
+                questions.push({
+                    question_text: questionText,
+                    options: options
+                });
+            }
+        });
+
+        if (questions.length === 0) {
+            showAlert('Please add at least one observable item for the Observation Match task', 'error');
+            return;
+        }
+
+        taskDataObject.questions = questions;
+    }
+    
+    // Handle route_completion type
+    if (taskType === 'route_completion') {
+        const routeName = document.getElementById('taskAndGuideRouteName')?.value?.trim();
+        const checkpoints = collectTaskAndGuideRouteCheckpoints();
+        
+        if (!routeName) {
+            showAlert('Please enter a route name', 'error');
+            return;
+        }
+        
+        if (checkpoints.length < 2) {
+            showAlert('Please add at least 2 checkpoints for the Route Completion task', 'error');
+            return;
+        }
+        
+        taskDataObject.route_config = {
+            route_name: routeName,
+            checkpoints: checkpoints
+        };
     }
 
     const guideDataObject = {

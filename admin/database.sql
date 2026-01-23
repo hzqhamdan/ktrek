@@ -66,7 +66,19 @@ CREATE TABLE IF NOT EXISTS tasks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     attraction_id INT NOT NULL,
     name VARCHAR(255) NOT NULL,
-    type ENUM('quiz', 'photo', 'checkin') NOT NULL,
+    type ENUM(
+        'quiz',
+        'checkin',
+        'observation_match',
+        'count_confirm',
+        'direction',
+        'time_based',
+        'memory_recall',
+        'route_completion',
+        'riddle',
+        'photo'
+    ) NOT NULL,
+    task_config JSON DEFAULT NULL COMMENT 'Task-specific configuration (time windows, GPS coords, correct counts, etc.)',
     description TEXT NOT NULL,
     qr_code VARCHAR(255),
     media_url VARCHAR(500),
@@ -88,15 +100,19 @@ CREATE TABLE IF NOT EXISTS quiz_questions (
 );
 
 -- Quiz Options table (for quiz questions)
+-- option_metadata stores JSON data for special task types like observation_match
+-- Format for observation_match: {"match_pair_id": 1, "item_type": "item" or "function"}
 CREATE TABLE IF NOT EXISTS quiz_options (
     id INT AUTO_INCREMENT PRIMARY KEY,
     question_id INT NOT NULL,
     option_text TEXT NOT NULL,
     is_correct BOOLEAN DEFAULT FALSE,
     option_order INT DEFAULT 0,
+    option_metadata JSON DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (question_id) REFERENCES quiz_questions(id) ON DELETE CASCADE,
-    INDEX idx_question_id (question_id)
+    INDEX idx_question_id (question_id),
+    INDEX idx_question_order (question_id, option_order)
 );
 
 -- Guides table

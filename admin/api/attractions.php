@@ -17,6 +17,43 @@ $admin_role = $_SESSION['admin_role'];
 $conn = getDBConnection();
 $input = json_decode(file_get_contents('php://input'), true);
 
+// Helper function to log audit entries (only for superadmin actions)
+function logAudit($conn, $admin_id, $admin_role, $action_type, $entity_type, $entity_id, $entity_name, $attraction_id = null, $attraction_name = null, $changes_summary = null) {
+    // Only log superadmin actions
+    if ($admin_role !== 'superadmin') {
+        return;
+    }
+    
+    // Check if audit log table exists before attempting to log
+    try {
+        $check_table = $conn->query("SHOW TABLES LIKE 'admin_audit_log'");
+        if ($check_table->num_rows === 0) {
+            // Table doesn't exist yet, skip logging silently
+            return;
+        }
+    } catch (Exception $e) {
+        // If there's any error checking for the table, skip logging
+        return;
+    }
+    
+    // Get admin name
+    $admin_stmt = $conn->prepare("SELECT full_name FROM admin WHERE id = ?");
+    $admin_stmt->bind_param("i", $admin_id);
+    $admin_stmt->execute();
+    $admin_result = $admin_stmt->get_result();
+    $admin_data = $admin_result->fetch_assoc();
+    $admin_name = $admin_data['full_name'] ?? 'Unknown';
+    $admin_stmt->close();
+    
+    // Insert audit log entry
+    $log_stmt = $conn->prepare("INSERT INTO admin_audit_log (admin_id, admin_name, admin_role, action_type, entity_type, entity_id, entity_name, attraction_id, attraction_name, changes_summary) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    if ($log_stmt) {
+        $log_stmt->bind_param("issssisiss", $admin_id, $admin_name, $admin_role, $action_type, $entity_type, $entity_id, $entity_name, $attraction_id, $attraction_name, $changes_summary);
+        $log_stmt->execute();
+        $log_stmt->close();
+    }
+}
+
 // GET - List all attractions or get single attraction
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $action = $_GET['action'] ?? 'list';
@@ -28,11 +65,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $params = [];
         $types = "";
 
-        // Apply filter for managers - Managers can only see attractions they created
+        // Apply filter for managers
+        // Preferred: managers only see attractions they created (created_by_admin_id)
+        // Backward compatibility: if older data doesn't have created_by_admin_id populated,
+        // fall back to admin.attraction_id assignment.
         if ($admin_role === 'manager') {
-             $query .= " WHERE a.created_by_admin_id = ?";
-             $params[] = $admin_id; // Use the logged-in admin's ID
-             $types .= "i"; // Integer for admin ID
+            // Fetch manager's assigned attraction_id (legacy behavior)
+            $assigned_attraction_id = null;
+            $aStmt = $conn->prepare("SELECT attraction_id FROM admin WHERE id = ? LIMIT 1");
+            $aStmt->bind_param("i", $admin_id);
+            $aStmt->execute();
+            $aRes = $aStmt->get_result();
+            if ($aRes && $aRes->num_rows === 1) {
+                $assigned_attraction_id = $aRes->fetch_assoc()['attraction_id'];
+            }
+            $aStmt->close();
+
+            if ($assigned_attraction_id !== null) {
+                $query .= " WHERE (a.created_by_admin_id = ? OR a.id = ?)";
+                $params[] = $admin_id;
+                $params[] = (int)$assigned_attraction_id;
+                $types .= "ii";
+            } else {
+                $query .= " WHERE a.created_by_admin_id = ?";
+                $params[] = $admin_id;
+                $types .= "i";
+            }
         }
 
         $query .= " ORDER BY a.created_at DESC";
@@ -46,6 +104,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         while ($row = $result->fetch_assoc()) {
             $attractions[] = $row;
+        }
+
+        // If manager has no accessible attractions, return an actionable error message.
+        // This avoids UI confusion (success=true with empty list) and guides admins to fix account assignment.
+        if ($admin_role === 'manager' && count($attractions) === 0) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'No attraction is assigned to your manager account. Please create an attraction or ask a superadmin to assign one.'
+            ]);
+            $stmt->close();
+            $conn->close();
+            exit();
         }
 
         echo json_encode([
@@ -223,6 +293,9 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $update_stmt->close();
             }
 
+            // Log audit entry (only for superadmin)
+            logAudit($conn, $admin_id, $admin_role, 'create', 'attraction', $new_attraction_id, $input['name'], $new_attraction_id, $input['name'], 'Created new attraction');
+
             echo json_encode([
                 'success' => true,
                 'message' => 'Attraction created successfully',
@@ -291,6 +364,18 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->affected_rows > 0 || $stmt->affected_rows === 0) {
                 // Affected rows = 0 can mean no changes, but update was successful
                 // We already verified the attraction exists above, so this is OK
+                
+                // Log audit entry (only for superadmin)
+                $changes = [];
+                if (isset($input['name'])) $changes[] = 'name';
+                if (isset($input['location'])) $changes[] = 'location';
+                if (isset($input['description'])) $changes[] = 'description';
+                if (isset($input['latitude']) || isset($input['longitude'])) $changes[] = 'coordinates';
+                if (isset($input['navigation_link'])) $changes[] = 'navigation_link';
+                if (isset($input['image'])) $changes[] = 'image';
+                $changes_summary = 'Updated: ' . implode(', ', $changes);
+                logAudit($conn, $admin_id, $admin_role, 'update', 'attraction', $id, $input['name'], $id, $input['name'], $changes_summary);
+                
                 echo json_encode([
                     'success' => true,
                     'message' => 'Attraction updated successfully'
@@ -360,6 +445,17 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // If the user was a manager, clearing their attraction_id is no longer relevant
                 // as that column no longer exists in the admin table.
                 // The relationship between attractions and creators/managers is now handled via 'created_by_admin_id' in the attractions table.
+
+                // Get attraction name before deletion for audit log
+                $name_stmt = $conn->prepare("SELECT name FROM attractions WHERE id = ?");
+                $name_stmt->bind_param("i", $id);
+                $name_stmt->execute();
+                $name_result = $name_stmt->get_result();
+                $attraction_name = $name_result->num_rows > 0 ? $name_result->fetch_assoc()['name'] : 'Unknown';
+                $name_stmt->close();
+
+                // Log audit entry (only for superadmin)
+                logAudit($conn, $admin_id, $admin_role, 'delete', 'attraction', $id, $attraction_name, $id, $attraction_name, 'Deleted attraction');
 
                 echo json_encode([
                     'success' => true,

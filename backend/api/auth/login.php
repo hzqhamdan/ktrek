@@ -43,10 +43,10 @@ try {
 
     // Build query based on identifier type
     if ($isPhone) {
-        $query = "SELECT id, username, email, phone_number, password, full_name, is_active, auth_provider 
+        $query = "SELECT id, username, email, phone_number, password, full_name, profile_picture, avatar_style, avatar_seed, is_active, auth_provider 
                   FROM users WHERE phone_number = :identifier";
     } else {
-        $query = "SELECT id, username, email, phone_number, password, full_name, is_active, auth_provider 
+        $query = "SELECT id, username, email, phone_number, password, full_name, profile_picture, avatar_style, avatar_seed, is_active, auth_provider 
                   FROM users WHERE email = :identifier";
     }
     
@@ -105,6 +105,9 @@ try {
             'email' => $user['email'],
             'phone_number' => $user['phone_number'],
             'full_name' => $user['full_name'],
+            'profile_picture' => $user['profile_picture'] ?? null,
+            'avatar_style' => $user['avatar_style'] ?? null,
+            'avatar_seed' => $user['avatar_seed'] ?? null,
             'auth_provider' => $user['auth_provider']
         ]
     ], "Login successful");

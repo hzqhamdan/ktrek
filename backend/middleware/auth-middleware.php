@@ -29,7 +29,7 @@ class AuthMiddleware {
         
         try {
             $query = "SELECT u.id, u.username, u.email, u.phone_number, u.full_name, 
-                             u.date_of_birth, u.profile_picture, u.auth_provider, 
+                             u.date_of_birth, u.profile_picture, u.avatar_style, u.avatar_seed, u.auth_provider, 
                              u.is_active, u.created_at, s.expires_at
                       FROM users u 
                       INNER JOIN sessions s ON u.id = s.user_id 
@@ -86,7 +86,7 @@ class AuthMiddleware {
         
         try {
             $query = "SELECT u.id, u.username, u.email, u.phone_number, u.full_name, 
-                             u.date_of_birth, u.profile_picture, u.auth_provider, 
+                             u.date_of_birth, u.profile_picture, u.avatar_style, u.avatar_seed, u.auth_provider, 
                              u.is_active, u.created_at, s.expires_at
                       FROM users u 
                       INNER JOIN sessions s ON u.id = s.user_id 

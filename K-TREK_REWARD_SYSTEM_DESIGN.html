@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>K-Trek Reward System Design</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+            color: #333;
+        }
+        h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; border-bottom: 2px solid #95a5a6; padding-bottom: 8px; margin-top: 30px; }
+        h3 { color: #7f8c8d; margin-top: 20px; }
+        h4 { color: #95a5a6; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #3498db; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 3px; }
+        pre { background-color: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        blockquote { border-left: 4px solid #3498db; padding-left: 20px; margin-left: 0; color: #7f8c8d; }
+        .page-break { page-break-after: always; }
+        @media print {
+            body { max-width: 100%; padding: 20px; }
+            h1, h2 { page-break-after: avoid; }
+        }
+    </style>
+</head>
+<body>
+<pre># K-Trek Gamification Reward System Design
+
+**Application:** K-Trek - Kelantan Cultural & Natural Tourism Mobile App  
+**Document Type:** System Design Specification  
+**Version:** 1.0  
+**Date:** January 6, 2026
+
+---
+
+## Executive Summary
+
+This document outlines a comprehensive three-layer reward system designed to motivate user engagement in exploring Kelantan's cultural and natural attractions through the K-Trek mobile application. The system employs progressive reward mechanics that balance short-term gratification with long-term achievement goals.
+
+---
+
+## Table of Contents
+
+1. [System Overview](#system-overview)
+2. [Attraction Categories](#attraction-categories)
+3. [Layer 1: Attraction-Level (Micro) Rewards](#layer-1-attraction-level-micro-rewards)
+4. [Layer 2: Category Completion Rewards](#layer-2-category-completion-rewards)
+5. [Layer 3: Cross-Category (Meta) Rewards](#layer-3-cross-category-meta-rewards)
+6. [Progression Milestones](#progression-milestones)
+7. [Psychological Motivation Framework](#psychological-motivation-framework)
+8. [Implementation Considerations](#implementation-considerations)
+9. [Database Schema Recommendations](#database-schema-recommendations)
+
+---
+
+## System Overview
+
+### Design Philosophy
+
+The K-Trek reward system is built on three core principles:
+
+1. **Progressive Achievement** - Rewards scale from immediate gratification to long-term accomplishment
+2. **User Autonomy** - Players choose their exploration path without forced completion
+3. **Cultural Celebration** - Rewards reflect Kelantan's unique heritage and natural beauty
+
+### Reward Layer Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│              LAYER 3: META REWARDS                      │
+│         (Cross-Category & Master Achievements)          │
+│  • Grand Master Explorer Badge                          │
+│  • Exclusive Avatar Frames & Titles                     │
+│  • Complete Profile Showcase Elements                   │
+└─────────────────────────────────────────────────────────┘
+                           ▲
+                           │
+┌─────────────────────────────────────────────────────────┐
+│          LAYER 2: CATEGORY COMPLETION REWARDS           │
+│              (Malay Traditional / Temples / Beaches)    │
+│  • Category Master Badges                               │
+│  • Themed Avatar Cosmetics                              │
+│  • Special Titles & Profile Banners                     │
+└─────────────────────────────────────────────────────────┘
+                           ▲
+                           │
+┌─────────────────────────────────────────────────────────┐
+│         LAYER 1: ATTRACTION-LEVEL (MICRO) REWARDS       │
+│              (Per Attraction Completion)                │
+│  • Experience Points (XP)                               │
+│  • Exploration Points                                   │
+│  • Badge Fragments                                      │
+│  • Photo Cards & Achievement Stamps                     │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Attraction Categories
+
+### Category Breakdown
+
+| Category | Count | Examples | Cultural Significance |
+|----------|-------|----------|----------------------|
+| **Malay Traditionals** | 5 | Istana Jahar, Kampung Laut Mosque, Traditional Villages | Heritage, architecture, cultural practices |
+| **Temples** | 4 | Wat Phothivihan, Wat Machimmaram, Buddhist sites | Religious diversity, Thai-Malay culture |
+| **Beaches** | 3 | Pantai Cahaya Bulan, Pantai Senok, Pantai Irama | Natural beauty, coastal ecosystems |
+
+**Total Attractions:** 12
+
+---
+
+## Layer 1: Attraction-Level (Micro) Rewards
+
+### Purpose
+Provide immediate feedback and gratification for completing tasks at individual attractions, maintaining momentum and engagement during exploration.
+
+### Reward Components
+
+#### 1.1 Experience Points (XP)
+
+**Mechanic:**
+- Base XP awarded per attraction: **100 XP**
+- Bonus XP for completing all tasks at an attraction: **+50 XP** (150 XP total)
+- First-time visit bonus: **+25 XP**
+- Quality bonus (e.g., high-quality photos, perfect quiz scores): **+25 XP**
+
+**Maximum per attraction:** 200 XP  
+**Total possible from all 12 attractions:** 2,400 XP
+
+**Motivation:**
+- Creates measurable progress
+- Satisfies achievement-oriented users
+- Enables level progression (see milestones section)
+
+---
+
+#### 1.2 Exploration Points (EP)
+
+**Mechanic:**
+- Currency-like points for completion
+- Standard attraction completion: **50 EP**
+- Completing optional tasks: **+10 EP per task**
+- Check-in during peak cultural times (festivals, events): **+20 EP**
+
+**Purpose:**
+- Separate from XP to add depth
+- Can be displayed on leaderboards (optional social feature)
+- Provides numerical progress tracking
+
+**Motivation:**
+- Appeals to collectors and completionists
+- Creates sense of wealth/accumulation
+- Non-competitive metric (personal progress focus)
+
+---
+
+#### 1.3 Badge Fragments
+
+**Mechanic:**
+- Each attraction awards **1 Badge Fragment** upon completion
+- Fragments are category-specific:
+  - **Malay Traditional Fragment** (red/gold color theme)
+  - **Temple Fragment** (purple/gold color theme)
+  - **Beach Fragment** (blue/turquoise color theme)
+- Collecting all fragments in a category unlocks a complete badge (Layer 2 reward)
+
+**Visual Design:**
+- Fragments appear as puzzle pieces or gems
+- Display progress: "3/5 Malay Traditional Fragments Collected"
+- Fragments shine/glow when collected (micro-animation)
+
+**Motivation:**
+- Gamifies the collection process
+- Creates visible progress toward category completion
+- Satisfies completion-oriented psychology
+- Builds anticipation for full badge unlock
+
+---
+
+#### 1.4 Digital Photo Cards
+
+**Mechanic:**
+- Each attraction visit generates a unique **Photo Card**
+- Cards feature:
+  - User's submitted photo or AR-generated attraction image
+  - Attraction name and location
+  - Date of visit
+  - Special stamp/seal graphic
+- Cards stored in personal "Travel Album" section
+
+**Variants:**
+- **Bronze Card** - Basic completion
+- **Silver Card** - All tasks completed
+- **Gold Card** - Perfect score + bonus objectives
+
+**Motivation:**
+- Creates tangible memory of visit
+- Satisfies social sharing desire (shareable to social media)
+- Appeals to collectors
+- Personal achievement gallery
+
+---
+
+#### 1.5 Task Completion Stamps
+
+**Mechanic:**
+- Mini-achievements for completing specific task types:
+  - 📸 **Photographer Stamp** - Submit a photo task
+  - ✅ **Check-in Stamp** - Complete QR/GPS check-in
+  - 🧠 **Scholar Stamp** - Complete quiz with 100% score
+  - 📖 **Story Seeker Stamp** - Read all guide content
+
+**Display:**
+- Shown on attraction detail page
+- Contributes to overall profile statistics
+- "You've earned 37/48 total stamps!"
+
+**Motivation:**
+- Provides immediate task-level feedback
+- Creates micro-goals within each attraction
+- Supports completionist behavior
+- Low-friction rewards for simple actions
+
+---
+
+### Layer 1 Summary Table
+
+| Reward Type | Base Amount | Bonus Potential | Motivation Type |
+|-------------|-------------|-----------------|-----------------|
+| XP | 100 | +100 | Achievement, Progression |
+| Exploration Points | 50 | +30 | Collection, Measurement |
+| Badge Fragments | 1 | - | Collection, Progress |
+| Photo Cards | 1 | +2 variants | Memory, Social, Collection |
+| Task Stamps | 0-4 | - | Completion, Micro-goals |
+
+---
+
+### Psychological Motivation (Layer 1)
+
+**Short-term Engagement Drivers:**
+
+1. **Variable Rewards** - Different reward types prevent monotony
+2. **Instant Gratification** - XP and stamps appear immediately after task completion
+3. **Progress Visibility** - Badge fragments show clear path to next milestone
+4. **Competence Satisfaction** - Task stamps validate user skill and effort
+5. **Endowed Progress Effect** - Starting with rewards (e.g., first fragment) motivates continuation
+
+**Behavioral Triggers:**
+- ✅ Completion satisfaction (dopamine release)
+- 📊 Visual progress bars create urgency to complete
+- 🎯 Clear goals at each attraction reduce decision fatigue
+- 💪 Competence building through quiz and photo quality feedback
+
+---
+
+## Layer 2: Category Completion Rewards
+
+### Purpose
+Recognize and celebrate mastery of entire attraction categories, providing medium-term goals that encourage exploration of thematically related locations.
+
+### Reward Structure
+
+#### 2.1 Malay Traditional Master Rewards
+
+**Category:** 5 Attractions (Istana Jahar, Kampung Laut Mosque, etc.)
+
+**Completion Badge:**
+- **"Warisan Guardian" Badge** (Heritage Guardian)
+- Design: Traditional Malay architectural motif (e.g., Istana roofline silhouette) in red and gold
+- Badge displays completion date and "5/5 Traditionals Explored"
+
+**Profile Title:**
+- **"Keeper of Warisan"** (Heritage Keeper)
+- Displayed under username in profile and leaderboards
+- Color: Traditional Malay red/gold gradient
+
+**Avatar Cosmetics:**
+- **Songket Pattern Background** - Traditional Malay woven textile design for avatar frame
+- **Wau Border** - Animated kite border that gently sways
+- **Traditional Hat Accessory** - Mini kopiah or tengkolok for avatar
+
+**Profile Banner:**
+- **"Malay Heritage Collection"** banner showcasing miniature icons of all 5 completed attractions
+- Unlocks ability to set any Malay Traditional site as profile cover photo
+
+**Special Reward:**
+- **Heritage Seal** - Digital stamp certifying cultural knowledge
+- Unlock special "Did You Know?" heritage facts in profile
+
+**Motivation:**
+- Validates deep cultural engagement
+- Appeals to heritage preservation values
+- Creates identity through title and cosmetics
+- Provides social recognition
+
+---
+
+#### 2.2 Temple Explorer Rewards
+
+**Category:** 4 Attractions (Wat Phothivihan, Wat Machimmaram, etc.)
+
+**Completion Badge:**
+- **"Spiritual Voyager" Badge**
+- Design: Lotus flower with temple silhouette, purple and gold theme
+- Badge glows with animated particles
+
+**Profile Title:**
+- **"Temple Pathfinder"**
+- Displayed in purple/gold gradient
+- Signifies religious tourism appreciation
+
+**Avatar Cosmetics:**
+- **Lotus Frame** - Elegant lotus petal border around avatar
+- **Prayer Beads Accessory** - Decorative mala beads for avatar
+- **Temple Sticker Pack** - 8 temple-themed profile stickers
+
+**Profile Banner:**
+- **"Sacred Journey"** banner with temple collection display
+- Animated incense smoke effect on profile
+- Golden temple gate profile frame option
+
+**Special Reward:**
+- **Enlightenment Points** - Bonus 200 XP for completing all temple quizzes
+- **"Peace Seeker"** animated profile badge (glowing effect)
+
+**Motivation:**
+- Recognizes spiritual/cultural curiosity
+- Creates visual distinction in community
+- Appeals to collectors of themed content
+- Rewards focused exploration strategy
+
+---
+
+#### 2.3 Beach Master Rewards
+
+**Category:** 3 Attractions (Pantai Cahaya Bulan, Pantai Senok, Pantai Irama)
+
+**Completion Badge:**
+- **"Coastal Conqueror" Badge**
+- Design: Stylized wave with sunset, turquoise and gold theme
+- Animated water ripple effect
+
+**Profile Title:**
+- **"Guardian of the Shores"**
+- Displayed in ocean blue gradient
+- Signifies natural beauty appreciation
+
+**Avatar Cosmetics:**
+- **Seashell Crown** - Beach-themed decorative crown for avatar
+- **Wave Pattern Background** - Animated ocean waves behind avatar
+- **Sunset Aura** - Golden hour lighting effect for profile photo
+
+**Profile Banner:**
+- **"Beach Paradise"** banner with all 3 beaches visualized
+- Animated palm tree swaying effect
+- Ocean soundscape option for profile (if audio supported)
+
+**Special Reward:**
+- **"Sunset Chaser"** achievement if all beaches visited during golden hour
+- **Marine Conservation Badge** - Special eco-tourism recognition
+- Unlock beach wallpaper pack for app background
+
+**Motivation:**
+- Celebrates nature tourism
+- Appeals to environmental awareness
+- Creates aesthetic profile customization
+- Simplest category (3 attractions) = first major milestone for many users
+
+---
+
+### Category Completion Bonus XP
+
+| Category | Base XP | Bonus for Perfect Completion | Total Possible |
+|----------|---------|------------------------------|----------------|
+| Malay Traditional | 1,000 XP | +250 XP | 1,250 XP |
+| Temples | 800 XP | +200 XP | 1,000 XP |
+| Beaches | 600 XP | +150 XP | 750 XP |
+
+**Perfect Completion Definition:**
+- All attractions in category completed
+- All tasks completed with high quality scores
+- All quizzes passed with 100%
+
+---
+
+### Layer 2 Summary Table
+
+| Category | Badge Name | Title | Cosmetics | Bonus XP |
+|----------|-----------|-------|-----------|----------|
+| Malay Traditional (5) | Warisan Guardian | Keeper of Warisan | Songket Frame, Wau Border, Hat | 1,000-1,250 |
+| Temples (4) | Spiritual Voyager | Temple Pathfinder | Lotus Frame, Beads, Stickers | 800-1,000 |
+| Beaches (3) | Coastal Conqueror | Guardian of Shores | Shell Crown, Wave BG, Sunset | 600-750 |
+
+---
+
+### Psychological Motivation (Layer 2)
+
+**Medium-term Engagement Drivers:**
+
+1. **Identity Formation** - Titles and badges allow users to express their explorer archetype
+2. **Social Distinction** - Unique cosmetics create visible status in community
+3. **Theme-Based Goals** - Category structure appeals to focused interest (e.g., "I love temples")
+4. **Customization Desire** - Avatar cosmetics satisfy personalization needs
+5. **Completion Satisfaction** - Category mastery provides significant achievement feeling
+
+**User Autonomy Support:**
+- Users can choose which category to complete first
+- No penalty for focusing on preferred themes
+- Each category independently valuable
+- Multiple paths to social recognition
+
+**Engagement Strategy:**
+- **Beach (3 attractions)** - Quick win to demonstrate reward value
+- **Temples (4 attractions)** - Mid-tier challenge for engaged users
+- **Malay Traditional (5 attractions)** - Ultimate cultural deep-dive
+
+---
+
+## Layer 3: Cross-Category (Meta) Rewards
+
+### Purpose
+Provide ultimate long-term goals that celebrate comprehensive exploration of Kelantan, rewarding dedication and complete engagement with the application.
+
+### Reward Tiers
+
+#### 3.1 Dual Category Completionist
+
+**Requirement:** Complete any 2 out of 3 categories
+
+**Rewards:**
+
+**Badge:**
+- **"Cultural Explorer" Badge**
+- Design: Two category symbols merged (e.g., temple + beach, traditional + temple)
+- Gold border with "2/3 Categories Mastered"
+
+**Avatar Rewards:**
+- **Elite Explorer Frame** - Premium gold-accented avatar border
+- **Category Fusion Background** - Animated background blending two completed themes
+- **Special Emoji Pack** - 12 Kelantan-themed emojis for chat/comments
+
+**Profile Enhancements:**
+- **Dual Title Display** - Can display two category titles simultaneously
+- **Progress Showcase Widget** - Visual display of collection breadth
+- **Featured Explorer Status** - Profile may be featured in "Explorer Spotlight"
+
+**Bonus XP:** +500 XP
+
+**Statistics Unlock:**
+- Detailed analytics dashboard
+- Personal exploration heatmap
+- Time spent at attractions graph
+
+**Motivation:**
+- Validates significant investment
+- Provides flexibility (choose 2 of 3 paths)
+- Creates aspiration for full completion
+- Recognizes diverse interests
+
+---
+
+#### 3.2 Triple Category Master
+
+**Requirement:** Complete ALL 3 categories (12/12 attractions)
+
+**Ultimate Badge:**
+- **"Kelantan Grand Master" Badge**
+- Design: Crown with all three category symbols integrated, rainbow holographic effect
+- Animated with particle effects and glow
+- Displays total stats: "12/12 Attractions • 100% Kelantan"
+
+**Exclusive Title:**
+- **"Pelancongan Diraja"** (Royal Tourist)
+- OR **"Kelantan Ambassador"**
+- Displayed in special rainbow gradient
+- Unique icon next to username across app
+
+**Premium Avatar Cosmetics:**
+- **Crown of Kelantan** - Majestic crown accessory for avatar
+- **Master Explorer Cape** - Animated flowing cape with state flag colors
+- **Holographic Avatar Border** - Rainbow shimmer effect
+- **Complete Collection Background** - All 12 attractions miniaturized as avatar background
+
+**Profile Transformation:**
+- **Master Profile Banner** - Exclusive animated banner showing Kelantan map with completed pins
+- **Custom Profile Color Scheme** - Unlock unique color themes
+- **Achievement Wall** - Dedicated section showcasing all badges, stamps, and cards
+- **Legacy Counter** - Display "Days Since Grand Master Achievement"
+
+**Special Privileges:**
+- **Name in Hall of Fame** - Listed in app's "Legendary Explorers" section
+- **Master Certificate** - Downloadable/shareable digital certificate with QR code verification
+- **Early Access Pass** - First to try new attractions/features added to app
+- **Community Ambassador Badge** - Can contribute tips/reviews marked as "Verified Master"
+
+**Massive Bonus XP:** +1,000 XP
+
+**Physical World Connection:**
+- **Virtual Trophy** - 3D trophy visible in AR mode
+- **Shareable Achievement Card** - Premium social media graphic generator
+- **Tourist Ambassador Recognition** - Special mention in app announcements
+
+**Motivation:**
+- Ultimate aspirational goal
+- Creates elite status and social prestige
+- Validates complete cultural immersion
+- Provides ongoing benefits (early access)
+- Celebrates dedication to Kelantan tourism
+
+---
+
+### Cross-Category Progression Path
+
+```
+START
+  ↓
+Complete 1st Category (Any) → Layer 2 Rewards
+  ↓
+Complete 2nd Category → Dual Completionist (Layer 3.1)
+  ↓
+Complete 3rd Category → Grand Master (Layer 3.2)
+```
+
+**Flexible Paths:**
+- Path A: Beaches → Temples → Malay Traditional
+- Path B: Malay Traditional → Beaches → Temples
+- Path C: Temples → Malay Traditional → Beaches
+- *Any combination valid - user chooses journey*
+
+---
+
+### Layer 3 Summary Table
+
+| Achievement | Requirements | Key Rewards | Bonus XP | Exclusivity |
+|-------------|--------------|-------------|----------|-------------|
+| Dual Category Master | 2/3 Categories | Cultural Explorer Badge, Elite Frame, Dual Titles | +500 | Moderately Rare |
+| Grand Master | 3/3 Categories (12/12) | Kelantan Ambassador Title, Crown, Hall of Fame | +1,000 | Ultra Rare |
+
+---
+
+### Psychological Motivation (Layer 3)
+
+**Long-term Engagement Drivers:**
+
+1. **Epic Meaning** - Contributing to Kelantan tourism and cultural preservation
+2. **Scarcity & Status** - Very few users achieve Grand Master, creating exclusivity
+3. **Completionist Satisfaction** - Ultimate closure for collection-oriented users
+4. **Social Proof** - Hall of Fame and verified status provide community recognition
+5. **Ongoing Benefits** - Early access and privileges maintain engagement post-completion
+6. **Legacy Building** - Permanent recognition as app pioneer/ambassador
+
+**Behavioral Psychology:**
+- **Sunk Cost Effect** - After completing 2 categories, users compelled to finish 3rd
+- **Peak-End Rule** - Grand Master celebration creates memorable positive experience
+- **Social Comparison** - Hall of Fame triggers aspiration in other users
+- **Commitment & Consistency** - Public achievement increases identity investment
+
+**Retention Strategy:**
+- Grand Masters become community mentors
+- Early access keeps them engaged with new content
+- Verified contributor status creates ongoing participation
+- Legacy counters encourage return visits to maintain status awareness
+
+---
+
+## Progression Milestones
+
+### Level System (XP-Based)
+
+The XP earned from all three layers feeds into an overarching level system that provides continuous progression feedback.
+
+#### Level Tiers
+
+| Level Range | Title | XP Required | Milestone Rewards |
+|-------------|-------|-------------|-------------------|
+| 1-5 | Newcomer | 0-500 | Tutorial completion, first attraction rewards |
+| 6-10 | Explorer | 501-1,200 | Avatar customization unlocked, first badge fragment |
+| 11-15 | Adventurer | 1,201-2,000 | Category progress tracking, special frames |
+| 16-20 | Wayfarer | 2,001-3,000 | First category completion typically achieved |
+| 21-25 | Pathfinder | 3,001-4,200 | Multi-category badges, enhanced cosmetics |
+| 26-30 | Master Explorer | 4,201-6,000 | Grand Master achievable, elite status |
+| 30+ | Legend | 6,000+ | Post-completion engagement, mentor status |
+
+**Level-Up Rewards:**
+- Every level: +1 Profile Border option
+- Every 5 levels: New avatar customization pack
+- Every 10 levels: Special animated badge or title
+
+---
+
+### Partial Completion Milestones
+
+To support user autonomy and prevent discouragement, the system rewards partial progress within each category.
+
+#### Bronze Tier (33% Category Progress)
+
+**Malay Traditional:** 2/5 attractions completed  
+**Temples:** 2/4 attractions completed  
+**Beaches:** 1/3 attractions completed
+
+**Rewards:**
+- **Bronze Category Badge** (e.g., "Bronze Heritage Seeker")
+- **+100 Bonus XP**
+- **Encouragement Notification:** "You're making great progress! 3 more to master Malay Traditionals!"
+- **Unlock:** Category-themed avatar accessory preview (semi-transparent)
+
+**Motivation:**
+- Early validation prevents dropout
+- Shows achievable path forward
+- Endowed progress effect (already invested)
+
+---
+
+#### Silver Tier (66% Category Progress)
+
+**Malay Traditional:** 4/5 attractions completed  
+**Temples:** 3/4 attractions completed  
+**Beaches:** 2/3 attractions completed
+
+**Rewards:**
+- **Silver Category Badge** (upgraded from Bronze)
+- **+200 Bonus XP**
+- **Progress Highlight:** "Almost there! Just 1 more for Gold!"
+- **Unlock:** Premium category-themed profile background (partial animation)
+- **Special Badge Fragment Effect:** Fragments glow brighter, showing proximity to completion
+
+**Motivation:**
+- Creates urgency to finish (Zeigarnik effect - unfinished tasks create tension)
+- Substantial investment makes abandonment psychologically costly
+- Visual rewards demonstrate value of completion
+
+---
+
+#### Gold Tier (100% Category Completion)
+
+**Completion of any full category**
+
+**Rewards:**
+- **Full Layer 2 rewards** (see Layer 2 section)
+- **Gold Category Badge** (final tier)
+- **Category-specific bonus XP** (600-1,250 XP)
+- **Completion Celebration:** Full-screen animation with confetti and achievement showcase
+- **Social Share Prompt:** "Share your achievement!"
+
+---
+
+### Milestone Progression Visualization
+
+```
+Category Progress Tracker (User Dashboard)
+
+┌─────────────────────────────────────────────────┐
+│  Malay Traditional                    [4/5]  ●  │
+│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░   80%      │
+│  🥉 Bronze ✓   🥈 Silver ✓   🥇 Gold (1 more!) │
+│                                                   │
+│  Temples                              [2/4]  ●   │
+│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░   50%      │
+│  🥉 Bronze ✓   🥈 Silver (1 more)   🥇 Gold     │
+│                                                   │
+│  Beaches                              [1/3]  ●   │
+│  ▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░   33%      │
+│  🥉 Bronze ✓   🥈 Silver (1 more)   🥇 Gold     │
+└─────────────────────────────────────────────────┘
+```
+
+---
+
+### Milestone Notification System
+
+**Timing:** Notifications appear immediately after completing an attraction that triggers a milestone.
+
+**Notification Types:**
+
+1. **Bronze Achievement:**
+   - Toast message: "🥉 Bronze Heritage Seeker unlocked! +100 XP"
+   - Vibration feedback (mobile)
+   - Sound effect: Pleasant chime
+
+2. **Silver Achievement:**
+   - Modal popup with animation
+   - "🥈 You're so close! Just 1 more attraction to unlock Gold rewards!"
+   - Show preview of Gold rewards (semi-transparent teaser)
+
+3. **Gold Achievement:**
+   - Full-screen takeover with celebration animation
+   - Display all unlocked rewards (badge, title, cosmetics)
+   - Social sharing buttons
+   - Confetti particle effect
+
+---
+
+## Psychological Motivation Framework
+
+### Core Motivational Theories Applied
+
+#### 1. Self-Determination Theory (SDT)
+
+**Autonomy:**
+- Users choose exploration order and category focus
+- No forced paths or mandatory categories
+- Multiple valid progression routes
+
+**Competence:**
+- Clear feedback through XP, levels, and badges
+- Task variety (quiz, photo, check-in) supports skill demonstration
+- Quality bonuses reward excellence
+
+**Relatedness:**
+- Social sharing features
+- Hall of Fame creates community
+- Verified Master status enables contribution
+
+---
+
+#### 2. Flow Theory
+
+**Challenge-Skill Balance:**
+- Layer 1: Easy, immediate rewards (flow entry)
+- Layer 2: Moderate challenge requiring sustained effort
+- Layer 3: Ultimate challenge for dedicated users
+
+**Clear Goals:**
+- Each attraction has explicit tasks
+- Progress bars show exact completion status
+- Milestone system provides intermediate goals
+
+**Immediate Feedback:**
+- XP and stamps awarded instantly
+- Visual progress updates in real-time
+- Celebration animations reinforce completion
+
+---
+
+#### 3. Variable Reward Schedule
+
+**Predictable Rewards:**
+- Fixed XP per attraction (creates baseline expectation)
+- Guaranteed badge fragments (reduces anxiety)
+
+**Variable Rewards:**
+- Quality bonuses (uncertain, requires effort)
+- Special event bonuses (time-limited)
+- Social recognition (depends on community)
+
+**Result:** Maintains engagement without addiction concerns (ethical design)
+
+---
+
+#### 4. Goal Gradient Effect
+
+**Implementation:**
+- Progress bars accelerate motivation as users near completion
+- Silver tier explicitly reminds users they're "almost there"
+- Badge fragment visualization shows proximity to category completion
+- Grand Master becomes psychologically "irresistible" after completing 2 categories
+
+---
+
+### Player Archetypes Supported
+
+Based on Bartle's taxonomy and modern gamification research:
+
+| Archetype | Motivation | Supported By |
+|-----------|------------|--------------|
+| **Achievers** | Completion, mastery | XP, levels, badges, Grand Master status |
+| **Explorers** | Discovery, knowledge | Photo cards, guide content, cultural facts |
+| **Socializers** | Community, sharing | Titles, Hall of Fame, shareable cards |
+| **Collectors** | Accumulation | Badge fragments, photo cards, stamps, cosmetics |
+| **Completionists** | 100% finish | Layer 3 rewards, milestone tracking |
+
+**Inclusivity:** System supports multiple play styles without forcing any single approach.
+
+---
+
+## Implementation Considerations
+
+### Technical Requirements
+
+#### Frontend Features
+
+1. **Profile System:**
+   - Avatar display with customization layers (frame, background, accessories)
+   - Title display with gradient rendering
+   - Badge collection gallery
+   - Photo card album with filtering/sorting
+   - Progress dashboards with animated bars
+
+2. **Reward Animation System:**
+   - XP counter with increment animation
+   - Badge unlock full-screen modal
+   - Confetti/particle effects for major milestones
+   - Toast notifications for micro-rewards
+   - Fragment collection animation (puzzle piece snap-in effect)
+
+3. **Social Features:**
+   - Achievement sharing to social media (pre-generated graphics)
+   - Hall of Fame leaderboard (filterable by category)
+   - Profile viewing (see other users' badges and titles)
+
+---
+
+#### Backend Requirements
+
+1. **Reward Calculation Engine:**
+   - XP calculation with bonus logic
+   - Milestone detection triggers
+   - Badge unlock conditions checker
+   - Fragment collection tracker
+
+2. **State Management:**
+   - User progress persistence (per attraction, per category)
+   - Reward inventory (badges, cosmetics, titles owned)
+   - Timestamp tracking (for legacy counters, event bonuses)
+
+3. **Analytics Tracking:**
+   - Reward earning rates
+   - Category completion rates
+   - Time to milestone achievement
+   - Most popular categories
+   - Grand Master achievement rate
+
+---
+
+### User Experience Guidelines
+
+#### Reward Presentation Best Practices
+
+1. **Clarity:**
+   - Always explain what reward was earned and why
+   - Show progress toward next milestone
+   - Use consistent visual language (colors, icons)
+
+2. **Timing:**
+   - Immediate rewards (XP, stamps) appear within 500ms
+   - Major rewards (badges) get dedicated celebration moment
+   - Don't interrupt core experience (e.g., while reading content)
+
+3. **Hierarchy:**
+   - Micro-rewards: Toast notification (3 seconds)
+   - Medium rewards: Modal popup (dismissible, 5-10 seconds)
+   - Major rewards: Full-screen takeover (auto-dismiss after 15 seconds or user action)
+
+4. **Accessibility:**
+   - All animations should be disableable (motion sensitivity)
+   - Rewards accessible through profile even if notification missed
+   - Text alternatives for visual rewards
+   - Haptic feedback for mobile accessibility
+
+---
+
+### Balancing Considerations
+
+#### Preventing Reward Fatigue
+
+**Problem:** Too many rewards diminish value  
+**Solution:**
+- Layer 1 rewards are frequent but small
+- Layer 2 rewards require significant effort (5-10 hours gameplay)
+- Layer 3 rewards are rare (months of engagement)
+
+#### Maintaining Fairness
+
+**Problem:** Some users only want specific categories  
+**Solution:**
+- Each category provides full Layer 2 rewards independently
+- Beaches (3 attractions) offers equally valuable rewards as Malay Traditional (5)
+- No category locked behind others
+
+#### Encouraging Continued Engagement
+
+**Post-Completion Strategy:**
+- Grand Masters get early access to new attractions
+- Seasonal events with limited-time badges
+- Community features (mentoring new users)
+- Annual "Grand Master Reunion" virtual events
+- Legacy tracking (days as Grand Master)
+
+---
+
+## Database Schema Recommendations
+
+### Suggested Tables
+
+#### user_rewards
+```sql
+CREATE TABLE user_rewards (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    reward_type ENUM('xp', 'ep', 'badge', 'title', 'cosmetic', 'stamp', 'photo_card'),
+    reward_identifier VARCHAR(100), -- e.g., 'warisan_guardian_badge'
+    quantity INT DEFAULT 1,
+    earned_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    source_attraction_id INT, -- nullable, for attraction-specific rewards
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+```
+
+#### user_progress
+```sql
+CREATE TABLE user_progress (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    attraction_id INT NOT NULL,
+    category VARCHAR(50), -- 'malay_traditional', 'temples', 'beaches'
+    completion_percentage INT DEFAULT 0, -- 0-100
+    tasks_completed JSON, -- Array of completed task IDs
+    completion_date TIMESTAMP NULL,
+    quality_score INT, -- 0-100, for bonus calculations
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (attraction_id) REFERENCES attractions(id)
+);
+```
+
+#### user_milestones
+```sql
+CREATE TABLE user_milestones (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    milestone_type VARCHAR(50), -- 'bronze_traditional', 'grand_master', etc.
+    achievement_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    bonus_xp_awarded INT,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+```
+
+#### user_cosmetics
+```sql
+CREATE TABLE user_cosmetics (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    cosmetic_type ENUM('avatar_frame', 'background', 'accessory', 'banner'),
+    cosmetic_identifier VARCHAR(100), -- 'songket_frame', 'lotus_border', etc.
+    equipped BOOLEAN DEFAULT FALSE, -- Is currently active on profile
+    unlocked_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+```
+
+#### leaderboard
+```sql
+CREATE TABLE leaderboard (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    total_xp INT DEFAULT 0,
+    total_ep INT DEFAULT 0,
+    categories_completed INT DEFAULT 0,
+    is_grand_master BOOLEAN DEFAULT FALSE,
+    grand_master_date TIMESTAMP NULL,
+    rank INT, -- Calculated field, updated periodically
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+```
+
+---
+
+## Summary & Recommendations
+
+### System Strengths
+
+✅ **Three-Layer Architecture** provides progression for all engagement levels  
+✅ **User Autonomy** supported through flexible category choices  
+✅ **Diverse Rewards** appeal to multiple player archetypes  
+✅ **Cultural Relevance** all rewards connect to Kelantan heritage  
+✅ **Psychological Foundation** based on proven motivational theories  
+✅ **Scalable Design** can add new categories/attractions easily  
+✅ **Non-Monetary** entirely digital, sustainable for budget constraints  
+
+---
+
+### Implementation Priority
+
+**Phase 1: Core Foundation (MVP)**
+- Layer 1 rewards (XP, EP, badge fragments)
+- Basic profile system with avatar display
+- Progress tracking and bars
+- Simple badge unlock notifications
+
+**Phase 2: Enhanced Engagement**
+- Layer 2 category completion rewards
+- Avatar customization system
+- Photo card album
+- Bronze/Silver/Gold milestones
+
+**Phase 3: Social & Elite Features**
+- Layer 3 cross-category rewards
+- Hall of Fame
+- Social sharing
+- Grand Master celebrations
+- Community features
+
+---
+
+### Success Metrics
+
+**Engagement Indicators:**
+- Average attractions visited per user (target: 6+/12)
+- Category completion rate (target: 40% complete at least one)
+- Grand Master achievement rate (target: 5-10% of active users)
+- Return visit rate (target: 50% return within 7 days)
+- Time to first category completion (target: &lt; 4 weeks)
+
+**Quality Metrics:**
+- User satisfaction with reward system (survey: target 4.2+/5.0)
+- Perceived value of rewards (target: 70%+ find rewards motivating)
+- Profile customization usage (target: 60%+ equip cosmetics)
+
+---
+
+### Future Expansion Opportunities
+
+1. **Seasonal Events:** Time-limited badges for festivals (e.g., Hari Raya Kelantan special)
+2. **Collaborative Challenges:** Group goals for community (e.g., "10,000 total check-ins unlocks bonus")
+3. **New Categories:** Culinary attractions, adventure sports, arts & crafts
+4. **Real-World Partnerships:** Grand Masters get discounts at local businesses
+5. **Educational Extensions:** School programs with special student badges
+6. **Tourism Board Integration:** Official recognition for Grand Masters
+
+---
+
+## Conclusion
+
+The K-Trek three-layer reward system provides a comprehensive gamification framework that:
+
+- **Motivates** users through immediate, medium-term, and long-term goals
+- **Respects** user autonomy by offering multiple valid progression paths
+- **Celebrates** Kelantan's rich cultural heritage through thematically appropriate rewards
+- **Sustains** engagement through psychological principles and diverse reward types
+- **Scales** effectively from casual visitors to dedicated completionists
+
+This system transforms tourism exploration into an engaging journey of discovery, collection, and achievement while promoting cultural appreciation and sustainable tourism in Kelantan.
+
+---
+
+**Document Status:** Complete  
+**For:** Final Year Project Documentation  
+**Next Steps:** UI/UX mockups, technical specification, implementation roadmap
+
+---
+
+*End of Document*
+
+</pre>
+</body>
+</html>

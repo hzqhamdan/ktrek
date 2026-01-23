@@ -27,6 +27,8 @@ Response::success([
         'full_name' => $user['full_name'],
         'phone_number' => $user['phone_number'],
         'profile_picture' => $user['profile_picture'],
+        'avatar_style' => $user['avatar_style'] ?? null,
+        'avatar_seed' => $user['avatar_seed'] ?? null,
         'auth_provider' => $user['auth_provider']
     ]
 ], "Session valid");

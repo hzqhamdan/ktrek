@@ -17,6 +17,43 @@ $admin_role = $_SESSION['admin_role'];
 $conn = getDBConnection();
 $input = json_decode(file_get_contents('php://input'), true);
 
+// Helper function to log audit entries (only for superadmin actions)
+function logAudit($conn, $admin_id, $admin_role, $action_type, $entity_type, $entity_id, $entity_name, $attraction_id = null, $attraction_name = null, $changes_summary = null) {
+    // Only log superadmin actions
+    if ($admin_role !== 'superadmin') {
+        return;
+    }
+    
+    // Check if audit log table exists before attempting to log
+    try {
+        $check_table = $conn->query("SHOW TABLES LIKE 'admin_audit_log'");
+        if ($check_table->num_rows === 0) {
+            // Table doesn't exist yet, skip logging silently
+            return;
+        }
+    } catch (Exception $e) {
+        // If there's any error checking for the table, skip logging
+        return;
+    }
+    
+    // Get admin name
+    $admin_stmt = $conn->prepare("SELECT full_name FROM admin WHERE id = ?");
+    $admin_stmt->bind_param("i", $admin_id);
+    $admin_stmt->execute();
+    $admin_result = $admin_stmt->get_result();
+    $admin_data = $admin_result->fetch_assoc();
+    $admin_name = $admin_data['full_name'] ?? 'Unknown';
+    $admin_stmt->close();
+    
+    // Insert audit log entry
+    $log_stmt = $conn->prepare("INSERT INTO admin_audit_log (admin_id, admin_name, admin_role, action_type, entity_type, entity_id, entity_name, attraction_id, attraction_name, changes_summary) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    if ($log_stmt) {
+        $log_stmt->bind_param("issssisiss", $admin_id, $admin_name, $admin_role, $action_type, $entity_type, $entity_id, $entity_name, $attraction_id, $attraction_name, $changes_summary);
+        $log_stmt->execute();
+        $log_stmt->close();
+    }
+}
+
 function dbColumnExists(mysqli $conn, string $table, string $column): bool {
     $sql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ? LIMIT 1";
     $stmt = $conn->prepare($sql);
@@ -161,6 +198,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 }
             }
 
+            // Load quiz-style questions/options for relevant task types
+            $quiz_backed_types = ['quiz', 'riddle', 'direction', 'observation_match'];
+            if (in_array($task['type'], $quiz_backed_types, true)) {
+                $questions_stmt = $conn->prepare("SELECT id, question_text, question_order FROM quiz_questions WHERE task_id = ? ORDER BY question_order ASC");
+                $questions_stmt->bind_param("i", $id);
+                $questions_stmt->execute();
+                $questions_result = $questions_stmt->get_result();
+                $questions = [];
+
+                while ($question = $questions_result->fetch_assoc()) {
+                    $options_stmt = $conn->prepare("SELECT id as option_id, option_text, is_correct, option_order, option_metadata FROM quiz_options WHERE question_id = ? ORDER BY option_order ASC");
+                    $question_id = (int)$question['id'];
+                    $options_stmt->bind_param("i", $question_id);
+                    $options_stmt->execute();
+                    $options_result = $options_stmt->get_result();
+                    $options = [];
+                    while ($option = $options_result->fetch_assoc()) {
+                        $options[] = $option;
+                    }
+                    $options_stmt->close();
+
+                    $question['options'] = $options;
+                    $questions[] = $question;
+                }
+                $questions_stmt->close();
+
+                $task['questions'] = $questions;
+            }
+
             echo json_encode([
                 'success' => true,
                 'task' => $task
@@ -294,6 +360,111 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
             
+            // Observation Match tasks (admin form sends questions/options, similar to quiz)
+            if ($input['type'] === 'observation_match' && isset($input['questions']) && is_array($input['questions'])) {
+                foreach ($input['questions'] as $index => $question) {
+                    if (!empty($question['question_text'])) {
+                        $q_stmt = $conn->prepare("INSERT INTO quiz_questions (task_id, question_text, question_order) VALUES (?, ?, ?)");
+                        $q_stmt->bind_param("isi", $task_id, $question['question_text'], $index);
+                        $q_stmt->execute();
+                        $question_id = $conn->insert_id;
+                        $q_stmt->close();
+
+                        if (isset($question['options']) && is_array($question['options'])) {
+                            foreach ($question['options'] as $opt_index => $option) {
+                                if (!empty($option['option_text'])) {
+                                    $is_correct = isset($option['is_correct']) ? (int)$option['is_correct'] : 0;
+                                    $opt_stmt = $conn->prepare("INSERT INTO quiz_options (question_id, option_text, is_correct, option_order) VALUES (?, ?, ?, ?)");
+                                    $opt_stmt->bind_param("isii", $question_id, $option['option_text'], $is_correct, $opt_index);
+                                    $opt_stmt->execute();
+                                    $opt_stmt->close();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // If it's an observation_match task, handle options (new format with multiple correct answers)
+            if ($input['type'] === 'observation_match' && isset($input['observation_match_options']) && is_array($input['observation_match_options'])) {
+                // Create a single question container
+                $q_stmt = $conn->prepare("INSERT INTO quiz_questions (task_id, question_text, question_order) VALUES (?, ?, ?)");
+                $question_text = isset($input['observation_match_question']) ? $input['observation_match_question'] : "Select all correct answers";
+                $question_order = 0;
+                $q_stmt->bind_param("isi", $task_id, $question_text, $question_order);
+                $q_stmt->execute();
+                $question_id = $conn->insert_id;
+                $q_stmt->close();
+                
+                // Insert each option with is_correct metadata
+                foreach ($input['observation_match_options'] as $option) {
+                    $option_text = $option['option_text'];
+                    $is_correct = isset($option['is_correct']) && $option['is_correct'] ? true : false;
+                    $option_order = isset($option['option_order']) ? (int)$option['option_order'] : 0;
+                    
+                    // Store is_correct in metadata for the submission handler
+                    $option_metadata = json_encode([
+                        'is_correct' => $is_correct
+                    ]);
+                    
+                    $opt_stmt = $conn->prepare("INSERT INTO quiz_options (question_id, option_text, is_correct, option_order, option_metadata) VALUES (?, ?, ?, ?, ?)");
+                    $is_correct_int = $is_correct ? 1 : 0;
+                    $opt_stmt->bind_param("isiis", $question_id, $option_text, $is_correct_int, $option_order, $option_metadata);
+                    $opt_stmt->execute();
+                    $opt_stmt->close();
+                }
+            }
+            // Legacy format: match pairs (for backwards compatibility)
+            elseif ($input['type'] === 'observation_match' && isset($input['match_pairs']) && is_array($input['match_pairs'])) {
+                // Create a single question container for all match pairs
+                $q_stmt = $conn->prepare("INSERT INTO quiz_questions (task_id, question_text, question_order) VALUES (?, ?, ?)");
+                $question_text = "Match the items with their meanings";
+                $question_order = 0;
+                $q_stmt->bind_param("isi", $task_id, $question_text, $question_order);
+                $q_stmt->execute();
+                $question_id = $conn->insert_id;
+                $q_stmt->close();
+                
+                // Insert each match pair as two options with metadata
+                $option_order = 0;
+                foreach ($input['match_pairs'] as $pair) {
+                    $pair_id = (int)$pair['pair_id'];
+                    
+                    // Insert the item (observable feature)
+                    $item_metadata = json_encode([
+                        'match_pair_id' => $pair_id,
+                        'item_type' => 'item'
+                    ]);
+                    $opt_stmt = $conn->prepare("INSERT INTO quiz_options (question_id, option_text, is_correct, option_order, option_metadata) VALUES (?, ?, 0, ?, ?)");
+                    $opt_stmt->bind_param("isis", $question_id, $pair['item_text'], $option_order, $item_metadata);
+                    $opt_stmt->execute();
+                    $opt_stmt->close();
+                    $option_order++;
+                    
+                    // Insert the function/meaning
+                    $function_metadata = json_encode([
+                        'match_pair_id' => $pair_id,
+                        'item_type' => 'function'
+                    ]);
+                    $opt_stmt = $conn->prepare("INSERT INTO quiz_options (question_id, option_text, is_correct, option_order, option_metadata) VALUES (?, ?, 0, ?, ?)");
+                    $opt_stmt->bind_param("isis", $question_id, $pair['function_text'], $option_order, $function_metadata);
+                    $opt_stmt->execute();
+                    $opt_stmt->close();
+                    $option_order++;
+                }
+            }
+            
+            // Get attraction name for audit log
+            $attr_name_stmt = $conn->prepare("SELECT name FROM attractions WHERE id = ?");
+            $attr_name_stmt->bind_param("i", $input['attraction_id']);
+            $attr_name_stmt->execute();
+            $attr_name_result = $attr_name_stmt->get_result();
+            $attraction_name = $attr_name_result->num_rows > 0 ? $attr_name_result->fetch_assoc()['name'] : 'Unknown';
+            $attr_name_stmt->close();
+            
+            // Log audit entry (only for superadmin)
+            logAudit($conn, $admin_id, $admin_role, 'create', 'task', $task_id, $input['name'], $input['attraction_id'], $attraction_name, 'Created new task of type: ' . $input['type']);
+            
             echo json_encode([
                 'success' => true,
                 'message' => 'Task created successfully',
@@ -422,10 +593,86 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $conn->prepare("UPDATE tasks SET attraction_id = ?, name = ?, type = ?, description = ?, qr_code = ?, media_url = ? WHERE id = ?");
         $qr_code = $input['qr_code'] ?? null;
         $media_url = $input['media_url'] ?? null;
-        $stmt->bind_param("issssssi", $input['attraction_id'], $input['name'], $input['type'], $input['description'], $qr_code, $media_url, $id);
+        // 7 placeholders: attraction_id (i), name (s), type (s), description (s), qr_code (s), media_url (s), id (i)
+        $stmt->bind_param("isssssi", $input['attraction_id'], $input['name'], $input['type'], $input['description'], $qr_code, $media_url, $id);
 
         if ($stmt->execute()) {
-            if ($stmt->affected_rows > 0) {
+            $questions_updated = false;
+            
+            // Handle quiz/observation_match questions update
+            $quiz_backed_types = ['quiz', 'riddle', 'direction', 'observation_match'];
+            if (in_array($input['type'], $quiz_backed_types, true) && isset($input['questions']) && is_array($input['questions'])) {
+                // First, delete existing questions and options for this task
+                // Get all question IDs for this task
+                $get_questions_stmt = $conn->prepare("SELECT id FROM quiz_questions WHERE task_id = ?");
+                $get_questions_stmt->bind_param("i", $id);
+                $get_questions_stmt->execute();
+                $questions_result = $get_questions_stmt->get_result();
+                
+                while ($q_row = $questions_result->fetch_assoc()) {
+                    // Delete options for this question
+                    $del_opts_stmt = $conn->prepare("DELETE FROM quiz_options WHERE question_id = ?");
+                    $del_opts_stmt->bind_param("i", $q_row['id']);
+                    $del_opts_stmt->execute();
+                    $del_opts_stmt->close();
+                }
+                $get_questions_stmt->close();
+                
+                // Delete all questions for this task
+                $del_questions_stmt = $conn->prepare("DELETE FROM quiz_questions WHERE task_id = ?");
+                $del_questions_stmt->bind_param("i", $id);
+                $del_questions_stmt->execute();
+                $del_questions_stmt->close();
+                
+                // Insert new questions and options
+                foreach ($input['questions'] as $index => $question) {
+                    if (!empty($question['question_text'])) {
+                        $q_stmt = $conn->prepare("INSERT INTO quiz_questions (task_id, question_text, question_order) VALUES (?, ?, ?)");
+                        $q_stmt->bind_param("isi", $id, $question['question_text'], $index);
+                        $q_stmt->execute();
+                        $question_id = $conn->insert_id;
+                        $q_stmt->close();
+                        
+                        if (isset($question['options']) && is_array($question['options'])) {
+                            foreach ($question['options'] as $opt_index => $option) {
+                                if (!empty($option['option_text'])) {
+                                    $is_correct = isset($option['is_correct']) ? (int)$option['is_correct'] : 0;
+                                    $opt_stmt = $conn->prepare("INSERT INTO quiz_options (question_id, option_text, is_correct, option_order) VALUES (?, ?, ?, ?)");
+                                    $opt_stmt->bind_param("isii", $question_id, $option['option_text'], $is_correct, $opt_index);
+                                    $opt_stmt->execute();
+                                    $opt_stmt->close();
+                                }
+                            }
+                        }
+                        $questions_updated = true;
+                    }
+                }
+            }
+            
+            // Check if either main task was updated OR questions were updated
+            if ($stmt->affected_rows > 0 || $questions_updated) {
+                // Get attraction name for audit log
+                $attr_name_stmt = $conn->prepare("SELECT name FROM attractions WHERE id = ?");
+                $attr_name_stmt->bind_param("i", $input['attraction_id']);
+                $attr_name_stmt->execute();
+                $attr_name_result = $attr_name_stmt->get_result();
+                $attraction_name = $attr_name_result->num_rows > 0 ? $attr_name_result->fetch_assoc()['name'] : 'Unknown';
+                $attr_name_stmt->close();
+                
+                // Build changes summary
+                $changes = [];
+                if (isset($input['name'])) $changes[] = 'name';
+                if (isset($input['type'])) $changes[] = 'type';
+                if (isset($input['description'])) $changes[] = 'description';
+                if (isset($input['qr_code'])) $changes[] = 'QR code';
+                if (isset($input['media_url'])) $changes[] = 'media';
+                if (isset($input['attraction_id']) && $input['attraction_id'] != $existing_task['attraction_id']) $changes[] = 'attraction';
+                if ($questions_updated) $changes[] = 'questions/options';
+                $changes_summary = 'Updated: ' . implode(', ', $changes);
+                
+                // Log audit entry (only for superadmin)
+                logAudit($conn, $admin_id, $admin_role, 'update', 'task', $id, $input['name'], $input['attraction_id'], $attraction_name, $changes_summary);
+                
                 echo json_encode([
                     'success' => true,
                     'message' => 'Task updated successfully'
@@ -516,11 +763,24 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
          // $verify_result = $verify_stmt->get_result();
          // if (!$verify_result || $verify_result->num_rows !== 1) { ... }
 
+        // Get task and attraction info before deletion for audit log
+        $task_info_stmt = $conn->prepare("SELECT t.name as task_name, a.id as attraction_id, a.name as attraction_name FROM tasks t LEFT JOIN attractions a ON t.attraction_id = a.id WHERE t.id = ?");
+        $task_info_stmt->bind_param("i", $id);
+        $task_info_stmt->execute();
+        $task_info_result = $task_info_stmt->get_result();
+        $task_info = $task_info_result->num_rows > 0 ? $task_info_result->fetch_assoc() : null;
+        $task_info_stmt->close();
+
         $stmt = $conn->prepare("DELETE FROM tasks WHERE id = ?");
         $stmt->bind_param("i", $id);
 
         if ($stmt->execute()) {
             if ($stmt->affected_rows > 0) {
+                // Log audit entry (only for superadmin)
+                if ($task_info) {
+                    logAudit($conn, $admin_id, $admin_role, 'delete', 'task', $id, $task_info['task_name'] ?? 'Unknown', $task_info['attraction_id'] ?? null, $task_info['attraction_name'] ?? 'Unknown', 'Deleted task');
+                }
+                
                 echo json_encode([
                     'success' => true,
                     'message' => 'Task deleted successfully'

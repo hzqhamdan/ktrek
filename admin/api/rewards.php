@@ -1,74 +1,69 @@
 <?php
-// rewards.php - Updated for attraction-based ownership
+// rewards.php - Reward Management System (Superadmin Only)
 require_once '../config.php';
 
 // Ensure session is started to get admin details
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Enable error logging for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Don't display errors (they break JSON)
+ini_set('log_errors', 1);
+ini_set('error_log', '../error_log.txt');
 if (!isset($_SESSION['admin_id']) || !isset($_SESSION['admin_role'])) {
-     echo json_encode([
+    echo json_encode([
         'success' => false,
         'message' => 'Authentication required.'
     ]);
     exit();
 }
+
 $admin_id = $_SESSION['admin_id'];
 $admin_role = $_SESSION['admin_role'];
+
+// Restrict to Superadmin only
+if (strcasecmp($admin_role, 'superadmin') !== 0) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Access denied. Superadmin privileges required.'
+    ]);
+    exit();
+}
 
 $conn = getDBConnection();
 $input = json_decode(file_get_contents('php://input'), true);
 
-// GET - List all rewards for accessible attractions or get single reward
+// GET - List all rewards or get single reward
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $action = $_GET['action'] ?? 'list';
 
     if ($action === 'list') {
-        // Base query - Join rewards with attractions and admin (creator) to get names and check ownership
-        $query = "SELECT r.*, a.name as attraction_name FROM rewards r LEFT JOIN attractions a ON r.attraction_id = a.id LEFT JOIN admin ad ON a.created_by_admin_id = ad.id";
+        // Base query - Get all rewards with attraction names
+        $query = "SELECT r.*, a.name as attraction_name 
+                  FROM rewards r 
+                  LEFT JOIN attractions a ON r.attraction_id = a.id 
+                  ORDER BY r.created_at DESC";
 
         $params = [];
         $types = "";
 
-        // Apply filter for managers - Managers can only see rewards for attractions they created
-        if ($admin_role === 'manager') {
-             $query .= " WHERE a.created_by_admin_id = ?";
-             $params[] = $admin_id; // Use the logged-in admin's ID
-             $types .= "i"; // Integer for admin ID
-        }
-        // Superadmin sees all rewards
-
-        // Apply search filter (search in title and description)
+        // Apply search filter
         $search_term = $_GET['search'] ?? '';
         if ($search_term !== '') {
             $search_param = '%' . $search_term . '%';
-            // Determine if WHERE or AND is needed based on previous filters (manager filter)
-            $where_clause = ($admin_role === 'manager') ? ' AND' : ' WHERE';
-            $query .= $where_clause . " (r.title LIKE ? OR r.description LIKE ?)";
+            $query = "SELECT r.*, a.name as attraction_name 
+                      FROM rewards r 
+                      LEFT JOIN attractions a ON r.attraction_id = a.id 
+                      WHERE (r.title LIKE ? OR r.description LIKE ? OR r.reward_identifier LIKE ?)
+                      ORDER BY r.created_at DESC";
             $params[] = $search_param;
-            $params[] = $search_param; // Search in both title and description
-            $types .= "ss"; // Two string parameters for the LIKE clauses
+            $params[] = $search_param;
+            $params[] = $search_param;
+            $types .= "sss";
         }
 
-        // Apply attraction filter (filter by specific attraction ID)
-        $attraction_filter_id = $_GET['attraction_id'] ?? '';
-        if ($attraction_filter_id !== '') {
-             // Validate the attraction ID (optional but recommended)
-             if (!is_numeric($attraction_filter_id)) {
-                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Invalid attraction ID provided for filter.'
-                ]);
-                $conn->close();
-                exit();
-             }
-
-            // Determine if WHERE or AND is needed based on previous filters (manager, search)
-            $clause = (strpos($query, 'WHERE') !== false) ? ' AND' : ' WHERE';
-            $query .= $clause . " r.attraction_id = ?";
-            $params[] = (int)$attraction_filter_id; // Cast to int for safety
-            $types .= "i"; // One integer parameter for the attraction ID
-        }
-
-        $query .= " ORDER BY r.created_at DESC";
         $stmt = $conn->prepare($query);
         if (!empty($params)) {
             $stmt->bind_param($types, ...$params);
@@ -78,6 +73,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $rewards = [];
 
         while ($row = $result->fetch_assoc()) {
+            // Parse JSON fields
+            if (isset($row['trigger_condition']) && $row['trigger_condition']) {
+                $row['trigger_condition'] = json_decode($row['trigger_condition'], true);
+            }
             $rewards[] = $row;
         }
 
@@ -89,27 +88,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
     elseif ($action === 'get' && isset($_GET['id'])) {
         $id = intval($_GET['id']);
-        // Join with attractions table to check creator
-        $stmt = $conn->prepare("SELECT r.*, a.name as attraction_name, a.created_by_admin_id FROM rewards r LEFT JOIN attractions a ON r.attraction_id = a.id WHERE r.id = ?");
+        $stmt = $conn->prepare("SELECT r.*, a.name as attraction_name FROM rewards r LEFT JOIN attractions a ON r.attraction_id = a.id WHERE r.id = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($result && $result->num_rows === 1) {
             $reward = $result->fetch_assoc();
-
-            // Check if manager can access this specific reward
-            if ($admin_role === 'manager') {
-                // The key check: the reward's attraction must have been created by the current manager
-                if ($reward['attraction_created_by_admin_id'] !== $admin_id) { // Note: fetched column name might differ based on JOIN alias
-                     echo json_encode([
-                        'success' => false,
-                        'message' => 'Access denied. This reward is not part of your attraction.'
-                    ]);
-                    $stmt->close();
-                    $conn->close();
-                    exit();
-                }
+            
+            // Parse JSON fields
+            if (isset($reward['trigger_condition']) && $reward['trigger_condition']) {
+                $reward['trigger_condition'] = json_decode($reward['trigger_condition'], true);
             }
 
             echo json_encode([
@@ -124,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }
         $stmt->close();
     } else {
-         echo json_encode([
+        echo json_encode([
             'success' => false,
             'message' => 'Invalid action for GET request.'
         ]);
@@ -135,74 +124,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $input['action'] ?? '';
 
-    // Validate required fields for creation (example)
-    if ($action === 'create' && !validateRequired($input, ['title', 'attraction_id', 'description'])) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Title, attraction, and description are required for creating a reward.'
-        ]);
-        $conn->close();
-        exit();
-    }
-
-    // Validate required fields for update (example)
-    if ($action === 'update' && (!isset($input['id']) || !validateRequired($input, ['title', 'attraction_id', 'description']))) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'ID, title, attraction, and description are required for updating a reward.'
-        ]);
-        $conn->close();
-        exit();
-    }
-
-    // Validate required fields for deletion (example)
-    if ($action === 'delete' && !isset($input['id'])) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'ID is required for deleting a reward.'
-        ]);
-        $conn->close();
-        exit();
-    }
-
-
-    // Create new reward
+    // CREATE new reward
     if ($action === 'create') {
-        // Check if manager is trying to create reward for an attraction they didn't create
-        if ($admin_role === 'manager') {
-             // First, fetch the attraction to check its creator
-             $attr_fetch_stmt = $conn->prepare("SELECT created_by_admin_id FROM attractions WHERE id = ?");
-             $attr_fetch_stmt->bind_param("i", $input['attraction_id']);
-             $attr_fetch_stmt->execute();
-             $attr_fetch_result = $attr_fetch_stmt->get_result();
-
-             if (!$attr_fetch_result || $attr_fetch_result->num_rows !== 1) {
-                  echo json_encode([
-                     'success' => false,
-                     'message' => 'Target attraction not found.'
-                 ]);
-                 $attr_fetch_stmt->close();
-                 $conn->close();
-                 exit();
-             }
-
-             $target_attraction = $attr_fetch_result->fetch_assoc();
-             $attr_fetch_stmt->close();
-
-             if ($target_attraction['created_by_admin_id'] !== $admin_id) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Access denied. You can only create rewards for attractions you manage.'
-                ]);
-                $conn->close();
-                exit();
-             }
+        // Validate required fields
+        if (!validateRequired($input, ['title', 'description', 'reward_type'])) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Title, description, and reward type are required.'
+            ]);
+            $conn->close();
+            exit();
         }
 
-        $image_url = !empty($input['image']) ? trim($input['image']) : null; // Get image path from input
+        // Generate reward_identifier if not provided
+        $reward_identifier = $input['reward_identifier'] ?? strtolower(str_replace(' ', '_', $input['title'])) . '_' . time();
+        
+        // Prepare values
+        $attraction_id = isset($input['attraction_id']) && $input['attraction_id'] !== '' ? intval($input['attraction_id']) : null;
+        $reward_type = $input['reward_type'] ?? 'badge';
+        $category = $input['category'] ?? null;
+        $rarity = $input['rarity'] ?? 'common';
+        $trigger_type = $input['trigger_type'] ?? null;
+        $trigger_condition = isset($input['trigger_condition']) ? json_encode($input['trigger_condition']) : null;
+        $xp_amount = isset($input['xp_amount']) ? intval($input['xp_amount']) : 0;
+        $ep_amount = isset($input['ep_amount']) ? intval($input['ep_amount']) : 0;
+        $is_active = isset($input['is_active']) ? intval($input['is_active']) : 1;
+        $image_url = $input['image'] ?? null;
 
-        $stmt = $conn->prepare("INSERT INTO rewards (attraction_id, title, description, image) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("isss", $input['attraction_id'], $input['title'], $input['description'], $image_url);
+        $stmt = $conn->prepare("INSERT INTO rewards (attraction_id, reward_type, reward_identifier, title, description, image, category, rarity, trigger_type, trigger_condition, xp_amount, ep_amount, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("isssssssssiii", $attraction_id, $reward_type, $reward_identifier, $input['title'], $input['description'], $image_url, $category, $rarity, $trigger_type, $trigger_condition, $xp_amount, $ep_amount, $is_active);
 
         if ($stmt->execute()) {
             echo json_encode([
@@ -218,116 +168,41 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $stmt->close();
     }
-    // Update reward
+    
+    // UPDATE reward
     elseif ($action === 'update') {
-        $id = intval($input['id']);
-
-        // Check if manager is trying to update a reward for an attraction they didn't create
-        if ($admin_role === 'manager') {
-             // First, fetch the *existing* reward to get its attraction_id
-             $existing_reward_fetch_stmt = $conn->prepare("SELECT attraction_id FROM rewards WHERE id = ?");
-             $existing_reward_fetch_stmt->bind_param("i", $id);
-             $existing_reward_fetch_stmt->execute();
-             $existing_reward_fetch_result = $existing_reward_fetch_stmt->get_result();
-
-             if (!$existing_reward_fetch_result || $existing_reward_fetch_result->num_rows !== 1) {
-                  echo json_encode([
-                     'success' => false,
-                     'message' => 'Reward not found.'
-                 ]);
-                 $existing_reward_fetch_stmt->close();
-                 $conn->close();
-                 exit();
-             }
-
-             $existing_reward = $existing_reward_fetch_result->fetch_assoc();
-             $existing_reward_fetch_stmt->close();
-
-             // Then, fetch the *attraction* for that reward to check its creator
-             $attr_fetch_stmt_for_update = $conn->prepare("SELECT created_by_admin_id FROM attractions WHERE id = ?");
-             $attr_fetch_stmt_for_update->bind_param("i", $existing_reward['attraction_id']);
-             $attr_fetch_stmt_for_update->execute();
-             $attr_fetch_result_for_update = $attr_fetch_stmt_for_update->get_result();
-
-             if (!$attr_fetch_result_for_update || $attr_fetch_result_for_update->num_rows !== 1) {
-                  echo json_encode([
-                     'success' => false,
-                     'message' => 'Attraction for the reward not found.'
-                 ]);
-                 $attr_fetch_stmt_for_update->close();
-                 $conn->close();
-                 exit();
-             }
-
-             $target_attraction = $attr_fetch_result_for_update->fetch_assoc();
-             $attr_fetch_stmt_for_update->close();
-
-             if ($target_attraction['created_by_admin_id'] !== $admin_id) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Access denied. You cannot update this reward.'
-                ]);
-                $conn->close();
-                exit();
-             }
-
-             // Also check if manager is trying to change the attraction_id to an unassigned one (optional, depends on rules)
-             // If changing attraction_id is allowed, check if the *new* attraction_id also belongs to the manager.
-             if (isset($input['attraction_id']) && $input['attraction_id'] != $existing_reward['attraction_id']) {
-                 $new_attr_fetch_stmt = $conn->prepare("SELECT created_by_admin_id FROM attractions WHERE id = ?");
-                 $new_attr_fetch_stmt->bind_param("i", $input['attraction_id']);
-                 $new_attr_fetch_stmt->execute();
-                 $new_attr_fetch_result = $new_attr_fetch_stmt->get_result();
-
-                 if (!$new_attr_fetch_result || $new_attr_fetch_result->num_rows !== 1) {
-                      echo json_encode([
-                         'success' => false,
-                         'message' => 'Target attraction for update not found.'
-                     ]);
-                     $new_attr_fetch_stmt->close();
-                     $conn->close();
-                     exit();
-                 }
-
-                 $new_target_attraction = $new_attr_fetch_result->fetch_assoc();
-                 $new_attr_fetch_stmt->close();
-
-                 if ($new_target_attraction['created_by_admin_id'] !== $admin_id) {
-                    echo json_encode([
-                        'success' => false,
-                        'message' => 'Access denied. You cannot move this reward to an attraction you do not manage.'
-                    ]);
-                    $conn->close();
-                    exit();
-                 }
-             }
+        if (!isset($input['id']) || !validateRequired($input, ['title', 'description', 'reward_type'])) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'ID, title, description, and reward type are required.'
+            ]);
+            $conn->close();
+            exit();
         }
 
-        // Optional: Verify the reward exists before attempting update (adds robustness - already done above)
-        // $verify_stmt = $conn->prepare("SELECT id FROM rewards WHERE id = ?");
-        // $verify_stmt->bind_param("i", $id);
-        // $verify_stmt->execute();
-        // $verify_result = $verify_stmt->get_result();
-        // if (!$verify_result || $verify_result->num_rows !== 1) { ... }
+        $id = intval($input['id']);
+        
+        // Prepare values
+        $attraction_id = isset($input['attraction_id']) && $input['attraction_id'] !== '' ? intval($input['attraction_id']) : null;
+        $reward_type = $input['reward_type'] ?? 'badge';
+        $reward_identifier = $input['reward_identifier'] ?? null;
+        $category = $input['category'] ?? null;
+        $rarity = $input['rarity'] ?? 'common';
+        $trigger_type = $input['trigger_type'] ?? null;
+        $trigger_condition = isset($input['trigger_condition']) ? json_encode($input['trigger_condition']) : null;
+        $xp_amount = isset($input['xp_amount']) ? intval($input['xp_amount']) : 0;
+        $ep_amount = isset($input['ep_amount']) ? intval($input['ep_amount']) : 0;
+        $is_active = isset($input['is_active']) ? intval($input['is_active']) : 1;
+        $image_url = $input['image'] ?? null;
 
-        $image_url = !empty($input['image']) ? trim($input['image']) : null; // Get potentially updated image path
-
-        $stmt = $conn->prepare("UPDATE rewards SET attraction_id = ?, title = ?, description = ?, image = ? WHERE id = ?");
-        $stmt->bind_param("issssi", $input['attraction_id'], $input['title'], $input['description'], $image_url, $id);
+        $stmt = $conn->prepare("UPDATE rewards SET attraction_id = ?, reward_type = ?, reward_identifier = ?, title = ?, description = ?, image = ?, category = ?, rarity = ?, trigger_type = ?, trigger_condition = ?, xp_amount = ?, ep_amount = ?, is_active = ? WHERE id = ?");
+        $stmt->bind_param("isssssssssiii", $attraction_id, $reward_type, $reward_identifier, $input['title'], $input['description'], $image_url, $category, $rarity, $trigger_type, $trigger_condition, $xp_amount, $ep_amount, $is_active, $id);
 
         if ($stmt->execute()) {
-            if ($stmt->affected_rows > 0) {
-                echo json_encode([
-                    'success' => true,
-                    'message' => 'Reward updated successfully'
-                ]);
-            } else {
-                // This case might occur if the ID doesn't exist (though verification above should catch it) or no changes were made
-                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Reward not found or no changes made.'
-                ]);
-            }
+            echo json_encode([
+                'success' => true,
+                'message' => 'Reward updated successfully'
+            ]);
         } else {
             echo json_encode([
                 'success' => false,
@@ -336,83 +211,27 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $stmt->close();
     }
-    // Delete reward
+    
+    // DELETE reward
     elseif ($action === 'delete') {
-        $id = intval($input['id']);
-
-        // Check if manager is trying to delete a reward for an attraction they didn't create
-        if ($admin_role === 'manager') {
-             // First, fetch the *existing* reward to get its attraction_id
-             $existing_reward_fetch_stmt = $conn->prepare("SELECT attraction_id FROM rewards WHERE id = ?");
-             $existing_reward_fetch_stmt->bind_param("i", $id);
-             $existing_reward_fetch_stmt->execute();
-             $existing_reward_fetch_result = $existing_reward_fetch_stmt->get_result();
-
-             if (!$existing_reward_fetch_result || $existing_reward_fetch_result->num_rows !== 1) {
-                  echo json_encode([
-                     'success' => false,
-                     'message' => 'Reward not found.'
-                 ]);
-                 $existing_reward_fetch_stmt->close();
-                 $conn->close();
-                 exit();
-             }
-
-             $existing_reward = $existing_reward_fetch_result->fetch_assoc();
-             $existing_reward_fetch_stmt->close();
-
-             // Then, fetch the *attraction* for that reward to check its creator
-             $attr_fetch_stmt_for_delete = $conn->prepare("SELECT created_by_admin_id FROM attractions WHERE id = ?");
-             $attr_fetch_stmt_for_delete->bind_param("i", $existing_reward['attraction_id']);
-             $attr_fetch_stmt_for_delete->execute();
-             $attr_fetch_result_for_delete = $attr_fetch_stmt_for_delete->get_result();
-
-             if (!$attr_fetch_result_for_delete || $attr_fetch_result_for_delete->num_rows !== 1) {
-                  echo json_encode([
-                     'success' => false,
-                     'message' => 'Attraction for the reward not found.'
-                 ]);
-                 $attr_fetch_stmt_for_delete->close();
-                 $conn->close();
-                 exit();
-             }
-
-             $target_attraction = $attr_fetch_result_for_delete->fetch_assoc();
-             $attr_fetch_stmt_for_delete->close();
-
-             if ($target_attraction['created_by_admin_id'] !== $admin_id) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Access denied. You cannot delete this reward.'
-                ]);
-                $conn->close();
-                exit();
-             }
+        if (!isset($input['id'])) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'ID is required for deleting a reward.'
+            ]);
+            $conn->close();
+            exit();
         }
 
-         // Optional: Verify the reward exists before attempting delete (adds robustness - already done above)
-         // $verify_stmt = $conn->prepare("SELECT id FROM rewards WHERE id = ?");
-         // $verify_stmt->bind_param("i", $id);
-         // $verify_stmt->execute();
-         // $verify_result = $verify_stmt->get_result();
-         // if (!$verify_result || $verify_result->num_rows !== 1) { ... }
-
+        $id = intval($input['id']);
         $stmt = $conn->prepare("DELETE FROM rewards WHERE id = ?");
         $stmt->bind_param("i", $id);
 
         if ($stmt->execute()) {
-            if ($stmt->affected_rows > 0) {
-                echo json_encode([
-                    'success' => true,
-                    'message' => 'Reward deleted successfully'
-                ]);
-            } else {
-                // Shouldn't happen if verification passed, but good to check
-                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Reward not found.'
-                ]);
-            }
+            echo json_encode([
+                'success' => true,
+                'message' => 'Reward deleted successfully'
+            ]);
         } else {
             echo json_encode([
                 'success' => false,
@@ -420,16 +239,50 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
         }
         $stmt->close();
-    } else {
-         echo json_encode([
+    }
+    
+    // TOGGLE ACTIVE status
+    elseif ($action === 'toggle_active') {
+        if (!isset($input['id'])) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'ID is required.'
+            ]);
+            $conn->close();
+            exit();
+        }
+
+        $id = intval($input['id']);
+        $is_active = isset($input['is_active']) ? intval($input['is_active']) : 1;
+
+        $stmt = $conn->prepare("UPDATE rewards SET is_active = ? WHERE id = ?");
+        $stmt->bind_param("ii", $is_active, $id);
+
+        if ($stmt->execute()) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Reward status updated successfully'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error updating status: ' . $conn->error
+            ]);
+        }
+        $stmt->close();
+    }
+    else {
+        echo json_encode([
             'success' => false,
-            'message' => 'Invalid action specified for POST request. Use create, update, or delete.'
+            'message' => 'Invalid action'
         ]);
     }
-} else {
-     echo json_encode([
+}
+
+else {
+    echo json_encode([
         'success' => false,
-        'message' => 'Invalid request method. Use GET or POST.'
+        'message' => 'Invalid request method'
     ]);
 }
 

@@ -15,21 +15,35 @@ $auth = new AuthMiddleware($db);
 $user = $auth->verifySession();
 
 try {
+    // Updated query for new reward system structure
     $query = "SELECT 
-                r.*,
-                a.name as attraction_name,
-                ur.unlocked_at
-              FROM user_rewards ur
-              JOIN rewards r ON ur.reward_id = r.id
-              JOIN attractions a ON r.attraction_id = a.id
-              WHERE ur.user_id = :user_id
-              ORDER BY ur.unlocked_at DESC";
+                id,
+                reward_type,
+                reward_identifier,
+                reward_name,
+                reward_description,
+                quantity,
+                category,
+                source_type,
+                source_id,
+                metadata,
+                earned_date
+              FROM user_rewards
+              WHERE user_id = :user_id
+              ORDER BY earned_date DESC";
     
     $stmt = $db->prepare($query);
     $stmt->bindParam(':user_id', $user['id']);
     $stmt->execute();
 
-    $rewards = $stmt->fetchAll();
+    $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Decode JSON metadata for each reward
+    foreach ($rewards as &$reward) {
+        if ($reward['metadata']) {
+            $reward['metadata'] = json_decode($reward['metadata'], true);
+        }
+    }
 
     Response::success($rewards, "User rewards retrieved");
 

@@ -345,6 +345,43 @@ body {
     margin: 0;
 }
 
+/* --- Dashboard layout fixes (Quick Actions + Analytics header) --- */
+.quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+/* Make the quick action buttons align horizontally and keep a consistent width */
+.quick-actions .add-btn {
+    flex: 1 1 200px;
+    min-width: 200px;
+}
+
+/* Place Analytics period buttons on the far left (next to the title) */
+.analytics-header {
+    display: flex;
+    justify-content: flex-start !important;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+/* Prevent flex items from stretching/pushing controls to the far right */
+.analytics-header > h3 {
+    flex: 0 0 auto;
+}
+
+.analytics-period-buttons {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 10px;
+    margin-left: 0 !important;
+}
+
 .add-btn:hover {
     background: #C8E6C9;
     transform: translateY(-1px);

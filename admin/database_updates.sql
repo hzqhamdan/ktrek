@@ -19,6 +19,11 @@ ADD COLUMN IF NOT EXISTS created_by_admin_id INT NULL;
 -- ALTER TABLE attractions ADD CONSTRAINT fk_attractions_created_by_admin
 --   FOREIGN KEY (created_by_admin_id) REFERENCES admin(id) ON DELETE SET NULL;
 
+-- Add avatar fields to users table (DiceBear avatar onboarding)
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS avatar_style VARCHAR(50) NULL AFTER profile_picture,
+ADD COLUMN IF NOT EXISTS avatar_seed VARCHAR(255) NULL AFTER avatar_style;
+
 -- Add location validation columns to user_task_submissions
 ALTER TABLE user_task_submissions 
 ADD COLUMN IF NOT EXISTS latitude DECIMAL(10, 8) NULL AFTER photo_url,

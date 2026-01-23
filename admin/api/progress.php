@@ -17,20 +17,48 @@ $admin_role = $_SESSION['admin_role'];
 $conn = getDBConnection();
 $input = json_decode(file_get_contents('php://input'), true);
 
-// Helper function to get manager's assigned attraction ID (NOT USED anymore for filtering main lists)
-// We keep it in case other parts of the system still rely on it for other purposes,
-// but the core filtering in GET/POST for progress is removed.
-/*
+// Helper: get manager's assigned attraction ID (legacy mapping)
 function getManagerAttractionId($conn, $admin_id) {
-    $stmt = $conn->prepare("SELECT attraction_id FROM admin WHERE id = ?");
+    $stmt = $conn->prepare("SELECT attraction_id FROM admin WHERE id = ? LIMIT 1");
     $stmt->bind_param("i", $admin_id);
     $stmt->execute();
     $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
+    $row = $result ? $result->fetch_assoc() : null;
     $stmt->close();
     return $row ? $row['attraction_id'] : null;
 }
-*/
+
+// Helper: get list of attraction IDs that the manager is allowed to view
+// Rule:
+// 1) Prefer attractions created by this manager (attractions.created_by_admin_id)
+// 2) Backward compatibility: include admin.attraction_id if set
+function getManagerAllowedAttractionIds($conn, $admin_id) {
+    $ids = [];
+
+    // Created attractions
+    $stmt = $conn->prepare("SELECT id FROM attractions WHERE created_by_admin_id = ?");
+    $stmt->bind_param("i", $admin_id);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    if ($res) {
+        while ($row = $res->fetch_assoc()) {
+            $ids[] = (int)$row['id'];
+        }
+    }
+    $stmt->close();
+
+    // Legacy assignment
+    $assigned = getManagerAttractionId($conn, $admin_id);
+    if ($assigned !== null && $assigned !== '') {
+        $ids[] = (int)$assigned;
+    }
+
+    // De-duplicate
+    // Use a classic anonymous function for compatibility with older PHP versions (pre-7.4)
+    $ids = array_values(array_unique(array_filter($ids, function ($v) { return $v !== 0; })));
+
+    return $ids;
+}
 
 // GET - List all progress records or get single user's progress for all attractions
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -40,25 +68,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         // Base query - Join progress with attractions to get attraction name
         $query = "SELECT p.*, a.name as attraction_name FROM progress p LEFT JOIN attractions a ON p.attraction_id = a.id";
 
-        // Apply attraction filter (filter by specific attraction ID) - Available for all roles now
+        // Apply attraction filter
+        // Superadmin: can see all (optionally filter by attraction_id)
+        // Manager: MUST be restricted to their own attraction(s)
         $attraction_filter_id = $_GET['attraction_id'] ?? '';
-        if ($attraction_filter_id !== '') {
-             // Validate the attraction ID (optional but recommended)
-             if (!is_numeric($attraction_filter_id)) {
-                 echo json_encode([
+
+        $params = [];
+        $types = "";
+
+        if ($admin_role === 'manager') {
+            $allowedIds = getManagerAllowedAttractionIds($conn, $admin_id);
+            if (count($allowedIds) === 0) {
+                echo json_encode([
                     'success' => false,
-                    'message' => 'Invalid attraction ID provided for filter.'
+                    'message' => 'No attraction is assigned to your manager account.'
                 ]);
                 $conn->close();
                 exit();
-             }
+            }
 
-            $query .= " WHERE p.attraction_id = ?";
-            $params = [(int)$attraction_filter_id]; // Cast to int for safety
-            $types = "i"; // One integer parameter for the attraction ID
+            // If manager explicitly requests an attraction_id, enforce it's allowed
+            if ($attraction_filter_id !== '') {
+                if (!is_numeric($attraction_filter_id)) {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Invalid attraction ID provided for filter.'
+                    ]);
+                    $conn->close();
+                    exit();
+                }
+
+                $requested = (int)$attraction_filter_id;
+                if (!in_array($requested, $allowedIds, true)) {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Access denied for this attraction.'
+                    ]);
+                    $conn->close();
+                    exit();
+                }
+
+                $query .= " WHERE p.attraction_id = ?";
+                $params[] = $requested;
+                $types .= "i";
+            } else {
+                // No specific attraction requested: restrict to allowed list
+                $placeholders = implode(',', array_fill(0, count($allowedIds), '?'));
+                $query .= " WHERE p.attraction_id IN ($placeholders)";
+                $params = array_merge($params, $allowedIds);
+                $types .= str_repeat('i', count($allowedIds));
+            }
         } else {
-            $params = [];
-            $types = "";
+            // superadmin/others: optional filter
+            if ($attraction_filter_id !== '') {
+                if (!is_numeric($attraction_filter_id)) {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Invalid attraction ID provided for filter.'
+                    ]);
+                    $conn->close();
+                    exit();
+                }
+
+                $query .= " WHERE p.attraction_id = ?";
+                $params[] = (int)$attraction_filter_id;
+                $types .= "i";
+            }
         }
 
         $query .= " ORDER BY p.updated_at DESC"; // Order by last update
@@ -83,12 +158,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     elseif ($action === 'get' && isset($_GET['firebase_user_id'])) {
         $firebase_user_id = $_GET['firebase_user_id'];
 
-        // Query for a specific user's progress across *all* attractions
-        // For superadmin: all attractions
-        // For manager: all attractions (as access control based on admin.attraction_id is removed)
+        // Query for a specific user's progress
+        // Superadmin: all attractions
+        // Manager: only their allowed attraction(s)
         $query = "SELECT p.*, a.name as attraction_name FROM progress p LEFT JOIN attractions a ON p.attraction_id = a.id WHERE p.firebase_user_id = ?";
         $params = [$firebase_user_id];
         $types = "s"; // One string parameter for firebase_user_id
+
+        if ($admin_role === 'manager') {
+            $allowedIds = getManagerAllowedAttractionIds($conn, $admin_id);
+            if (count($allowedIds) === 0) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'No attraction is assigned to your manager account.'
+                ]);
+                $conn->close();
+                exit();
+            }
+
+            $placeholders = implode(',', array_fill(0, count($allowedIds), '?'));
+            $query .= " AND p.attraction_id IN ($placeholders)";
+            $params = array_merge($params, $allowedIds);
+            $types .= str_repeat('i', count($allowedIds));
+        }
 
         $stmt = $conn->prepare($query);
         $stmt->bind_param($types, ...$params);

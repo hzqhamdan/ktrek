@@ -1,8 +1,13 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+
 require_once '../../config/database.php';
 require_once '../../config/cors.php';
 require_once '../../middleware/auth-middleware.php';
 require_once '../../utils/response.php';
+require_once '../../utils/reward-helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     Response::error("Method not allowed", 405);
@@ -88,15 +93,45 @@ try {
     $stmt->bindParam(':task_id', $task_id);
     $stmt->execute();
 
-    $db->commit();
-
-    // Get current attraction_id
+    // Get current attraction_id (MOVED UP - needed for rewards)
     $query = "SELECT attraction_id FROM tasks WHERE id = :task_id";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':task_id', $task_id);
     $stmt->execute();
     $currentTask = $stmt->fetch(PDO::FETCH_ASSOC);
     $attraction_id = $currentTask['attraction_id'];
+
+    $db->commit();
+    
+    // === REWARD SYSTEM INTEGRATION ===
+    // Convert PDO connection to mysqli for reward functions
+    $mysqli = new mysqli('localhost', 'root', '', 'ktrek_db');
+    
+    // Award task stamp
+    awardTaskStamp($mysqli, $user_id, $task_id, $attraction_id, 'quiz');
+    
+    // Award XP based on score
+    $xp_result = awardTaskXP($mysqli, $user_id, 'quiz', $task_id, $score);
+    
+    // Check if attraction is now complete
+    $completion_result = checkAttractionCompletion($mysqli, $user_id, $attraction_id);
+    
+    // Get newly earned rewards
+    $new_rewards = getNewlyEarnedRewards($mysqli, $user_id, 15);
+    
+    // Get updated user stats (includes XP and EP)
+    $user_stats = getUserCurrentStats($mysqli, $user_id);
+    
+    // Get EP earned in this session
+    $ep_earned = getRecentEP($mysqli, $user_id, 15);
+    
+    // Get category progress for the current attraction
+    $category = getAttractionCategory($mysqli, $attraction_id);
+    $category_progress = getCategoryProgress($mysqli, $user_id);
+    $current_category_progress = isset($category_progress[$category]) ? $category_progress[$category] : null;
+    
+    $mysqli->close();
+    // === END REWARD INTEGRATION ===
 
     // Get next task in the same attraction
     $query = "SELECT t.id
@@ -121,7 +156,17 @@ try {
         'total_questions' => $total_questions,
         'is_perfect' => $is_correct,
         'next_task_id' => $nextTask ? $nextTask['id'] : null,
-        'attraction_id' => $attraction_id
+        'attraction_id' => $attraction_id,
+        // Enhanced reward data with EP and category progress
+        'rewards' => [
+            'xp_earned' => $xp_result['xp'],
+            'ep_earned' => $ep_earned,
+            'new_rewards' => $new_rewards,
+            'user_stats' => $user_stats,
+            'attraction_complete' => $completion_result['complete'],
+            'completion_data' => $completion_result,
+            'category_progress' => $current_category_progress
+        ]
     ], "Quiz submitted successfully", 201);
 
 } catch (PDOException $e) {

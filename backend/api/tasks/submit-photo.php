@@ -4,6 +4,7 @@ require_once '../../config/cors.php';
 require_once '../../config/constants.php';
 require_once '../../middleware/auth-middleware.php';
 require_once '../../utils/response.php';
+require_once '../../utils/reward-helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     Response::error("Method not allowed", 405);
@@ -87,6 +88,14 @@ try {
     $stmt->bindParam(':photo_url', $photo_url);
     $stmt->execute();
 
+    // Get current attraction_id (MOVED UP - needed for rewards)
+    $query = "SELECT attraction_id FROM tasks WHERE id = :task_id";
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':task_id', $task_id);
+    $stmt->execute();
+    $currentTask = $stmt->fetch(PDO::FETCH_ASSOC);
+    $attraction_id = $currentTask['attraction_id'];
+
     // Update progress
     $query = "CALL update_user_progress(:user_id, :task_id)";
     $stmt = $db->prepare($query);
@@ -95,14 +104,40 @@ try {
     $stmt->execute();
 
     $db->commit();
-
-    // Get current attraction_id
-    $query = "SELECT attraction_id FROM tasks WHERE id = :task_id";
-    $stmt = $db->prepare($query);
-    $stmt->bindParam(':task_id', $task_id);
-    $stmt->execute();
-    $currentTask = $stmt->fetch(PDO::FETCH_ASSOC);
-    $attraction_id = $currentTask['attraction_id'];
+    
+    // === REWARD SYSTEM INTEGRATION ===
+    // Convert PDO connection to mysqli for reward functions
+    $mysqli = new mysqli('localhost', 'root', '', 'ktrek_db');
+    
+    // Award task stamp for photo
+    awardTaskStamp($mysqli, $user_id, $task_id, $attraction_id, 'photo_upload');
+    
+    // Award XP for photo submission
+    $xp_result = awardTaskXP($mysqli, $user_id, 'photo_upload', $task_id);
+    
+    // Award photo card (quality score based on file size and type - can be enhanced later)
+    $quality_score = 75; // Default quality, can be improved with AI/ML later
+    awardPhotoCard($mysqli, $user_id, $attraction_id, $quality_score, $photo_url);
+    
+    // Check if attraction is now complete
+    $completion_result = checkAttractionCompletion($mysqli, $user_id, $attraction_id);
+    
+    // Get newly earned rewards
+    $new_rewards = getNewlyEarnedRewards($mysqli, $user_id, 15);
+    
+    // Get updated user stats (includes XP and EP)
+    $user_stats = getUserCurrentStats($mysqli, $user_id);
+    
+    // Get EP earned in this session
+    $ep_earned = getRecentEP($mysqli, $user_id, 15);
+    
+    // Get category progress for the current attraction
+    $category = getAttractionCategory($mysqli, $attraction_id);
+    $category_progress = getCategoryProgress($mysqli, $user_id);
+    $current_category_progress = isset($category_progress[$category]) ? $category_progress[$category] : null;
+    
+    $mysqli->close();
+    // === END REWARD INTEGRATION ===
 
     // Get next task in the same attraction
     $query = "SELECT t.id
@@ -124,7 +159,17 @@ try {
     Response::success([
         'photo_url' => $photo_url,
         'next_task_id' => $nextTask ? $nextTask['id'] : null,
-        'attraction_id' => $attraction_id
+        'attraction_id' => $attraction_id,
+        // Enhanced reward data with EP and category progress
+        'rewards' => [
+            'xp_earned' => $xp_result['xp'],
+            'ep_earned' => $ep_earned,
+            'new_rewards' => $new_rewards,
+            'user_stats' => $user_stats,
+            'attraction_complete' => $completion_result['complete'],
+            'completion_data' => $completion_result,
+            'category_progress' => $current_category_progress
+        ]
     ], "Photo submitted successfully", 201);
 
 } catch (PDOException $e) {
