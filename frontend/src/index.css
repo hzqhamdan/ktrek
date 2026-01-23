@@ -1,0 +1,587 @@
+﻿@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&display=swap');
+@theme {
+  /* New Color Palette - Using ONLY specified colors */
+  
+  /* Background Colors */
+  /* Use the app's beige base so pages don't look like white 'boxes' */
+  --color-background-light: #f1eee7;
+  --color-background-cream: #fafafa;
+  --color-background-soft: #f5f5f5;
+
+  /* Primary/Secondary (aliases) */
+  --color-primary-50: #fff7ed;
+  --color-primary-100: #ffedd5;
+  --color-primary-200: #fed7aa;
+  --color-primary-300: #fdba74;
+  --color-primary-400: #fb923c;
+  --color-primary-500: #f97316;
+  --color-primary-600: #e16a02;
+  --color-primary-700: #c2410c;
+  --color-primary-800: #9a3412;
+  --color-primary-900: #7c2d12;
+
+  /* Secondary: neutral/beige scale */
+  --color-secondary-50: #ffffff;
+  --color-secondary-100: #faf7f2;
+  --color-secondary-200: #f1eee7;
+  --color-secondary-300: #e8e3da;
+  --color-secondary-400: #d8d0c2;
+  --color-secondary-500: #c7bba8;
+  --color-secondary-600: #b29b7f;
+  --color-secondary-700: #8f7c63;
+  --color-secondary-800: #6b5a46;
+  --color-secondary-900: #3d3328;
+
+}
+
+:root {
+  font-family: Helvetica, Arial, system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Shadcn UI Theme Variables - Orange Theme */
+  --background: 241 238 231; /* #F1EEE7 - cream background */
+  --foreground: 18 12 7; /* #120c07 - dark text */
+  
+  --card: 255 255 255; /* white */
+  --card-foreground: 18 12 7;
+  
+  --popover: 255 255 255;
+  --popover-foreground: 18 12 7;
+  
+  --primary: 249 115 22; /* #f97316 - orange-500 */
+  --primary-foreground: 255 255 255;
+  
+  --secondary: 241 238 231; /* #f1eee7 - cream */
+  --secondary-foreground: 18 12 7;
+  
+  --muted: 245 245 245; /* #f5f5f5 */
+  --muted-foreground: 107 114 128; /* gray-500 */
+  
+  --accent: 255 237 213; /* #ffedd5 - orange-100 */
+  --accent-foreground: 18 12 7;
+  
+  --destructive: 239 68 68; /* red-500 */
+  --destructive-foreground: 255 255 255;
+  
+  --border: 229 229 229; /* #e5e5e5 - light gray */
+  --input: 229 229 229;
+  --ring: 249 115 22; /* orange-500 */
+  
+  --radius: 0.75rem;
+
+  /* Chart colors using orange palette */
+  --chart-1: 251 146 60; /* orange-400 */
+  --chart-2: 253 186 116; /* orange-300 */
+  --chart-3: 255 237 213; /* orange-100 */
+  --chart-4: 254 215 170; /* orange-200 */
+  --chart-5: 194 65 12; /* orange-700 */
+}
+
+* {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(241,238,231,0.95) 0%, #ffffff 55%, rgba(225,106,2,0.08) 100%);
+  color: var(--color-text);
+}
+
+/* Theme note: avoid using purple/indigo/violet utilities; use primary (orange) instead. */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: #120c07;
+}
+
+a {
+  font-weight: 500;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: #120c07;
+  text-decoration: underline;
+}
+
+/* Link styled as a button (used for react-router <Link>) */
+.link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  text-decoration: none;
+
+  /* Match global button theme */
+  background: rgba(225, 106, 2, 0.14) !important;
+  color: #e16a02 !important;
+  box-shadow: 0 2px 4px rgba(44, 52, 69, 0.12);
+}
+
+.link-btn:hover,
+.link-btn:active,
+.link-btn:focus,
+.link-btn:focus-visible {
+  text-decoration: none;
+}
+
+/* CTA breathing space helpers */
+.cta-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* Larger breathing space for pages that feel cramped */
+.cta-stack-lg {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+/* Extra breathing space (use when differences must be obvious) */
+.cta-stack-xl {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+}
+
+button:not(.auth-plain-btn):not(.glass-button):not(.floating-avatar-trigger):not(.mapboxgl-ctrl-icon):not(.mapboxgl-popup-close-button) {
+  border-radius: 12px;
+  border: 0 !important;
+  outline: 0 !important;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+
+  /* Global button theme (mobile-friendly: no hover color changes) */
+  background: rgba(225, 106, 2, 0.14) !important;
+  color: #e16a02 !important;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(44, 52, 69, 0.12);
+}
+
+/* Force a button to use the "hover orange" look by default */
+button.btn-orange-fixed:not(.auth-plain-btn):not(.glass-button):not(.floating-avatar-trigger):not(.mapboxgl-ctrl-icon):not(.mapboxgl-popup-close-button) {
+  background: rgba(225, 106, 2, 0.14) !important;
+  color: #e16a02 !important;
+  box-shadow: 0 2px 4px rgba(44, 52, 69, 0.12) !important;
+}
+
+button:not(.auth-plain-btn):not(.glass-button):focus,
+button:not(.auth-plain-btn):not(.glass-button):active,
+button:not(.auth-plain-btn):not(.glass-button):focus-visible {
+  border: 0 !important;
+  outline: 0 !important;
+}
+
+/* Hover/active color changes removed globally (mobile-first) */
+
+button:not(.auth-plain-btn):not(.glass-button):disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  filter: grayscale(10%);
+}
+
+/* Secondary/Accent variants now match the global button theme */
+button.secondary,
+button.accent {
+  background: rgba(225, 106, 2, 0.14) !important;
+  color: #e16a02 !important;
+  box-shadow: 0 2px 4px rgba(44, 52, 69, 0.12);
+}
+
+/* Home hero "Begin the Adventure" button: force light-blue theme */
+button.hero-begin-btn:not(.auth-plain-btn):not(.glass-button):not(.mapboxgl-ctrl-icon):not(.mapboxgl-popup-close-button) {
+  background: #BFDBFE !important;
+  color: #120c07 !important;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.25) !important;
+}
+
+/* Card Styles */
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px);
+}
+
+/* Input Styles */
+input:not(.glass-auth-input):not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  background: white;
+  color: var(--color-text);
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #fed7aa;
+  box-shadow: 0 0 0 3px rgba(225, 106, 2, 0.1);
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #fed7aa;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #fb923c;
+}
+
+/* Animation Classes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 6s ease-in-out 3s infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Glass Button styles (stronger effect) */
+/* Pseudo-element shadow so we don't need a wrapper for most buttons */
+.glass-button{position:relative}
+.glass-button::after{content:"";position:absolute;inset:0;z-index:-1;transform:translateY(8px);filter:blur(14px);background:radial-gradient(60% 60% at 50% 50%,rgba(0,0,0,.35),transparent 60%);border-radius:inherit}
+
+.glass-button-wrap{position:relative}
+.glass-button{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.25) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1.5px solid rgba(255,255,255,.55);color:#120c07;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 24px rgba(0,0,0,.20);transition:transform .2s ease, box-shadow .2s ease}
+.glass-button:hover{transform:translateY(-1px) scale(1.01);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 12px 28px rgba(0,0,0,.24)}
+.glass-button:active{transform:translateY(0) scale(.99)}
+.glass-button:focus-visible{outline:2px solid rgba(18,12,7,.25);outline-offset:2px}
+.glass-button-text{color:#120c07}
+.glass-button-shadow{position:absolute;inset:0;z-index:-1;transform:translateY(8px);filter:blur(14px);background:radial-gradient(60% 60% at 50% 50%,rgba(0,0,0,.35),transparent 60%)}
+
+.glass-button.glass-soft{background:linear-gradient(180deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,.08) 100%);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-color:rgba(255,255,255,.25);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 4px 12px rgba(0,0,0,.12)}
+.glass-button.glass-soft:hover{transform:translateY(-1px) scale(1.005);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 14px rgba(0,0,0,.16)}
+.glass-button.glass-soft::after{transform:translateY(4px);filter:blur(8px);background:radial-gradient(60% 60% at 50% 50%,rgba(0,0,0,.18),transparent 60%)}
+
+.glass-button.glass-ultra{background:linear-gradient(180deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,.02) 100%);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);border-color:rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 1px 4px rgba(0,0,0,.06)}
+.glass-button.glass-ultra:hover{transform:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 1px 5px rgba(0,0,0,.07)}
+.glass-button.glass-ultra::after{transform:translateY(1px);filter:blur(2px);background:radial-gradient(60% 60% at 50% 50%,rgba(0,0,0,.06),transparent 60%)}
+
+/* Scoped glass for CTA rows on Home/Dashboard */
+.cta-row .link-btn, .cta-row button{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.25) 100%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1.5px solid rgba(255,255,255,.55);color:#120c07;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 24px rgba(0,0,0,.20);border-radius:9999px;padding:.75rem 1.5rem;transition:transform .2s ease, box-shadow .2s ease}
+.cta-row .link-btn:hover, .cta-row button:hover{transform:translateY(-1px) scale(1.01);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 12px 28px rgba(0,0,0,.24)}
+.cta-row .link-btn:active, .cta-row button:active{transform:translateY(0) scale(.99)}
+.cta-row .link-btn:focus-visible, .cta-row button:focus-visible{outline:2px solid rgba(18,12,7,.25);outline-offset:2px}
+.cta-row .link-btn::after, .cta-row button::after{content:"";position:absolute;inset:0;z-index:-1;transform:translateY(8px);filter:blur(14px);background:radial-gradient(60% 60% at 50% 50%,rgba(0,0,0,.35),transparent 60%);border-radius:inherit}
+
+/* CTA glass styles to match View Details for Home/Dashboard sections (override orange theme) */
+.cta-row .link-btn { background: linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.25) 100%) !important; font-weight: 500 !important; text-decoration: none !important; }
+.cta-row .link-btn,
+.cta-row button { background-color: transparent !important; color: #120c07 !important; border-color: rgba(255,255,255,.55) !important; }
+
+.cta-row .link-btn,
+.cta-row button {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.25) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(255,255,255,.55);
+  color: #120c07;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 8px 24px rgba(0,0,0,.20);
+  border-radius: 9999px;
+  padding: .75rem 1.5rem;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.cta-row .link-btn:hover,
+.cta-row button:hover { transform: translateY(-1px) scale(1.01); box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 12px 28px rgba(0,0,0,.24); }
+.cta-row .link-btn:active,
+.cta-row button:active { transform: translateY(0) scale(.99); }
+.cta-row .link-btn:focus-visible,
+.cta-row button:focus-visible { outline: 2px solid rgba(18,12,7,.25); outline-offset: 2px; }
+.cta-row .link-btn::after,
+.cta-row button::after { content: ""; position: absolute; inset: 0; z-index: -1; transform: translateY(8px); filter: blur(14px); background: radial-gradient(60% 60% at 50% 50%, rgba(0,0,0,.35), transparent 60%); border-radius: inherit; }
+
+/* Loading Spinner */
+.spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid var(--color-primary);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Mapbox Popup Custom Styles */
+.mapboxgl-popup {
+  max-width: 320px !important;
+}
+
+.mapboxgl-popup-content {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+  overflow: hidden !important;
+}
+
+.mapboxgl-popup-close-button {
+  /* Match the app's circular icon-button concept (like the eye toggle) */
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  border-radius: 9999px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  font-size: 20px !important;
+  line-height: 1 !important;
+
+  background: transparent !important;
+  color: #6b7280 !important;
+  transition: background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.mapboxgl-popup-close-button:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  color: #111827 !important;
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: white !important;
+}
+
+/* Custom Marker Styles */
+.custom-marker {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.custom-marker:hover {
+  transform: scale(1.1);
+  z-index: 100;
+}
+
+.marker-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-icon {
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+  position: relative;
+  z-index: 2;
+}
+
+.marker-pulse {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  background-color: rgba(94, 53, 177, 0.4);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+  z-index: 1;
+}
+
+@keyframes pulse {
+  0% {
+    transform: translateX(-50%) scale(0.8);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.2);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(-50%) scale(0.8);
+    opacity: 1;
+  }
+}
+
+/* Mapbox Controls (top-right zoom/fullscreen etc.) */
+.mapboxgl-ctrl-group {
+  /* Make the zoom buttons match the app's circular icon-button concept */
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.mapboxgl-ctrl-group button {
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  border-radius: 9999px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  background: rgba(241, 238, 231, 0.95) !important; /* #F1EEE7 */
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 6px 16px rgba(17, 24, 39, 0.12) !important;
+
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.mapboxgl-ctrl-group button:focus,
+.mapboxgl-ctrl-group button:active,
+.mapboxgl-ctrl-group button:hover {
+  background: rgba(225, 106, 2, 0.10) !important;
+}
+
+/* Popup Content Styles */
+.popup-content {
+  font-family: inherit;
+}
+
+.popup-image {
+  width: 100%;
+  height: 128px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.popup-button {
+  width: 100%;
+  padding: 8px 16px;
+  background: rgba(225, 106, 2, 0.14) !important;
+  color: #e16a02 !important;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: none;
+  box-shadow: 0 2px 4px rgba(44, 52, 69, 0.12);
+}
+
+/* Auth plain buttons should still look/behave like buttons */
+.auth-plain-btn {
+  cursor: pointer;
+}
+.auth-plain-btn:disabled {
+  cursor: not-allowed;
+}
+
+/* Force remove all button borders */
+button[type="button"],
+button[type="submit"] {
+  border: 0 !important;
+  outline: 0 !important;
+}
+
+button[type="button"]:focus,
+button[type="submit"]:focus,
+button[type="button"]:active,
+button[type="submit"]:active {
+  border: 0 !important;
+  outline: 0 !important;
+}
+
+/* Import custom animations for EP system */
+@import './styles/animations.css';
