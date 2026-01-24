@@ -29,12 +29,12 @@ export default defineConfig(({ mode }) => {
       ],
       ...(useTunnelHmr
         ? {
-            hmr: {
-              // For tunnels, HMR needs to use the public 443 port
-              clientPort: Number(env.VITE_HMR_CLIENT_PORT || 443),
-              protocol: env.VITE_HMR_PROTOCOL || 'wss',
-            },
-          }
+          hmr: {
+            // For tunnels, HMR needs to use the public 443 port
+            clientPort: Number(env.VITE_HMR_CLIENT_PORT || 443),
+            protocol: env.VITE_HMR_PROTOCOL || 'wss',
+          },
+        }
         : {}),
     },
   }
