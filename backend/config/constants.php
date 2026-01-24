@@ -38,4 +38,3 @@ define('APP_BASE_URL', ktrek_get_request_origin());
 // Public base URL for backend endpoints
 // Assumes backend is served under /backend (as in this project structure).
 define('BASE_URL', APP_BASE_URL . '/backend');
-?>

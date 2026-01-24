@@ -20,9 +20,16 @@ const HomePage = () => {
         setLoading(true);
         setError(null);
         const response = await attractionsAPI.getPublic();
+        console.log("HomePage: Raw API response result:", response);
+
         // Handle different response formats
         const attractionsData = response.data || response;
-        setAttractions(Array.isArray(attractionsData) ? attractionsData : []);
+        console.log("HomePage: Processed attractionsData:", attractionsData);
+
+        const finalData = Array.isArray(attractionsData) ? attractionsData : [];
+        console.log("HomePage: Final attractions array set to state (count):", finalData.length);
+
+        setAttractions(finalData);
       } catch (err) {
         console.error("Failed to load attractions:", err);
         setError(err.message || "Failed to load attractions");

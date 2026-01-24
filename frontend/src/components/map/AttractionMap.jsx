@@ -15,12 +15,19 @@ const AttractionMap = ({ attractions = [], mapboxToken }) => {
 
   // Filter attractions that have valid coordinates
   const validAttractions = attractions.filter(
-    (attr) =>
-      attr.latitude &&
-      attr.longitude &&
-      !isNaN(attr.latitude) &&
-      !isNaN(attr.longitude)
+    (attr) => {
+      const lat = parseFloat(attr.latitude);
+      const lng = parseFloat(attr.longitude);
+      return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
+    }
   );
+
+  console.log('AttractionMap Debug:', {
+    totalInput: attractions.length,
+    valid: validAttractions.length,
+    firstItem: attractions[0],
+    validItems: validAttractions
+  });
 
   useEffect(() => {
     if (!mapboxToken || !mapContainerRef.current) return;

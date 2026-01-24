@@ -5,6 +5,7 @@ const api = axios.create({
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true",
   },
 });
 
@@ -31,11 +32,11 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       const url = error.config?.url || '';
       // Don't auto-logout for auth endpoints
-      const isAuthEndpoint = url.includes('/auth/login') || 
-                            url.includes('/auth/register') ||
-                            url.includes('/auth/change-password') ||
-                            url.includes('/auth/google-auth');
-      
+      const isAuthEndpoint = url.includes('/auth/login') ||
+        url.includes('/auth/register') ||
+        url.includes('/auth/change-password') ||
+        url.includes('/auth/google-auth');
+
       if (!isAuthEndpoint) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");

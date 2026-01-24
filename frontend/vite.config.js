@@ -23,19 +23,24 @@ export default defineConfig(({ mode }) => {
       host: true, // Allow access from network (mobile devices)
       allowedHosts: [
         'localhost',
-        '.trycloudflare.com', // Allow all cloudflare tunnel domains
-        '.ngrok.io', // Allow ngrok tunnels
-        '.local', // Allow local domains
+        '.trycloudflare.com',
+        '.ngrok.io',
+        '.ngrok-free.dev',
+        '.local',
       ],
       ...(useTunnelHmr
         ? {
           hmr: {
-            // For tunnels, HMR needs to use the public 443 port
             clientPort: Number(env.VITE_HMR_CLIENT_PORT || 443),
             protocol: env.VITE_HMR_PROTOCOL || 'wss',
           },
         }
-        : {}),
+        : {
+          hmr: {
+            protocol: 'ws',
+            host: 'localhost',
+          }
+        }),
     },
   }
 })

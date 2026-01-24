@@ -29,4 +29,3 @@ class Response {
         self::error($message, 500);
     }
 }
-?>
