@@ -4,6 +4,7 @@ import { ThreeDPhotoCarousel, AttractionCard } from "../ui/3d-carousel";
 import { MapPin } from "lucide-react";
 import { GlassButton } from "@/components/ui/glass-button";
 import { motion, AnimatePresence } from "framer-motion";
+import { getImageUrl } from "../../utils/constants";
 
 interface Attraction {
   id: number;
@@ -29,7 +30,7 @@ const AttractionsCarousel: React.FC<AttractionsCarouselProps> = ({ attractions }
     return attractions.map((attraction) => ({
       id: attraction.id,
       name: attraction.name,
-      imageUrl: attraction.image || `https://picsum.photos/400/400?random=${attraction.id}`,
+      imageUrl: getImageUrl(attraction.image) || `https://picsum.photos/400/400?random=${attraction.id}`,
       description: attraction.description,
     }));
   }, [attractions]);
