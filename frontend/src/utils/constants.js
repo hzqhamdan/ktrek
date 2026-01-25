@@ -48,15 +48,44 @@ export const BREAKPOINTS = {
 export const getImageUrl = (path) => {
   if (!path) return null;
 
-  // If already a full URL, return as-is
-  if (path.startsWith('http://') || path.startsWith('https://')) {
-    return path;
-  }
-
   // Get API base URL
   const apiBase = import.meta?.env?.VITE_API_BASE_URL || 'http://localhost/backend/api';
 
-  let normalizedPath = String(path).replace(/^\/+/, '');
+  let normalizedPath = String(path);
+
+  // If path is a full localhost URL, extract just the path part
+  // e.g., "http://localhost/admin/uploads/image.jpg" -> "admin/uploads/image.jpg"
+  if (normalizedPath.startsWith('http://localhost/') || normalizedPath.startsWith('http://127.0.0.1/')) {
+    try {
+      const url = new URL(normalizedPath);
+      normalizedPath = url.pathname.replace(/^\/+/, ''); // Remove leading slashes
+    } catch (e) {
+      // If URL parsing fails, try string replacement
+      normalizedPath = normalizedPath
+        .replace(/^https?:\/\/localhost\//, '')
+        .replace(/^https?:\/\/127\.0\.0\.1\//, '');
+    }
+  }
+  
+  // If it's already a full non-localhost URL, try to extract the path or return as-is
+  if (normalizedPath.startsWith('http://') || normalizedPath.startsWith('https://')) {
+    try {
+      const url = new URL(normalizedPath);
+      // If it's pointing to uploads, extract the path
+      if (url.pathname.includes('/uploads/')) {
+        normalizedPath = url.pathname.replace(/^\/+/, '');
+      } else {
+        // External URL, return as-is (won't work through proxy but at least try)
+        return normalizedPath;
+      }
+    } catch (e) {
+      // Invalid URL, treat as path
+      normalizedPath = normalizedPath.replace(/^\/+/, '');
+    }
+  }
+
+  // Remove leading slashes
+  normalizedPath = normalizedPath.replace(/^\/+/, '');
 
   // In this project, attraction/admin images live under `admin/uploads/`.
   // The DB/API may return:
