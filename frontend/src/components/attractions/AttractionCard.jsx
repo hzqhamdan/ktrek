@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MapPin, CheckCircle, Clock, Award, ArrowRight } from "lucide-react";
 import Card from "../common/Card";
+import ProxyImage from "../common/ProxyImage";
 import { getImageUrl } from "../../utils/constants";
 
 const AttractionCard = ({ attraction, featured = false, isAuthenticated = false }) => {
@@ -46,7 +47,7 @@ const AttractionCard = ({ attraction, featured = false, isAuthenticated = false 
         <div className="relative h-48 overflow-hidden bg-gray-200">
           {" "}
           {image && !imageError ? (
-            <img
+            <ProxyImage
               src={getImageUrl(image)}
               alt={name}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"

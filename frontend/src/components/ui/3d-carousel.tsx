@@ -8,6 +8,7 @@ import {
   useMotionValue,
   useTransform,
 } from "framer-motion"
+import ProxyImage from "../../components/common/ProxyImage"
 
 export const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect
@@ -160,15 +161,10 @@ const Carousel = memo(
               }}
               onClick={() => handleClick(card, i)}
             >
-              <motion.img
+              <ProxyImage
                 src={card.imageUrl}
                 alt={card.name}
-                layoutId={`img-${card.id}`}
                 className="pointer-events-none w-full rounded-xl object-cover aspect-square shadow-lg"
-                initial={{ filter: "blur(4px)" }}
-                layout="position"
-                animate={{ filter: "blur(0px)" }}
-                transition={transition}
               />
             </motion.div>
           ))}

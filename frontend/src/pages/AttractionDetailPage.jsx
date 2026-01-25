@@ -5,6 +5,7 @@ import { AdminSidebarIcon } from "../components/ui/admin-sidebar-icon";
 import { MapPin, Clock, Users, Award, ArrowLeft, Navigation } from "lucide-react";
 import { attractionsAPI } from "../api/attractions";
 import { useAuthStore } from "../store/authStore";
+import ProxyImage from "../components/common/ProxyImage";
 import { getImageUrl, getPlaceholderImage } from "../utils/constants";
 import { useToast } from "../components/ui/toast-1";
 const AttractionDetailPage = () => {
@@ -160,16 +161,11 @@ const AttractionDetailPage = () => {
             {/* Image */}{" "}
             <div className="h-96 md:h-full relative overflow-hidden">
               {" "}
-              <img
-                src={
-                  getImageUrl(attraction.image) ||
-                  getPlaceholderImage(800, 600, "No Image")
-                }
+              <ProxyImage
+                src={getImageUrl(attraction.image)}
                 alt={attraction.name}
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                onError={(e) => {
-                  e.target.src = getPlaceholderImage(800, 600, "No Image");
-                }}
+                fallbackSrc={getPlaceholderImage(800, 600, "No Image")}
               />{" "}
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />{" "}
             </div>{" "}

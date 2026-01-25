@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Clock, Award, Image as ImageIcon } from "lucide-react";
 import { GlassButton } from "@/components/ui/glass-button";
+import ProxyImage from "../common/ProxyImage";
 import { getImageUrl, getPlaceholderImage } from "../../utils/constants";
 import { cn } from "../../lib/utils";
 
@@ -63,16 +64,11 @@ const AttractionFeature = ({ attraction, index, isAuthenticated, onClick }) => {
       {/* Image with overlay */}
       <div className="mb-4 relative z-10 px-5 pt-5">
         <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden shadow-md group-hover/feature:shadow-xl transition-shadow duration-200">
-          <img
-            src={
-              getImageUrl(attraction.image) ||
-              getPlaceholderImage(400, 300, "No Image")
-            }
+          <ProxyImage
+            src={getImageUrl(attraction.image)}
             alt={attraction.name}
             className="w-full h-full object-cover group-hover/feature:scale-110 transition-transform duration-300"
-            onError={(e) => {
-              e.target.src = getPlaceholderImage(400, 300, "No Image");
-            }}
+            fallbackSrc={getPlaceholderImage(400, 300, "No Image")}
           />
           {/* Progress badge for authenticated users */}
           {isAuthenticated && progress > 0 && (
