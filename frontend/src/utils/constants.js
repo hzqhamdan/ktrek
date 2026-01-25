@@ -53,19 +53,8 @@ export const getImageUrl = (path) => {
     return path;
   }
 
-  // Derive asset origin from the configured API base URL.
-  // Examples:
-  // - http://localhost/backend/api   -> http://localhost
-  // - http://192.168.0.10/backend/api -> http://192.168.0.10
-  // - https://xxxx.trycloudflare.com/backend/api -> https://xxxx.trycloudflare.com
+  // Get API base URL
   const apiBase = import.meta?.env?.VITE_API_BASE_URL || 'http://localhost/backend/api';
-
-  let origin = 'http://localhost';
-  try {
-    origin = new URL(apiBase).origin;
-  } catch {
-    // ignore parse errors, keep fallback
-  }
 
   let normalizedPath = String(path).replace(/^\/+/, '');
 
@@ -81,7 +70,9 @@ export const getImageUrl = (path) => {
     normalizedPath = `admin/uploads/${normalizedPath}`;
   }
 
-  return `${origin}/${normalizedPath}`;
+  // Use image proxy endpoint to bypass ngrok interstitial warning
+  // This allows images to be loaded with the ngrok-skip-browser-warning header
+  return `${apiBase}/images/get.php?path=${encodeURIComponent(normalizedPath)}`;
 };
 
 // Simple placeholder image generator
