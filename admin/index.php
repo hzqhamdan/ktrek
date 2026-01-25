@@ -415,8 +415,11 @@ if (session_status() === PHP_SESSION_NONE) {
                                 <select id="taskTypeFilter" style="width: auto;">
                                     <option value="">All Types</option>
                                     <option value="quiz">Quiz</option>
-                                    <option value="photo">Photo</option>
                                     <option value="checkin">Check-in</option>
+                                    <option value="direction">Direction & Orientation</option>
+                                    <option value="observation_match">Observation Match</option>
+                                    <option value="count_confirm">Count & Confirm</option>
+                                    <option value="time_based">Time Based</option>
                                 </select>
                             </div>
                             <div class="form-group" id="taskAttractionFilterGroup" style="display: none; margin-right: 15px; width: auto;">
@@ -731,7 +734,6 @@ if (session_status() === PHP_SESSION_NONE) {
                     <select id="taskType" required>
                         <option value="">Select Type</option>
                         <option value="quiz">Quiz</option>
-                        <option value="photo">Photo Upload</option>
                         <option value="checkin">Check-in</option>
                         <option value="count_confirm">Count & Confirm</option>
                         <option value="direction">Direction & Orientation</option>

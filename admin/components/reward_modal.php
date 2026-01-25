@@ -52,12 +52,13 @@
 
                 <div class="form-group">
                     <label>Rarity</label>
-                    <select id="rewardRarity">
-                        <option value="common">Common</option>
-                        <option value="rare">Rare</option>
-                        <option value="epic">Epic</option>
-                        <option value="legendary">Legendary</option>
+                    <select id="rewardRarity" onchange="updateXPPreview()">
+                        <option value="common">Common - 50 XP</option>
+                        <option value="rare">Rare - 100 XP</option>
+                        <option value="epic">Epic - 200 XP</option>
+                        <option value="legendary">Legendary - 500 XP</option>
                     </select>
+                    <small style="color: #666; font-size: 12px;">Higher rarity = More XP for users</small>
                 </div>
 
                 <div class="form-group">
@@ -79,6 +80,7 @@
                         <option value="">No Trigger (Manual Only)</option>
                         <option value="task_completion">✅ Single Task Completion</option>
                         <option value="task_set_completion">✅✅ Task Set Completion</option>
+                        <option value="task_type_completion">🎯 Task Type Completion</option>
                         <option value="attraction_completion">🏛️ Attraction Completion</option>
                         <option value="manual">🖐️ Manual Award Only</option>
                     </select>
@@ -113,6 +115,33 @@
                     </div>
                 </div>
 
+                <!-- Task Type Completion Trigger -->
+                <div id="taskTypeCompletionTrigger" style="display: none;" class="trigger-config">
+                    <div class="form-group">
+                        <label>Select Task Type</label>
+                        <select id="triggerTaskType">
+                            <option value="">Select a task type...</option>
+                            <option value="checkin">📍 Check-in (Required First)</option>
+                            <option value="quiz">📝 Quiz</option>
+                            <option value="observation_match">👁️ Observation Match</option>
+                            <option value="count_confirm">🔢 Count Confirm</option>
+                            <option value="direction">🧭 Direction</option>
+                            <option value="time_based">⏱️ Time Based</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Number of Tasks Required</label>
+                        <input type="number" id="triggerTaskTypeCount" min="1" value="1" style="width: 100px;">
+                        <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                            How many tasks of this type must the user complete?
+                        </small>
+                        <div id="taskTypeCountPreview" style="margin-top: 8px; padding: 10px; background: #f0f9ff; border-radius: 6px; border-left: 3px solid #3b82f6; font-size: 13px; color: #1e40af;">
+                            💡 User will earn this badge after completing <strong>1</strong> task(s) of this type
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Attraction Completion Trigger -->
                 <div id="attractionCompletionTrigger" style="display: none;" class="trigger-config">
                     <div class="form-group">
@@ -138,33 +167,39 @@
 
             <!-- XP/EP Info Section -->
             <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3b82f6;">
-                <h4 style="margin-top: 0; color: #5E35B1; margin-bottom: 10px;">💎 XP/EP Rewards (Automatic)</h4>
-                <p style="color: #666; font-size: 13px; margin-bottom: 10px;">XP and EP are automatically calculated based on trigger type:</p>
+                <h4 style="margin-top: 0; color: #5E35B1; margin-bottom: 10px;">💎 XP Rewards (Automatic by Rarity)</h4>
+                <p style="color: #666; font-size: 13px; margin-bottom: 10px;">XP is automatically awarded based on the rarity you select:</p>
                 
-                <table style="width: 100%; font-size: 12px; color: #444;">
-                    <tr>
-                        <td style="padding: 5px;"><strong>Task Completion:</strong></td>
-                        <td style="padding: 5px;">50 XP</td>
+                <div id="xpPreview" style="background: white; padding: 12px; border-radius: 6px; border: 2px solid #10b981; margin-bottom: 10px;">
+                    <div style="font-size: 14px; color: #10b981; font-weight: 600;">
+                        <span id="xpPreviewRarity">Common</span> Badge = <span id="xpPreviewAmount">50</span> XP
+                    </div>
+                </div>
+                
+                <table style="width: 100%; font-size: 12px; color: #444; background: white; border-radius: 6px; overflow: hidden;">
+                    <tr style="background: #f9fafb;">
+                        <td style="padding: 8px; font-weight: 600;">Rarity</td>
+                        <td style="padding: 8px; font-weight: 600;">XP Awarded</td>
                     </tr>
                     <tr>
-                        <td style="padding: 5px;"><strong>Attraction Completion:</strong></td>
-                        <td style="padding: 5px;">200 XP + 100 EP</td>
+                        <td style="padding: 5px; border-top: 1px solid #e5e7eb;">Common</td>
+                        <td style="padding: 5px; border-top: 1px solid #e5e7eb;">50 XP</td>
                     </tr>
                     <tr>
-                        <td style="padding: 5px;"><strong>Category 33% (Bronze):</strong></td>
-                        <td style="padding: 5px;">50 EP</td>
+                        <td style="padding: 5px; border-top: 1px solid #e5e7eb;">Rare</td>
+                        <td style="padding: 5px; border-top: 1px solid #e5e7eb;">100 XP</td>
                     </tr>
                     <tr>
-                        <td style="padding: 5px;"><strong>Category 66% (Silver):</strong></td>
-                        <td style="padding: 5px;">100 EP</td>
+                        <td style="padding: 5px; border-top: 1px solid #e5e7eb;">Epic</td>
+                        <td style="padding: 5px; border-top: 1px solid #e5e7eb;">200 XP</td>
                     </tr>
                     <tr>
-                        <td style="padding: 5px;"><strong>Category 100% (Gold):</strong></td>
-                        <td style="padding: 5px;">200 EP</td>
+                        <td style="padding: 5px; border-top: 1px solid #e5e7eb;">Legendary</td>
+                        <td style="padding: 5px; border-top: 1px solid #e5e7eb;">500 XP</td>
                     </tr>
                 </table>
                 
-                <p style="color: #666; font-size: 11px; margin-top: 10px; margin-bottom: 0;"><em>Note: These values are system-defined and cannot be customized per reward.</em></p>
+                <p style="color: #666; font-size: 11px; margin-top: 10px; margin-bottom: 0;"><em>💡 Tip: Use higher rarities for more challenging achievements!</em></p>
             </div>
             
             <!-- Hidden fields for XP/EP (set to 0, calculated by backend) -->
@@ -187,3 +222,53 @@
     border: 1px solid #e5e7eb;
 }
 </style>
+
+<script>
+// Update XP preview based on rarity selection
+function updateXPPreview() {
+    const rarity = document.getElementById('rewardRarity').value;
+    const xpValues = {
+        'common': 50,
+        'rare': 100,
+        'epic': 200,
+        'legendary': 500
+    };
+    
+    const xpAmount = xpValues[rarity] || 50;
+    const rarityCapitalized = rarity.charAt(0).toUpperCase() + rarity.slice(1);
+    
+    document.getElementById('xpPreviewRarity').textContent = rarityCapitalized;
+    document.getElementById('xpPreviewAmount').textContent = xpAmount;
+    
+    // Update border color based on rarity
+    const preview = document.getElementById('xpPreview');
+    const colors = {
+        'common': '#9ca3af',
+        'rare': '#3b82f6',
+        'epic': '#8b5cf6',
+        'legendary': '#f59e0b'
+    };
+    preview.style.borderColor = colors[rarity];
+    document.getElementById('xpPreviewRarity').style.color = colors[rarity];
+}
+
+// Update task type count preview
+function updateTaskTypeCountPreview() {
+    const count = document.getElementById('triggerTaskTypeCount')?.value || 1;
+    const previewElement = document.getElementById('taskTypeCountPreview');
+    if (previewElement) {
+        previewElement.innerHTML = `💡 User will earn this badge after completing <strong>${count}</strong> task(s) of this type`;
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateXPPreview();
+    
+    // Add event listener for task type count input
+    const taskTypeCountInput = document.getElementById('triggerTaskTypeCount');
+    if (taskTypeCountInput) {
+        taskTypeCountInput.addEventListener('input', updateTaskTypeCountPreview);
+    }
+});
+</script>

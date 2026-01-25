@@ -14,7 +14,7 @@ let allAttractions = []; // Store all attractions for sorting
 let currentEditingTaskId = null; // Track which task is being edited for QR generation
 
 function setupRoleBasedTaskAndGuideFilters() {
-    // TASKS: Superadmin uses Attraction filter; others use Type filter
+    // TASKS: Superadmin uses BOTH Attraction and Type filters; others use Type filter only
     const taskTypeGroup = document.getElementById('taskTypeFilterGroup');
     const taskAttractionGroup = document.getElementById('taskAttractionFilterGroup');
 
@@ -22,14 +22,16 @@ function setupRoleBasedTaskAndGuideFilters() {
     const guideAttractionGroup = document.getElementById('guideAttractionFilterGroup');
 
     if (currentUser?.role === 'superadmin') {
-        if (taskTypeGroup) taskTypeGroup.style.display = 'none';
+        // Show BOTH filters for superadmin
+        if (taskTypeGroup) taskTypeGroup.style.display = 'inline-block';
         if (taskAttractionGroup) taskAttractionGroup.style.display = 'inline-block';
         if (guideAttractionGroup) guideAttractionGroup.style.display = 'inline-block';
 
-        // Populate dropdowns
+        // Populate attraction dropdowns
         loadAttractionFilterDropdown('taskAttractionFilter');
         loadAttractionFilterDropdown('guideAttractionFilter');
     } else {
+        // Managers see only task type filter
         if (taskTypeGroup) taskTypeGroup.style.display = 'inline-block';
         if (taskAttractionGroup) taskAttractionGroup.style.display = 'none';
         if (guideAttractionGroup) guideAttractionGroup.style.display = 'none';
@@ -1063,8 +1065,11 @@ async function loadDashboardStats() {
                     // Task type emoji
                     let typeEmoji = '✅';
                     if (completion.task_type === 'quiz') typeEmoji = '📝';
-                    if (completion.task_type === 'photo') typeEmoji = '📸';
                     if (completion.task_type === 'checkin') typeEmoji = '📍';
+                    if (completion.task_type === 'observation_match') typeEmoji = '👁️';
+                    if (completion.task_type === 'count_confirm') typeEmoji = '🔢';
+                    if (completion.task_type === 'direction') typeEmoji = '🧭';
+                    if (completion.task_type === 'time_based') typeEmoji = '⏱️';
                     
                     completionItem.innerHTML = `
                         <div style="display: flex; justify-content: space-between; align-items: start;">
@@ -1707,7 +1712,7 @@ function applyTaskFilters() {
         );
     }
 
-    // Superadmin: filter by attraction (instead of type)
+    // Filter by attraction (for superadmins)
     if (currentUser?.role === 'superadmin') {
         const attractionFilter = document.getElementById('taskAttractionFilter')?.value || '';
         if (attractionFilter) {
@@ -1715,14 +1720,14 @@ function applyTaskFilters() {
                 String(task.attraction_id || '') === String(attractionFilter)
             );
         }
-    } else {
-        // Managers (and others): filter by type
-        const typeFilter = (document.getElementById('taskTypeFilter')?.value || '').toLowerCase();
-        if (typeFilter) {
-            filteredTasks = filteredTasks.filter(task =>
-                (task.type || '').toLowerCase() === typeFilter
-            );
-        }
+    }
+
+    // Filter by task type (for everyone - both managers and superadmins)
+    const typeFilter = (document.getElementById('taskTypeFilter')?.value || '').toLowerCase();
+    if (typeFilter) {
+        filteredTasks = filteredTasks.filter(task =>
+            (task.type || '').toLowerCase() === typeFilter
+        );
     }
 
     displayTasks(filteredTasks);
@@ -1803,7 +1808,7 @@ function handleTaskTypeChange() {
             observationQuestionCounter = 0;
             addObservationMatchQuestion();
         }
-    } else if (taskType === 'quiz' || taskType === 'riddle' || taskType === 'memory_recall' || taskType === 'route_completion') {
+    } else if (taskType === 'quiz' || taskType === 'observation_match') {
         quizSection.style.display = 'block';
         // Add at least one question by default
         if (document.getElementById('quizQuestionsList').children.length === 0) {
@@ -2145,9 +2150,8 @@ function handleTaskAndGuideTypeChange() {
     const countConfirmSection = document.getElementById('taskAndGuideCountConfirmSection');
     const directionSection = document.getElementById('taskAndGuideDirectionSection');
     const timeBasedSection = document.getElementById('taskAndGuideTimeBasedSection');
-    const riddleSection = document.getElementById('taskAndGuideRiddleSection');
-    const memoryRecallSection = document.getElementById('taskAndGuideMemoryRecallSection');
-    const routeCompletionSection = document.getElementById('taskAndGuideRouteCompletionSection');
+    const observationMatchSection = document.getElementById('taskAndGuideObservationMatchSection');
+    // Obsolete task type sections removed: riddle, memory_recall, route_completion, photo
     const guideTitleInput = document.getElementById('taskAndGuideGuideTitle');
     const guideContentInput = document.getElementById('taskAndGuideGuideContent');
     const guideTitleLabel = document.getElementById('guideTitleLabel');
@@ -2159,9 +2163,8 @@ function handleTaskAndGuideTypeChange() {
     if (countConfirmSection) countConfirmSection.style.display = 'none';
     if (directionSection) directionSection.style.display = 'none';
     if (timeBasedSection) timeBasedSection.style.display = 'none';
-    if (riddleSection) riddleSection.style.display = 'none';
-    if (memoryRecallSection) memoryRecallSection.style.display = 'none';
-    if (routeCompletionSection) routeCompletionSection.style.display = 'none';
+    if (observationMatchSection) observationMatchSection.style.display = 'none';
+    // Obsolete sections cleanup removed (memoryRecallSection, routeCompletionSection, riddleSection)
     
     // Show the relevant section based on task type
     switch (taskType) {
@@ -2180,15 +2183,6 @@ function handleTaskAndGuideTypeChange() {
         case 'direction':
             if (directionSection) directionSection.style.display = 'block';
             break;
-        case 'time_based':
-            if (timeBasedSection) timeBasedSection.style.display = 'block';
-            break;
-        case 'riddle':
-            if (riddleSection) riddleSection.style.display = 'block';
-            break;
-        case 'memory_recall':
-            if (memoryRecallSection) memoryRecallSection.style.display = 'block';
-            break;
         case 'observation_match':
             if (observationMatchSection) {
                 observationMatchSection.style.display = 'block';
@@ -2198,13 +2192,9 @@ function handleTaskAndGuideTypeChange() {
                 }
             }
             break;
-        case 'route_completion':
-            if (routeCompletionSection) {
-                routeCompletionSection.style.display = 'block';
-                // Reset checkpoints counter for this modal
-                taskAndGuideRouteCheckpointCounter = 0;
-                const checkpointsList = document.getElementById('taskAndGuideRouteCheckpoints');
-                if (checkpointsList) checkpointsList.innerHTML = '';
+        case 'time_based':
+            if (timeBasedSection) {
+                timeBasedSection.style.display = 'block';
             }
             break;
     }
@@ -4161,43 +4151,14 @@ async function handleTaskAndGuideSubmit(e) {
         };
     }
     
-    // Handle riddle type
-    if (taskType === 'riddle') {
-        const riddleQuestion = document.getElementById('taskAndGuideRiddleQuestion')?.value?.trim();
-        const riddleAnswer = document.getElementById('taskAndGuideRiddleAnswer')?.value?.trim();
-        const riddleHints = document.getElementById('taskAndGuideRiddleHints')?.value?.trim();
-        
-        if (!riddleQuestion || !riddleAnswer) {
-            showAlert('Please fill in the Riddle question and answer', 'error');
-            return;
-        }
-        
-        taskDataObject.riddle_config = {
-            question: riddleQuestion,
-            answer: riddleAnswer,
-            hints: riddleHints ? riddleHints.split('\n').filter(h => h.trim()) : []
-        };
-    }
-    
-    // Handle memory_recall type
-    if (taskType === 'memory_recall') {
-        const memoryInfo = document.getElementById('taskAndGuideMemoryInfo')?.value?.trim();
-        const memoryQuestion = document.getElementById('taskAndGuideMemoryQuestion')?.value?.trim();
-        const memoryAnswer = document.getElementById('taskAndGuideMemoryAnswer')?.value?.trim();
-        const memoryDelay = document.getElementById('taskAndGuideMemoryDelay')?.value || 30;
-        
-        if (!memoryInfo || !memoryQuestion || !memoryAnswer) {
-            showAlert('Please fill in all Memory Recall fields', 'error');
-            return;
-        }
-        
-        taskDataObject.memory_config = {
-            info_to_memorize: memoryInfo,
-            question: memoryQuestion,
-            answer: memoryAnswer,
-            delay_seconds: parseInt(memoryDelay)
-        };
-    }
+    // Obsolete task types removed: riddle, memory_recall, route_completion, photo
+    // Only the following task types are supported:
+    // - checkin (required first)
+    // - quiz
+    // - observation_match
+    // - count_confirm
+    // - direction
+    // - time_based
     
     // Handle observation_match type (dedicated section)
     if (taskType === 'observation_match') {
@@ -4240,26 +4201,7 @@ async function handleTaskAndGuideSubmit(e) {
         taskDataObject.questions = questions;
     }
     
-    // Handle route_completion type
-    if (taskType === 'route_completion') {
-        const routeName = document.getElementById('taskAndGuideRouteName')?.value?.trim();
-        const checkpoints = collectTaskAndGuideRouteCheckpoints();
-        
-        if (!routeName) {
-            showAlert('Please enter a route name', 'error');
-            return;
-        }
-        
-        if (checkpoints.length < 2) {
-            showAlert('Please add at least 2 checkpoints for the Route Completion task', 'error');
-            return;
-        }
-        
-        taskDataObject.route_config = {
-            route_name: routeName,
-            checkpoints: checkpoints
-        };
-    }
+    // Obsolete task type handling code removed above
 
     const guideDataObject = {
         attraction_id: attraction_id, // Link guide to the same attraction

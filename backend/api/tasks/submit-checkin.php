@@ -162,43 +162,30 @@ try {
     $stmt->bindParam(':task_id', $task_id);
     $stmt->execute();
 
-    // Get current attraction_id (MOVED UP - needed for rewards)
-    $query = "SELECT attraction_id FROM tasks WHERE id = :task_id";
+    // Get current attraction_id and category for rewards
+    $query = "SELECT t.attraction_id, a.category 
+              FROM tasks t 
+              JOIN attractions a ON t.attraction_id = a.id 
+              WHERE t.id = :task_id";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':task_id', $task_id);
     $stmt->execute();
     $currentTask = $stmt->fetch(PDO::FETCH_ASSOC);
     $attraction_id = $currentTask['attraction_id'];
+    $category = $currentTask['category'];
 
     $db->commit();
     
     // === REWARD SYSTEM INTEGRATION ===
-    // Convert PDO connection to mysqli for reward functions
-    $mysqli = new mysqli('localhost', 'root', '', 'ktrek_db');
-    
-    // Award task stamp for check-in
-    awardTaskStamp($mysqli, $user_id, $task_id, $attraction_id, 'qr_checkin');
-    
-    // Award XP for check-in
-    $xp_result = awardTaskXP($mysqli, $user_id, 'qr_checkin', $task_id);
-    
-    // Check if attraction is now complete
-    $completion_result = checkAttractionCompletion($mysqli, $user_id, $attraction_id);
-    
-    // Get newly earned rewards
-    $new_rewards = getNewlyEarnedRewards($mysqli, $user_id, 15);
-    
-    // Get updated user stats (includes XP and EP)
-    $user_stats = getUserCurrentStats($mysqli, $user_id);
-    
-    // Get EP earned in this session
-    $ep_earned = getRecentEP($mysqli, $user_id, 15);
-    
-    // Get category progress for the current attraction
-    $category = getAttractionCategory($mysqli, $attraction_id);
-    $category_progress = getCategoryProgress($mysqli, $user_id);
-    $current_category_progress = isset($category_progress[$category]) ? $category_progress[$category] : null;
-    
+    // Award rewards using RewardHelper class (works with PDO)
+    $rewards = RewardHelper::awardTaskCompletion(
+        $db,
+        $user_id,
+        $task_id,
+        $attraction_id,
+        $category,
+        'checkin'
+    );
     // === END REWARD INTEGRATION ===
 
     // Get next task in the same attraction (BEFORE closing mysqli)
@@ -217,9 +204,6 @@ try {
     $stmt->execute();
     
     $nextTask = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    // Close mysqli connection after all queries are done
-    $mysqli->close();
 
     Response::success([
         'next_task_id' => $nextTask ? $nextTask['id'] : null,
@@ -230,16 +214,7 @@ try {
             'allowed_radius_m' => $allowed_radius_m,
             'gps_accuracy_m' => $accuracy
         ],
-        // Enhanced reward data with EP and category progress
-        'rewards' => [
-            'xp_earned' => $xp_result['xp'],
-            'ep_earned' => $ep_earned,
-            'new_rewards' => $new_rewards,
-            'user_stats' => $user_stats,
-            'attraction_complete' => $completion_result['complete'],
-            'completion_data' => $completion_result,
-            'category_progress' => $current_category_progress
-        ]
+        'rewards' => $rewards
     ], "Check-in successful", 201);
 
 } catch (PDOException $e) {

@@ -1,6 +1,6 @@
 import React, { MouseEvent, useEffect, useRef, useState } from "react";
 
-type AwardBadgeType = "bronze" | "silver" | "gold";
+type AwardBadgeType = "bronze" | "silver" | "gold" | "common" | "rare" | "epic" | "legendary";
 
 interface AwardBadgeProps {
   type: AwardBadgeType;
@@ -23,18 +23,30 @@ const backgroundColor: Record<AwardBadgeType, string> = {
   bronze: "#cd7f32",
   silver: "#c0c0c0",
   gold: "#ffd700",
+  common: "#e5e7eb", // Grey-ish
+  rare: "#3b82f6", // Blue
+  epic: "#a855f7", // Purple
+  legendary: "url(#chromeGradient)", // Chrome effect (defined in SVG)
 };
 
 const textColor: Record<AwardBadgeType, string> = {
   bronze: "#5d3a1a",
   silver: "#4a4a4a",
   gold: "#8b6914",
+  common: "#6b7280", // Dark grey
+  rare: "#1e40af", // Dark blue
+  epic: "#6b21a8", // Dark purple
+  legendary: "#1f2937", // Dark grey for chrome
 };
 
 const title: Record<AwardBadgeType, string> = {
   bronze: "Bronze Tier",
   silver: "Silver Tier",
   gold: "Gold Tier",
+  common: "Common",
+  rare: "Rare",
+  epic: "Epic",
+  legendary: "Legendary",
 };
 
 export const AwardBadge = ({ type, category, onClick }: AwardBadgeProps) => {
@@ -232,8 +244,35 @@ export const AwardBadge = ({ type, category, onClick }: AwardBadgeProps) => {
             <mask id={`badgeMask-${type}`}>
               <rect width="260" height="54" fill="white" rx="10" />
             </mask>
+            {/* Chrome gradient for legendary */}
+            <linearGradient id="chromeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style={{ stopColor: "#e5e5e5", stopOpacity: 1 }} />
+              <stop offset="25%" style={{ stopColor: "#ffffff", stopOpacity: 1 }} />
+              <stop offset="50%" style={{ stopColor: "#c0c0c0", stopOpacity: 1 }} />
+              <stop offset="75%" style={{ stopColor: "#ffffff", stopOpacity: 1 }} />
+              <stop offset="100%" style={{ stopColor: "#e5e5e5", stopOpacity: 1 }} />
+            </linearGradient>
+            {/* Animated shine for legendary */}
+            <linearGradient id="chromeShine" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style={{ stopColor: "transparent", stopOpacity: 0 }} />
+              <stop offset="45%" style={{ stopColor: "transparent", stopOpacity: 0 }} />
+              <stop offset="50%" style={{ stopColor: "white", stopOpacity: 0.8 }} />
+              <stop offset="55%" style={{ stopColor: "transparent", stopOpacity: 0 }} />
+              <stop offset="100%" style={{ stopColor: "transparent", stopOpacity: 0 }} />
+              <animateTransform
+                attributeName="gradientTransform"
+                type="translate"
+                from="-1 0"
+                to="1 0"
+                dur="3s"
+                repeatCount="indefinite"
+              />
+            </linearGradient>
           </defs>
           <rect width="260" height="54" rx="10" fill={backgroundColor[type]} />
+          {type === 'legendary' && (
+            <rect width="260" height="54" rx="10" fill="url(#chromeShine)" style={{ mixBlendMode: 'overlay' }} />
+          )}
           <rect x="4" y="4" width="252" height="46" rx="8" fill="transparent" stroke="#333" strokeWidth="1" strokeOpacity="0.3" />
           <text fontFamily="Helvetica-Bold, Helvetica" fontSize="9" fontWeight="bold" fill={textColor[type]} x="53" y="20">
             K-TREK ACHIEVEMENT

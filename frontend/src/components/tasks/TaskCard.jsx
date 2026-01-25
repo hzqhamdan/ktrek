@@ -30,14 +30,8 @@ const TaskCard = ({ task, index, attractionId }) => {
         return <Hash size={24} className="text-blue-600" />;
       case "direction":
         return <Compass size={24} className="text-purple-600" />;
-      case "riddle":
-        return <HelpCircle size={24} className="text-pink-600" />;
-      case "memory_recall":
-        return <Lightbulb size={24} className="text-yellow-600" />;
       case "observation_match":
         return <Eye size={24} className="text-teal-600" />;
-      case "route_completion":
-        return <RouteIcon size={24} className="text-indigo-600" />;
       case "time_based":
         return <Clock size={24} className="text-orange-600" />;
       default:
@@ -54,14 +48,8 @@ const TaskCard = ({ task, index, attractionId }) => {
         return "Count & Confirm";
       case "direction":
         return "Direction & Orientation";
-      case "riddle":
-        return "Riddle Puzzle";
-      case "memory_recall":
-        return "Memory Recall";
       case "observation_match":
         return "Observation Match";
-      case "route_completion":
-        return "Route Completion";
       case "time_based":
         return "Time-Based Challenge";
       default:
@@ -78,14 +66,8 @@ const TaskCard = ({ task, index, attractionId }) => {
         return "bg-blue-100 text-blue-700";
       case "direction":
         return "bg-purple-100 text-purple-700";
-      case "riddle":
-        return "bg-pink-100 text-pink-700";
-      case "memory_recall":
-        return "bg-yellow-100 text-yellow-700";
       case "observation_match":
         return "bg-teal-100 text-teal-700";
-      case "route_completion":
-        return "bg-indigo-100 text-indigo-700";
       case "time_based":
         return "bg-orange-100 text-orange-700";
       default:

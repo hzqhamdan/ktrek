@@ -17,9 +17,121 @@ function awardTaskStamp($conn, $user_id, $task_id, $attraction_id, $task_type) {
         // Check for task set completion rewards
         checkTaskSetCompletion($conn, $user_id, $task_id);
         
+        // Check for task type completion rewards
+        checkTaskTypeCompletion($conn, $user_id, $task_type);
+        
         return true;
     } catch (Exception $e) {
         error_log("Failed to award task stamp: " . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Get XP amount based on reward rarity
+ */
+function getXPByRarity($rarity) {
+    $xp_values = [
+        'common' => 50,
+        'rare' => 100,
+        'epic' => 200,
+        'legendary' => 500
+    ];
+    return isset($xp_values[$rarity]) ? $xp_values[$rarity] : 50;
+}
+
+/**
+ * Check and award task type completion rewards
+ * This checks if the user has completed tasks of a specific type
+ * Supports both single completion and multiple completions (e.g., "Complete 5 quizzes")
+ */
+function checkTaskTypeCompletion($conn, $user_id, $task_type) {
+    try {
+        // Get all rewards with task_type_completion trigger (including rarity for XP calculation)
+        $stmt = $conn->prepare("
+            SELECT id, title, trigger_condition, rarity, reward_identifier, reward_type
+            FROM rewards
+            WHERE trigger_type = 'task_type_completion'
+            AND is_active = 1
+        ");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        while ($reward = $result->fetch_assoc()) {
+            $trigger_condition = json_decode($reward['trigger_condition'], true);
+            
+            if (!isset($trigger_condition['task_type']) || empty($trigger_condition['task_type'])) {
+                continue;
+            }
+            
+            $required_task_type = $trigger_condition['task_type'];
+            $required_count = isset($trigger_condition['required_count']) ? intval($trigger_condition['required_count']) : 1;
+            
+            // Check if the completed task matches the required task type
+            if ($task_type === $required_task_type) {
+                // Check if user already has this reward
+                $check_stmt = $conn->prepare("
+                    SELECT id FROM user_rewards
+                    WHERE user_id = ? AND reward_identifier = ?
+                ");
+                $check_stmt->bind_param("is", $user_id, $reward['reward_identifier']);
+                $check_stmt->execute();
+                $check_result = $check_stmt->get_result();
+                
+                if ($check_result->num_rows === 0) {
+                    // Count how many tasks of this type the user has completed
+                    $count_stmt = $conn->prepare("
+                        SELECT COUNT(DISTINCT t.id) as completed_count
+                        FROM tasks t
+                        INNER JOIN user_task_submissions uts ON t.id = uts.task_id
+                        WHERE uts.user_id = ? 
+                        AND t.type = ?
+                        AND uts.is_correct = 1
+                    ");
+                    $count_stmt->bind_param("is", $user_id, $required_task_type);
+                    $count_stmt->execute();
+                    $count_result = $count_stmt->get_result();
+                    $count_data = $count_result->fetch_assoc();
+                    $completed_count = intval($count_data['completed_count']);
+                    $count_stmt->close();
+                    
+                    // Award the reward if user has completed the required number of tasks
+                    if ($completed_count >= $required_count) {
+                        $award_stmt = $conn->prepare("
+                            INSERT INTO user_rewards (user_id, reward_id, reward_type, reward_identifier, 
+                                                     title, description, image, rarity, source_type, 
+                                                     source_id, earned_at)
+                            SELECT ?, r.id, r.reward_type, r.reward_identifier, r.title, r.description, 
+                                   r.image, r.rarity, 'task_type', 0, NOW()
+                            FROM rewards r
+                            WHERE r.id = ?
+                        ");
+                        $award_stmt->bind_param("ii", $user_id, $reward['id']);
+                        $award_stmt->execute();
+                        $award_stmt->close();
+                        
+                        // Award XP based on rarity
+                        $xp_amount = getXPByRarity($reward['rarity']);
+                        $xp_stmt = $conn->prepare("CALL award_xp(?, ?, ?, ?, ?)");
+                        $count_text = $required_count > 1 ? " (completed " . $required_count . " tasks)" : "";
+                        $reason = "Earned " . $reward['rarity'] . " badge: " . $reward['title'] . $count_text;
+                        $source_type = "task_type_completion";
+                        $source_id = 0;
+                        $xp_stmt->bind_param("iissi", $user_id, $xp_amount, $reason, $source_type, $source_id);
+                        $xp_stmt->execute();
+                        $xp_stmt->close();
+                        
+                        error_log("Awarded task_type_completion reward: " . $reward['title'] . " (" . $reward['rarity'] . ", " . $xp_amount . " XP, " . $completed_count . "/" . $required_count . " tasks) to user " . $user_id);
+                    }
+                }
+                $check_stmt->close();
+            }
+        }
+        
+        $stmt->close();
+        return true;
+    } catch (Exception $e) {
+        error_log("Failed to check task type completion: " . $e->getMessage());
         return false;
     }
 }
@@ -30,9 +142,9 @@ function awardTaskStamp($conn, $user_id, $task_id, $attraction_id, $task_type) {
  */
 function checkTaskSetCompletion($conn, $user_id, $task_id) {
     try {
-        // Get all rewards with task_set_completion trigger
+        // Get all rewards with task_set_completion trigger (including rarity for XP calculation)
         $stmt = $conn->prepare("
-            SELECT id, title, trigger_condition, xp_amount, ep_amount, reward_identifier, reward_type
+            SELECT id, title, trigger_condition, rarity, reward_identifier, reward_type
             FROM rewards
             WHERE trigger_type = 'task_set_completion'
             AND is_active = 1
@@ -88,23 +200,13 @@ function checkTaskSetCompletion($conn, $user_id, $task_id) {
             
             // If all tasks in the set are completed, award the reward
             if ($completed_data['completed_count'] == count($task_ids)) {
-                // Award XP if specified
-                if ($reward['xp_amount'] > 0) {
-                    $xp_stmt = $conn->prepare("CALL award_xp(?, ?, ?, 'task_set_completion', ?)");
-                    $xp_reason = "Completed task set: " . $reward['title'];
-                    $xp_stmt->bind_param("iisi", $user_id, $reward['xp_amount'], $xp_reason, $reward['id']);
-                    $xp_stmt->execute();
-                    $xp_stmt->close();
-                }
-                
-                // Award EP if specified
-                if ($reward['ep_amount'] > 0) {
-                    $ep_stmt = $conn->prepare("CALL award_ep(?, ?, ?, 'task_set_completion', ?)");
-                    $ep_reason = "Completed task set: " . $reward['title'];
-                    $ep_stmt->bind_param("iisi", $user_id, $reward['ep_amount'], $ep_reason, $reward['id']);
-                    $ep_stmt->execute();
-                    $ep_stmt->close();
-                }
+                // Award XP based on rarity
+                $xp_amount = getXPByRarity($reward['rarity']);
+                $xp_stmt = $conn->prepare("CALL award_xp(?, ?, ?, 'task_set_completion', ?)");
+                $xp_reason = "Completed " . $reward['rarity'] . " task set: " . $reward['title'];
+                $xp_stmt->bind_param("iisi", $user_id, $xp_amount, $xp_reason, $reward['id']);
+                $xp_stmt->execute();
+                $xp_stmt->close();
                 
                 // Award the reward (badge or title)
                 $metadata = json_encode([
@@ -129,7 +231,7 @@ function checkTaskSetCompletion($conn, $user_id, $task_id) {
                 $insert_stmt->execute();
                 $insert_stmt->close();
                 
-                error_log("Task set completion reward awarded: " . $reward['title'] . " to user " . $user_id);
+                error_log("Task set completion reward awarded: " . $reward['title'] . " (" . $reward['rarity'] . ", " . $xp_amount . " XP) to user " . $user_id);
             }
         }
         
@@ -481,5 +583,213 @@ function initializeUserRewards($conn, $user_id) {
     } catch (Exception $e) {
         error_log("Failed to initialize user rewards: " . $e->getMessage());
         return false;
+    }
+}
+
+/**
+ * RewardHelper class wrapper for compatibility with PDO-based task endpoints
+ */
+class RewardHelper {
+    /**
+     * Award task completion rewards (wrapper for PDO connections)
+     * This method checks for task type rewards and task set rewards
+     */
+    public static function awardTaskCompletion($pdo_conn, $user_id, $task_id, $attraction_id, $category, $task_type) {
+        try {
+            // For PDO connections, we need to handle rewards differently
+            // Check for task type completion rewards
+            $query = "
+                SELECT id, title, trigger_condition, rarity, reward_identifier, reward_type
+                FROM rewards
+                WHERE trigger_type = 'task_type_completion'
+                AND is_active = 1
+            ";
+            $stmt = $pdo_conn->prepare($query);
+            $stmt->execute();
+            $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            $awarded_rewards = [];
+            
+            foreach ($rewards as $reward) {
+                $trigger_condition = json_decode($reward['trigger_condition'], true);
+                
+                if (!isset($trigger_condition['task_type']) || empty($trigger_condition['task_type'])) {
+                    continue;
+                }
+                
+                $required_task_type = $trigger_condition['task_type'];
+                $required_count = isset($trigger_condition['required_count']) ? intval($trigger_condition['required_count']) : 1;
+                
+                // Check if the completed task matches the required task type
+                if ($task_type === $required_task_type) {
+                    // Check if user already has this reward
+                    $check_query = "
+                        SELECT id FROM user_rewards
+                        WHERE user_id = :user_id AND reward_identifier = :reward_identifier
+                    ";
+                    $check_stmt = $pdo_conn->prepare($check_query);
+                    $check_stmt->bindParam(':user_id', $user_id);
+                    $check_stmt->bindParam(':reward_identifier', $reward['reward_identifier']);
+                    $check_stmt->execute();
+                    
+                    if ($check_stmt->rowCount() === 0) {
+                        // Count how many tasks of this type the user has completed
+                        $count_query = "
+                            SELECT COUNT(DISTINCT t.id) as completed_count
+                            FROM tasks t
+                            INNER JOIN user_task_submissions uts ON t.id = uts.task_id
+                            WHERE uts.user_id = :user_id 
+                            AND t.type = :task_type
+                            AND uts.is_correct = 1
+                        ";
+                        $count_stmt = $pdo_conn->prepare($count_query);
+                        $count_stmt->bindParam(':user_id', $user_id);
+                        $count_stmt->bindParam(':task_type', $required_task_type);
+                        $count_stmt->execute();
+                        $count_data = $count_stmt->fetch(PDO::FETCH_ASSOC);
+                        $completed_count = intval($count_data['completed_count']);
+                        
+                        // Award the reward if user has completed the required number of tasks
+                        if ($completed_count >= $required_count) {
+                            $award_query = "
+                                INSERT INTO user_rewards (user_id, reward_type, reward_identifier, 
+                                                         reward_name, reward_description, category, metadata, earned_date)
+                                SELECT :user_id, r.reward_type, r.reward_identifier, r.title, r.description, 
+                                       :category, JSON_OBJECT('rarity', r.rarity, 'image', r.image), NOW()
+                                FROM rewards r
+                                WHERE r.id = :reward_id
+                            ";
+                            $award_stmt = $pdo_conn->prepare($award_query);
+                            $award_stmt->bindParam(':user_id', $user_id);
+                            $award_stmt->bindParam(':reward_id', $reward['id']);
+                            $award_stmt->bindParam(':category', $category);
+                            $award_stmt->execute();
+                            
+                            // Award XP based on rarity
+                            $xp_amount = getXPByRarity($reward['rarity']);
+                            $count_text = $required_count > 1 ? " (completed " . $required_count . " tasks)" : "";
+                            $reason = "Earned " . $reward['rarity'] . " badge: " . $reward['title'] . $count_text;
+                            $source_type = "task_type_completion";
+                            
+                            $xp_query = "CALL award_xp(:user_id, :xp_amount, :reason, :source_type, 0)";
+                            $xp_stmt = $pdo_conn->prepare($xp_query);
+                            $xp_stmt->bindParam(':user_id', $user_id);
+                            $xp_stmt->bindParam(':xp_amount', $xp_amount);
+                            $xp_stmt->bindParam(':reason', $reason);
+                            $xp_stmt->bindParam(':source_type', $source_type);
+                            $xp_stmt->execute();
+                            
+                            $awarded_rewards[] = [
+                                'reward_type' => $reward['reward_type'],
+                                'reward_name' => $reward['title'],
+                                'rarity' => $reward['rarity'],
+                                'xp_awarded' => $xp_amount
+                            ];
+                            
+                            error_log("Awarded task_type_completion reward: " . $reward['title'] . " (" . $reward['rarity'] . ", " . $xp_amount . " XP, " . $completed_count . "/" . $required_count . " tasks) to user " . $user_id);
+                        }
+                    }
+                }
+            }
+            
+            // Check for task set completion rewards
+            $set_query = "
+                SELECT id, title, trigger_condition, rarity, reward_identifier, reward_type
+                FROM rewards
+                WHERE trigger_type = 'task_set_completion'
+                AND is_active = 1
+            ";
+            $set_stmt = $pdo_conn->prepare($set_query);
+            $set_stmt->execute();
+            $set_rewards = $set_stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            foreach ($set_rewards as $reward) {
+                $trigger_condition = json_decode($reward['trigger_condition'], true);
+                
+                if (!isset($trigger_condition['task_ids']) || !is_array($trigger_condition['task_ids'])) {
+                    continue;
+                }
+                
+                $task_ids = $trigger_condition['task_ids'];
+                
+                // Check if the just-completed task is in this set
+                if (in_array($task_id, $task_ids)) {
+                    // Check if user already has this reward
+                    $check_query = "
+                        SELECT id FROM user_rewards
+                        WHERE user_id = :user_id AND reward_identifier = :reward_identifier
+                    ";
+                    $check_stmt = $pdo_conn->prepare($check_query);
+                    $check_stmt->bindParam(':user_id', $user_id);
+                    $check_stmt->bindParam(':reward_identifier', $reward['reward_identifier']);
+                    $check_stmt->execute();
+                    
+                    if ($check_stmt->rowCount() === 0) {
+                        // Check if all tasks in the set are completed
+                        $placeholders = implode(',', array_fill(0, count($task_ids), '?'));
+                        $completed_query = "
+                            SELECT COUNT(DISTINCT uts.task_id) as completed_count
+                            FROM user_task_submissions uts
+                            WHERE uts.user_id = :user_id 
+                            AND uts.task_id IN ($placeholders)
+                            AND uts.is_correct = 1
+                        ";
+                        $completed_stmt = $pdo_conn->prepare($completed_query);
+                        $completed_stmt->bindParam(':user_id', $user_id);
+                        foreach ($task_ids as $idx => $tid) {
+                            $completed_stmt->bindValue($idx + 1, $tid);
+                        }
+                        $completed_stmt->execute();
+                        $completed_data = $completed_stmt->fetch(PDO::FETCH_ASSOC);
+                        $completed_count = intval($completed_data['completed_count']);
+                        
+                        // Award if all tasks completed
+                        if ($completed_count >= count($task_ids)) {
+                            $award_query = "
+                                INSERT INTO user_rewards (user_id, reward_type, reward_identifier, 
+                                                         reward_name, reward_description, category, metadata, earned_date)
+                                SELECT :user_id, r.reward_type, r.reward_identifier, r.title, r.description, 
+                                       :category, JSON_OBJECT('rarity', r.rarity, 'image', r.image), NOW()
+                                FROM rewards r
+                                WHERE r.id = :reward_id
+                            ";
+                            $award_stmt = $pdo_conn->prepare($award_query);
+                            $award_stmt->bindParam(':user_id', $user_id);
+                            $award_stmt->bindParam(':reward_id', $reward['id']);
+                            $award_stmt->bindParam(':category', $category);
+                            $award_stmt->execute();
+                            
+                            // Award XP
+                            $xp_amount = getXPByRarity($reward['rarity']);
+                            $reason = "Completed task set: " . $reward['title'];
+                            $source_type = "task_set_completion";
+                            
+                            $xp_query = "CALL award_xp(:user_id, :xp_amount, :reason, :source_type, 0)";
+                            $xp_stmt = $pdo_conn->prepare($xp_query);
+                            $xp_stmt->bindParam(':user_id', $user_id);
+                            $xp_stmt->bindParam(':xp_amount', $xp_amount);
+                            $xp_stmt->bindParam(':reason', $reason);
+                            $xp_stmt->bindParam(':source_type', $source_type);
+                            $xp_stmt->execute();
+                            
+                            $awarded_rewards[] = [
+                                'reward_type' => $reward['reward_type'],
+                                'reward_name' => $reward['title'],
+                                'rarity' => $reward['rarity'],
+                                'xp_awarded' => $xp_amount
+                            ];
+                            
+                            error_log("Awarded task_set_completion reward: " . $reward['title'] . " to user " . $user_id);
+                        }
+                    }
+                }
+            }
+            
+            return count($awarded_rewards) > 0 ? $awarded_rewards : null;
+            
+        } catch (Exception $e) {
+            error_log("Failed to award task completion rewards: " . $e->getMessage());
+            return null;
+        }
     }
 }

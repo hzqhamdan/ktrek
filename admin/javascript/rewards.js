@@ -113,6 +113,7 @@ function getTriggerText(triggerType) {
     const triggers = {
         'task_completion': '✅ Task',
         'task_set_completion': '✅✅ Task Set',
+        'task_type_completion': '🎯 Task Type',
         'attraction_completion': '🏛️ Attraction',
         'category_milestone': '📊 Category',
         'manual': '🖐️ Manual'
@@ -196,6 +197,14 @@ function loadRewardData(id) {
                             });
                             updateTaskSetCount();
                         }, 500);
+                    } else if (reward.trigger_type === 'task_type_completion' && condition.task_type) {
+                        setTimeout(() => {
+                            document.getElementById('triggerTaskType').value = condition.task_type;
+                            if (condition.required_count) {
+                                document.getElementById('triggerTaskTypeCount').value = condition.required_count;
+                                updateTaskTypeCountPreview();
+                            }
+                        }, 500);
                     } else if (reward.trigger_type === 'attraction_completion' && condition.attraction_id) {
                         setTimeout(() => {
                             document.getElementById('triggerAttractionId').value = condition.attraction_id;
@@ -231,6 +240,8 @@ function handleTriggerTypeChange() {
         document.getElementById('taskCompletionTrigger').style.display = 'block';
     } else if (triggerType === 'task_set_completion') {
         document.getElementById('taskSetCompletionTrigger').style.display = 'block';
+    } else if (triggerType === 'task_type_completion') {
+        document.getElementById('taskTypeCompletionTrigger').style.display = 'block';
     } else if (triggerType === 'attraction_completion') {
         document.getElementById('attractionCompletionTrigger').style.display = 'block';
     } else if (triggerType === 'manual' || triggerType === '') {
@@ -385,6 +396,18 @@ document.getElementById('rewardForm')?.addEventListener('submit', async function
             formData.trigger_condition = { task_ids: selectedTasks };
         } else {
             showAlert('Please select at least one task for the task set trigger', 'error');
+            return;
+        }
+    } else if (triggerType === 'task_type_completion') {
+        const taskType = document.getElementById('triggerTaskType').value;
+        const taskTypeCount = document.getElementById('triggerTaskTypeCount').value;
+        if (taskType) {
+            formData.trigger_condition = { 
+                task_type: taskType,
+                required_count: parseInt(taskTypeCount) || 1
+            };
+        } else {
+            showAlert('Please select a task type for the task type completion trigger', 'error');
             return;
         }
     } else if (triggerType === 'attraction_completion') {

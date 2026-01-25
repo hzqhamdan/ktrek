@@ -24,11 +24,9 @@ import CheckinTaskPage from "./pages/CheckinTaskPage";
 import QuizTaskPage from "./pages/QuizTaskPage";
 import CountConfirmTaskPage from "./pages/CountConfirmTaskPage";
 import DirectionTaskPage from "./pages/DirectionTaskPage";
-import RiddleTaskPage from "./pages/RiddleTaskPage";
-import MemoryRecallTaskPage from "./pages/MemoryRecallTaskPage";
 import ObservationMatchTaskPage from "./pages/ObservationMatchTaskPage";
-import RouteCompletionTaskPage from "./pages/RouteCompletionTaskPage";
 import TimeBasedTaskPage from "./pages/TimeBasedTaskPage";
+// Obsolete task types removed: RiddleTaskPage, MemoryRecallTaskPage, RouteCompletionTaskPage
 import ProgressPage from "./pages/ProgressPage";
 import RewardsPage from "./pages/RewardsPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -89,11 +87,9 @@ function App() {
             <Route path="dashboard/tasks/:taskId/quiz" element={<QuizTaskPage />} />
             <Route path="dashboard/tasks/:taskId/count-confirm" element={<CountConfirmTaskPage />} />
             <Route path="dashboard/tasks/:taskId/direction" element={<DirectionTaskPage />} />
-            <Route path="dashboard/tasks/:taskId/riddle" element={<RiddleTaskPage />} />
-            <Route path="dashboard/tasks/:taskId/memory-recall" element={<MemoryRecallTaskPage />} />
             <Route path="dashboard/tasks/:taskId/observation-match" element={<ObservationMatchTaskPage />} />
-            <Route path="dashboard/tasks/:taskId/route-completion" element={<RouteCompletionTaskPage />} />
             <Route path="dashboard/tasks/:taskId/time-based" element={<TimeBasedTaskPage />} />
+            {/* Obsolete routes removed: riddle, memory-recall, route-completion */}
             <Route path="dashboard/progress" element={<ProgressPage />} />
             <Route path="dashboard/rewards" element={<RewardsPage />} />
             <Route path="dashboard/profile" element={<ProfilePage />} />

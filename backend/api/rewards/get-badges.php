@@ -4,27 +4,31 @@
  * Returns all badges earned by the user
  */
 
+require_once '../../config/cors.php';
 require_once '../../config/database.php';
 require_once '../../middleware/auth-middleware.php';
 require_once '../../utils/response.php';
 
 header('Content-Type: application/json');
 
+// Initialize database and auth
+$database = new Database();
+$db = $database->getConnection();
+$auth = new AuthMiddleware($db);
+
 // Verify authentication
-$user = authenticateUser();
+$user = $auth->requireAuth();
 
 if (!$user) {
-    sendErrorResponse('Unauthorized', 401);
+    Response::error('Unauthorized', 401);
     exit;
 }
 
 $user_id = $user['id'];
 
 try {
-    $conn = getDBConnection();
-    
-    // Get all badges
-    $stmt = $conn->prepare("
+    // Get all badges (includes rewards where reward_type is 'badge' or NULL/empty)
+    $stmt = $db->prepare("
         SELECT 
             id,
             reward_identifier,
@@ -32,29 +36,27 @@ try {
             reward_description,
             category,
             metadata,
-            earned_date
+            earned_date,
+            reward_type
         FROM user_rewards
-        WHERE user_id = ? AND reward_type = 'badge'
+        WHERE user_id = :user_id AND (reward_type = 'badge' OR reward_type IS NULL OR reward_type = '')
         ORDER BY earned_date DESC
     ");
     
-    $stmt->bind_param("i", $user_id);
+    $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
     $stmt->execute();
-    $result = $stmt->get_result();
     
     $badges = [];
-    while ($row = $result->fetch_assoc()) {
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         if ($row['metadata']) {
             $row['metadata'] = json_decode($row['metadata'], true);
         }
         $badges[] = $row;
     }
     
-    sendSuccessResponse(['badges' => $badges], 'Badges retrieved successfully');
-    
-    $stmt->close();
-    $conn->close();
+    Response::success(['badges' => $badges], 'Badges retrieved successfully');
     
 } catch (Exception $e) {
-    sendErrorResponse('Failed to retrieve badges: ' . $e->getMessage(), 500);
+    error_log('Get badges error: ' . $e->getMessage());
+    Response::serverError('Failed to retrieve badges: ' . $e->getMessage());
 }

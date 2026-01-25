@@ -22,12 +22,7 @@ const AttractionMap = ({ attractions = [], mapboxToken }) => {
     }
   );
 
-  console.log('AttractionMap Debug:', {
-    totalInput: attractions.length,
-    valid: validAttractions.length,
-    firstItem: attractions[0],
-    validItems: validAttractions
-  });
+
 
   useEffect(() => {
     if (!mapboxToken || !mapContainerRef.current) return;

@@ -161,47 +161,19 @@ try {
     $db->commit();
 
     // === REWARD SYSTEM INTEGRATION ===
-    // Convert PDO connection to mysqli for reward functions
     $rewards = null;
     try {
-        $mysqli = new mysqli('localhost', 'root', '', 'ktrek_db');
-        
         if ($is_correct) {
-            // Award task stamp
-            awardTaskStamp($mysqli, $user['id'], $task_id, $task['attraction_id'], 'observation_match');
-            
-            // Award XP based on score
-            $xp_result = awardTaskXP($mysqli, $user['id'], 'observation_match', $task_id, $score);
-            
-            // Check if attraction is now complete
-            $completion_result = checkAttractionCompletion($mysqli, $user['id'], $task['attraction_id']);
-            
-            // Get newly earned rewards
-            $new_rewards = getNewlyEarnedRewards($mysqli, $user['id'], 15);
-            
-            // Get updated user stats (includes XP and EP)
-            $user_stats = getUserCurrentStats($mysqli, $user['id']);
-            
-            // Get EP earned in this session
-            $ep_earned = getRecentEP($mysqli, $user['id'], 15);
-            
-            // Get category progress
-            $category = $task['category'];
-            $category_progress = getCategoryProgress($mysqli, $user['id']);
-            $current_category_progress = isset($category_progress[$category]) ? $category_progress[$category] : null;
-            
-            $rewards = [
-                'xp_earned' => $xp_result['xp'] ?? 0,
-                'ep_earned' => $ep_earned ?? 0,
-                'new_rewards' => $new_rewards ?? [],
-                'user_stats' => $user_stats,
-                'attraction_complete' => $completion_result['complete'] ?? false,
-                'completion_data' => $completion_result,
-                'category_progress' => $current_category_progress
-            ];
+            // Award rewards using RewardHelper class (works with PDO)
+            $rewards = RewardHelper::awardTaskCompletion(
+                $db,
+                $user['id'],
+                $task_id,
+                $task['attraction_id'],
+                $task['category'],
+                'observation_match'
+            );
         }
-        
-        $mysqli->close();
     } catch (Exception $e) {
         error_log("Observation match reward error: " . $e->getMessage());
         // Don't fail the submission if rewards fail

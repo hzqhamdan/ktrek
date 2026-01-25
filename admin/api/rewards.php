@@ -196,7 +196,7 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $image_url = $input['image'] ?? null;
 
         $stmt = $conn->prepare("UPDATE rewards SET attraction_id = ?, reward_type = ?, reward_identifier = ?, title = ?, description = ?, image = ?, category = ?, rarity = ?, trigger_type = ?, trigger_condition = ?, xp_amount = ?, ep_amount = ?, is_active = ? WHERE id = ?");
-        $stmt->bind_param("isssssssssiii", $attraction_id, $reward_type, $reward_identifier, $input['title'], $input['description'], $image_url, $category, $rarity, $trigger_type, $trigger_condition, $xp_amount, $ep_amount, $is_active, $id);
+        $stmt->bind_param("isssssssssiiii", $attraction_id, $reward_type, $reward_identifier, $input['title'], $input['description'], $image_url, $category, $rarity, $trigger_type, $trigger_condition, $xp_amount, $ep_amount, $is_active, $id);
 
         if ($stmt->execute()) {
             echo json_encode([

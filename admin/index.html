@@ -276,15 +276,30 @@
                                 <label for="taskSearchInput">Search:</label>
                                 <input type="text" id="taskSearchInput" placeholder="Task Name..." style="width: 200px;">
                             </div>
-                            <div class="form-group" style="display: inline-block; margin-right: 15px; width: auto;">
+                            
+                            <!-- Task Type Filter (for Managers) -->
+                            <div id="taskTypeFilterGroup" class="form-group" style="display: inline-block; margin-right: 15px; width: auto;">
                                 <label for="taskTypeFilter">Type:</label>
                                 <select id="taskTypeFilter" style="width: auto;">
                                     <option value="">All Types</option>
+                                    <option value="checkin">Check-in (Required First)</option>
                                     <option value="quiz">Quiz</option>
-                                    <option value="photo">Photo</option>
-                                    <option value="checkin">Check-in</option>
+                                    <option value="observation_match">Observation Match</option>
+                                    <option value="count_confirm">Count Confirm</option>
+                                    <option value="direction">Direction</option>
+                                    <option value="time_based">Time Based</option>
                                 </select>
                             </div>
+                            
+                            <!-- Attraction Filter (for Superadmins) -->
+                            <div id="taskAttractionFilterGroup" class="form-group" style="display: none; margin-right: 15px; width: auto;">
+                                <label for="taskAttractionFilter">Attraction:</label>
+                                <select id="taskAttractionFilter" style="width: auto;">
+                                    <option value="">All Attractions</option>
+                                    <!-- Options will be populated by JS -->
+                                </select>
+                            </div>
+                            
                              <button class="btn" onclick="applyTaskFilters()" style="display: inline-block; margin-top: 25px; padding: 8px 15px; font-size: 14px;">Apply Filters</button>
                              <button class="btn" onclick="clearTaskFilters()" style="display: inline-block; margin-top: 25px; padding: 8px 15px; font-size: 14px; background: #9ca3af;">Clear</button>
                         </div>
@@ -553,9 +568,12 @@
                     <label>Type*</label>
                     <select id="taskType" required>
                         <option value="">Select Type</option>
+                        <option value="checkin">Check-in (Required First)</option>
                         <option value="quiz">Quiz</option>
-                        <option value="photo">Photo Upload</option>
-                        <option value="checkin">Check-in</option>
+                        <option value="observation_match">Observation Match</option>
+                        <option value="count_confirm">Count Confirm</option>
+                        <option value="direction">Direction</option>
+                        <option value="time_based">Time Based</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -662,15 +680,11 @@
                     <label>Type*</label>
                     <select id="taskAndGuideTaskType" required>
                         <option value="">Select Type</option>
+                        <option value="checkin">Check-in (Required First)</option>
                         <option value="quiz">Quiz</option>
-                        <option value="photo">Photo Upload</option>
-                        <option value="checkin">Check-in</option>
+                        <option value="observation_match">Observation Match</option>
                         <option value="count_confirm">Count & Confirm</option>
                         <option value="direction">Direction & Orientation</option>
-                        <option value="riddle">Riddle / Puzzle</option>
-                        <option value="memory_recall">Memory Recall</option>
-                        <option value="observation_match">Observation Match</option>
-                        <option value="route_completion">Route Completion</option>
                         <option value="time_based">Time-Based Challenge</option>
                     </select>
                 </div>

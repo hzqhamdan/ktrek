@@ -7,7 +7,7 @@ import { attractionsAPI } from "../api/attractions";
 import Loading from "../components/common/Loading";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
-import RewardBadge from "../components/rewards/RewardBadge";
+import BadgeCollection from "../components/rewards/BadgeCollection";
 import CategoryMilestone from "../components/rewards/CategoryMilestone";
 import { formatDateTime } from "../utils/helpers";
 import { useToast } from "../components/ui/toast-1";
@@ -138,27 +138,10 @@ const RewardsPage = () => {
         <div className="mb-12">
           <CategoryMilestone categoryProgress={categoryProgress} />
         </div>
-        {/* Unlocked Rewards */}{" "}
-        {unlockedRewards.length > 0 && (
-          <div className="mb-12">
-            {" "}
-            <div className="flex items-center space-x-2 mb-6">
-              {" "}
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#000000" viewBox="0 0 256 256" className="w-8 h-8 text-[#120c07]">
-                <path d="M208,80H96V56a32,32,0,0,1,32-32c15.37,0,29.2,11,32.16,25.59a8,8,0,0,0,15.68-3.18C171.32,24.15,151.2,8,128,8A48.05,48.05,0,0,0,80,56V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM184,192H72a8,8,0,0,1,0-16H184a8,8,0,0,1,0,16Zm0-32H72a8,8,0,0,1,0-16H184a8,8,0,0,1,0,16Zm0-32H72a8,8,0,0,1,0-16H184a8,8,0,0,1,0,16Z"></path>
-              </svg>{" "}
-              <h2 className="text-2xl font-bold bg-clip-text text-transparent">
-                Unlocked Badges
-              </h2>
-            </div>{" "}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {" "}
-              {unlockedRewards.map((reward) => (
-                <RewardBadge key={reward.id} reward={reward} unlocked />
-              ))}{" "}
-            </div>{" "}
-          </div>
-        )}{" "}
+        {/* Unlocked Rewards */}
+        <div className="mb-12">
+          <BadgeCollection />
+        </div>
         {/* Locked Rewards */}{" "}
         {lockedAttractions.length > 0 && (
           <div>
