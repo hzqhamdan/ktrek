@@ -1,13 +1,16 @@
 <?php
 
 /**
- * Normalize an attraction image path from the database into an absolute URL.
+ * Normalize an attraction image path from the database into a relative path.
  *
  * Accepted DB formats seen in this project:
+ * - full URL: http://localhost/admin/uploads/file.jpg
  * - full URL: https://.../admin/uploads/file.jpg
  * - relative path: uploads/file.jpg
  * - relative path: admin/uploads/file.jpg
  * - bare filename: file.jpg
+ * 
+ * Returns just the relative path for frontend to handle URL construction
  */
 function ktrek_normalize_image_url(?string $image): ?string {
     if (!$image) return null;
@@ -15,9 +18,16 @@ function ktrek_normalize_image_url(?string $image): ?string {
     $image = trim($image);
     if ($image === '') return null;
 
-    // Already absolute URL
-    if (preg_match('/^https?:\\/\\//i', $image)) {
-        return $image;
+    // If it's a full URL (localhost or otherwise), extract just the path
+    if (preg_match('/^https?:\/\//i', $image)) {
+        // Extract path from URL
+        $parsedUrl = parse_url($image);
+        if (isset($parsedUrl['path'])) {
+            $image = ltrim($parsedUrl['path'], '/');
+        } else {
+            // Can't parse URL, return null
+            return null;
+        }
     }
 
     // Remove leading slashes
@@ -33,7 +43,6 @@ function ktrek_normalize_image_url(?string $image): ?string {
         $path = 'admin/' . $path;
     }
 
-    // If it starts with admin/uploads already, keep as-is
-
-    return APP_BASE_URL . '/' . $path;
+    // Return just the relative path - frontend will construct the full URL
+    return $path;
 }
