@@ -6,11 +6,8 @@ header('Content-Type: text/plain');
 $database = new Database();
 $db = $database->getConnection();
 
-// For debugging, allow passing user_id as query parameter
-$userId = isset($_GET['user_id']) ? intval($_GET['user_id']) : 5;
-
-echo "GET parameter: " . ($_GET['user_id'] ?? 'not set') . "\n";
-echo "User ID after intval: $userId\n";
+// For debugging - hardcoded to user 5
+$userId = 5;
 echo "=== DEBUG USER STATS FOR USER $userId ===\n\n";
 
 // Check if user_stats table exists
