@@ -37,7 +37,11 @@ const ModernLoginPage = () => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Invalid email or password';
+      const errorMessage = 
+        error.response?.data?.error || 
+        error.response?.data?.message || 
+        error.message || 
+        'Invalid email or password. Please try again.';
       showToast(errorMessage, "error");
       throw error;
     }

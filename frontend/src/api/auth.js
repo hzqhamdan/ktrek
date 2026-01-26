@@ -34,8 +34,16 @@ export const authAPI = {
 
   // Login user
   login: async (credentials) => {
-    const response = await api.post("/auth/login.php", credentials);
-    return response.data;
+    try {
+      const response = await api.post("/auth/login.php", credentials);
+      return response.data;
+    } catch (error) {
+      // Axios throws for non-2xx; for expected validation errors, return the payload.
+      if (error?.response?.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
   },
 
   // Logout user

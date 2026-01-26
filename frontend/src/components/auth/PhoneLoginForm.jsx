@@ -96,7 +96,12 @@ const PhoneLoginForm = () => {
       }
     } catch (error) {
       console.error("Login error:", error);
-      showToast("Invalid phone number or password", "error");
+      const errorMessage =
+        error.response?.data?.error || 
+        error.response?.data?.message || 
+        error.message || 
+        "Invalid phone number or password. Please try again.";
+      showToast(errorMessage, "error");
     } finally {
       setIsLoading(false);
     }
