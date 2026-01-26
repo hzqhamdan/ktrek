@@ -11,12 +11,19 @@ $db = $database->getConnection();
 // Check task_config field
 $query = "SELECT * FROM tasks WHERE id = :task_id";
 $stmt = $db->prepare($query);
-$stmt->bindParam(':task_id', $task_id);
+$stmt->bindParam(':task_id', $task_id, PDO::PARAM_INT);
 $stmt->execute();
+
+echo "Row count: " . $stmt->rowCount() . "\n";
+
 $task = $stmt->fetch(PDO::FETCH_ASSOC);
 
 echo "Full Task Data:\n";
-echo json_encode($task, JSON_PRETTY_PRINT) . "\n\n";
+if ($task === false) {
+    echo "No task found with ID $task_id\n\n";
+} else {
+    echo json_encode($task, JSON_PRETTY_PRINT) . "\n\n";
+}
 
 // Check if task_config is JSON
 if (!empty($task['task_config'])) {
