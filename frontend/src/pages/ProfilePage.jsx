@@ -541,13 +541,16 @@ const ProfilePage = () => {
                   <div className="flex items-center justify-between mb-2">
                     {" "}
                     <span className="text-sm text-gray-600">
-                      Badges Earned
+                      Rewards Earned
                     </span>{" "}
                     <span className="text-2xl font-semibold text-gray-800">
                       {" "}
-                      {stats.total_badges || 0}{" "}
+                      {(stats.total_badges || 0) + (stats.total_titles || 0)}{" "}
                     </span>{" "}
                   </div>{" "}
+                  <div className="text-xs text-gray-500 mt-1">
+                    {stats.total_badges || 0} Badges • {stats.total_titles || 0} Titles
+                  </div>
                 </div>{" "}
               </div>{" "}
             </Card>{" "}
