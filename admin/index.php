@@ -110,6 +110,64 @@ if (session_status() === PHP_SESSION_NONE) {
                                 <button class="add-btn" onclick="loadSuperadminDashboard()" style="padding: 8px 15px; font-size: 14px;">Refresh</button>
                             </div>
 
+                            <!-- Analytics Charts Section - TOP -->
+                            <h3 style="margin-top: 20px; margin-bottom: 15px; color: #5E35B1;">📊 Analytics Dashboard</h3>
+                            
+                            <!-- Top Row: 3 Charts -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                                <!-- Area Chart - Users Growth -->
+                                <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+                                    <h4 style="color: #5E35B1; margin: 0 0 15px 0;">👥 User Growth Trend</h4>
+                                    <canvas id="saUsersGrowthChart" style="max-height: 200px;"></canvas>
+                                </div>
+                                
+                                <!-- Area Chart - Attractions Growth -->
+                                <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+                                    <h4 style="color: #5E35B1; margin: 0 0 15px 0;">📍 Attraction Growth Trend</h4>
+                                    <canvas id="saAttractionsGrowthChart" style="max-height: 200px;"></canvas>
+                                </div>
+                                
+                                <!-- Radar Chart - Manager Performance -->
+                                <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+                                    <h4 style="color: #5E35B1; margin: 0 0 15px 0;">🎯 Manager Performance</h4>
+                                    <div style="max-width: 280px; max-height: 280px; margin: 0 auto;">
+                                        <canvas id="saManagerPerformanceChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Second Row: 2 Full Width Charts -->
+                            <div style="display: grid; gap: 20px; margin-bottom: 20px;">
+                                <!-- Line Chart - Engagement Trend -->
+                                <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+                                    <h4 style="color: #5E35B1; margin: 0 0 15px 0;">📈 Task Submission Trend</h4>
+                                    <canvas id="saEngagementChart" style="max-height: 250px;"></canvas>
+                                </div>
+                                
+                                <!-- Scatter Chart - Manager Efficiency -->
+                                <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+                                    <h4 style="color: #5E35B1; margin: 0 0 15px 0;">💡 Manager Efficiency (Attractions vs Tasks)</h4>
+                                    <canvas id="saEfficiencyScatterChart" style="max-height: 250px;"></canvas>
+                                </div>
+                            </div>
+                            
+                            <!-- Third Row: Bubble and Polar -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                                <!-- Bubble Chart - Manager Activity -->
+                                <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+                                    <h4 style="color: #5E35B1; margin: 0 0 15px 0;">💭 Manager Activity Bubbles</h4>
+                                    <canvas id="saActivityBubbleChart" style="max-height: 280px;"></canvas>
+                                </div>
+                                
+                                <!-- Polar Area Chart - Report Distribution -->
+                                <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+                                    <h4 style="color: #5E35B1; margin: 0 0 15px 0;">🎪 Report Volume by Manager</h4>
+                                    <div style="max-width: 320px; max-height: 320px; margin: 0 auto;">
+                                        <canvas id="saReportPolarChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Manager Overview Cards -->
                             <div class="stats-grid" style="margin-top: 15px;">
                                 <div class="stat-card">
