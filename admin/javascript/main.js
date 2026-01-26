@@ -1284,8 +1284,8 @@ function renderEngagementScatterChart(statsData) {
             datasets: [{
                 label: 'Users',
                 data: scatterData,
-                backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                borderColor: 'rgba(255, 255, 255, 1)',
+                backgroundColor: 'rgba(33, 150, 243, 0.6)',
+                borderColor: '#2196F3',
                 borderWidth: 2,
                 pointRadius: 8,
                 pointHoverRadius: 12
@@ -1299,10 +1299,10 @@ function renderEngagementScatterChart(statsData) {
                     display: false
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    borderColor: '#fff',
+                    backgroundColor: 'rgba(30, 30, 30, 0.9)',
+                    titleColor: '#e0e0e0',
+                    bodyColor: '#ccc',
+                    borderColor: '#2196F3',
                     borderWidth: 1,
                     padding: 12,
                     callbacks: {
@@ -1322,17 +1322,17 @@ function renderEngagementScatterChart(statsData) {
                     title: {
                         display: true,
                         text: 'Tasks Completed',
-                        color: 'rgba(255, 255, 255, 0.9)',
+                        color: '#555',
                         font: {
                             size: 14
                         }
                     },
                     ticks: {
-                        color: 'rgba(255, 255, 255, 0.8)',
+                        color: '#888',
                         stepSize: 1
                     },
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.1)',
+                        color: '#E0E0E0',
                         drawBorder: false
                     },
                     beginAtZero: true
@@ -1341,16 +1341,16 @@ function renderEngagementScatterChart(statsData) {
                     title: {
                         display: true,
                         text: 'Points Earned',
-                        color: 'rgba(255, 255, 255, 0.9)',
+                        color: '#555',
                         font: {
                             size: 14
                         }
                     },
                     ticks: {
-                        color: 'rgba(255, 255, 255, 0.8)'
+                        color: '#888'
                     },
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.1)',
+                        color: '#E0E0E0',
                         drawBorder: false
                     },
                     beginAtZero: true
@@ -1431,17 +1431,17 @@ function renderAttractionBubbleChart(statsData) {
                     title: {
                         display: true,
                         text: 'User Rank',
-                        color: 'rgba(255, 255, 255, 0.9)',
+                        color: '#555',
                         font: {
                             size: 14
                         }
                     },
                     ticks: {
-                        color: 'rgba(255, 255, 255, 0.8)',
+                        color: '#888',
                         stepSize: 1
                     },
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.1)',
+                        color: '#E0E0E0',
                         drawBorder: false
                     }
                 },
@@ -1449,16 +1449,16 @@ function renderAttractionBubbleChart(statsData) {
                     title: {
                         display: true,
                         text: 'Tasks Completed',
-                        color: 'rgba(255, 255, 255, 0.9)',
+                        color: '#555',
                         font: {
                             size: 14
                         }
                     },
                     ticks: {
-                        color: 'rgba(255, 255, 255, 0.8)'
+                        color: '#888'
                     },
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.1)',
+                        color: '#E0E0E0',
                         drawBorder: false
                     },
                     beginAtZero: true

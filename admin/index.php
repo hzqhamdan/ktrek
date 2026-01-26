@@ -214,28 +214,6 @@ if (session_status() === PHP_SESSION_NONE) {
                                 </table>
                             </div>
 
-                            <!-- Platform Growth Snapshot -->
-                            <div style="display:flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 15px;">
-                                <h3 style="color:#5E35B1; margin: 0;">Platform Growth Snapshot</h3>
-                                <div style="display:flex; gap: 10px;">
-                                    <button class="add-btn" onclick="loadSuperadminDashboard(30)" style="padding: 8px 15px; font-size: 14px;">30 Days</button>
-                                    <button class="add-btn" onclick="loadSuperadminDashboard(90)" style="padding: 8px 15px; font-size: 14px; background:#E0E0E0; color:#666;">90 Days</button>
-                                </div>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
-                                <div style="background:#fff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD;">
-                                    <h4 style="color:#5E35B1; margin:0 0 10px 0;">New Users</h4>
-                                    <canvas id="saUsersGrowthChart" style="max-height: 240px;"></canvas>
-                                </div>
-                                <div style="background:#fff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD;">
-                                    <h4 style="color:#5E35B1; margin:0 0 10px 0;">New Attractions</h4>
-                                    <canvas id="saAttractionsGrowthChart" style="max-height: 240px;"></canvas>
-                                </div>
-                            </div>
-                            <div style="background:#fff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD; margin-bottom: 30px;">
-                                <h4 style="color:#5E35B1; margin:0 0 10px 0;">Engagement (Task Submissions)</h4>
-                                <canvas id="saEngagementChart" style="max-height: 260px;"></canvas>
-                            </div>
 
                             <!-- Audit / Activity Summary -->
                             <h3 style="margin-top: 30px; margin-bottom: 15px; color: #5E35B1;">Audit & Activity Summary</h3>
