@@ -1095,6 +1095,8 @@ async function loadDashboardStats() {
             // Render charts
             renderTaskCompletionChart(data.stats.task_completion_chart);
             renderUserActivityChart(data.stats.user_activity_chart);
+            renderEngagementScatterChart(data.stats);
+            renderAttractionBubbleChart(data.stats);
             
             // Render leaderboard
             renderLeaderboard(data.stats.leaderboard);
@@ -1184,7 +1186,7 @@ function renderTaskCompletionChart(chartData) {
     });
 }
 
-// Function to render User Activity Chart
+// Function to render User Activity Chart (Radar Chart)
 function renderUserActivityChart(chartData) {
     const ctx = document.getElementById('userActivityChart').getContext('2d');
     
@@ -1194,58 +1196,272 @@ function renderUserActivityChart(chartData) {
     }
     
     userActivityChartInstance = new Chart(ctx, {
-        type: 'bar',
+        type: 'radar',
         data: {
             labels: chartData.labels,
             datasets: [{
-                label: 'Active Users',
+                label: 'Daily Activity',
                 data: chartData.data,
-                backgroundColor: '#E8F5E9',
-                borderColor: '#2E7D32',
-                borderWidth: 2,
-                borderRadius: 5
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                borderColor: 'rgba(255, 255, 255, 0.9)',
+                borderWidth: 3,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: 'rgba(255, 255, 255, 0.9)',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(255, 255, 255, 1)',
+                pointRadius: 5,
+                pointHoverRadius: 7
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
+            maintainAspectRatio: true,
             plugins: {
                 legend: {
                     display: false
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(30, 30, 30, 0.9)',
-                    titleColor: '#e0e0e0',
-                    bodyColor: '#ccc',
-                    borderColor: '#36a2eb',
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#fff',
                     borderWidth: 1,
-                    padding: 10,
+                    padding: 12,
                     displayColors: false,
                     callbacks: {
                         label: function(context) {
-                            return 'Active Users: ' + context.parsed.y;
+                            return 'Active Users: ' + context.parsed.r;
                         }
                     }
                 }
             },
             scales: {
-                y: {
+                r: {
                     beginAtZero: true,
                     ticks: {
-                        color: '#888',
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        backdropColor: 'transparent',
                         stepSize: 1
                     },
                     grid: {
-                        display: false
+                        color: 'rgba(255, 255, 255, 0.2)'
+                    },
+                    angleLines: {
+                        color: 'rgba(255, 255, 255, 0.2)'
+                    },
+                    pointLabels: {
+                        color: 'rgba(255, 255, 255, 0.9)',
+                        font: {
+                            size: 12
+                        }
                     }
+                }
+            }
+        }
+    });
+}
+
+// Function to render Engagement Scatter Chart
+function renderEngagementScatterChart(statsData) {
+    const ctx = document.getElementById('engagementScatterChart');
+    if (!ctx) return; // Chart element doesn't exist
+    
+    // Destroy existing chart if it exists
+    if (engagementScatterChartInstance) {
+        engagementScatterChartInstance.destroy();
+    }
+    
+    // Create scatter data from leaderboard (users)
+    const scatterData = (statsData.leaderboard || []).map((user, index) => ({
+        x: user.task_count || 0,
+        y: user.points || 0,
+        label: user.name
+    }));
+    
+    engagementScatterChartInstance = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Users',
+                data: scatterData,
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                borderColor: 'rgba(255, 255, 255, 1)',
+                borderWidth: 2,
+                pointRadius: 8,
+                pointHoverRadius: 12
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
                 },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#fff',
+                    borderWidth: 1,
+                    padding: 12,
+                    callbacks: {
+                        label: function(context) {
+                            const point = scatterData[context.dataIndex];
+                            return [
+                                point.label,
+                                `Tasks: ${point.x}`,
+                                `Points: ${point.y}`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
                 x: {
+                    title: {
+                        display: true,
+                        text: 'Tasks Completed',
+                        color: 'rgba(255, 255, 255, 0.9)',
+                        font: {
+                            size: 14
+                        }
+                    },
                     ticks: {
-                        color: '#888'
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        stepSize: 1
                     },
                     grid: {
-                        display: false
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        drawBorder: false
+                    },
+                    beginAtZero: true
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Points Earned',
+                        color: 'rgba(255, 255, 255, 0.9)',
+                        font: {
+                            size: 14
+                        }
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.8)'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        drawBorder: false
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// Function to render Attraction Bubble Chart
+function renderAttractionBubbleChart(statsData) {
+    const ctx = document.getElementById('attractionBubbleChart');
+    if (!ctx) return; // Chart element doesn't exist
+    
+    // Destroy existing chart if it exists
+    if (attractionBubbleChartInstance) {
+        attractionBubbleChartInstance.destroy();
+    }
+    
+    // Mock data - in reality this should come from API
+    // For now, we'll create bubbles based on leaderboard data
+    const bubbleData = (statsData.leaderboard || []).slice(0, 8).map((user, index) => ({
+        x: index + 1,
+        y: user.task_count || 0,
+        r: (user.points || 0) / 5, // Bubble size based on points
+        label: user.name
+    }));
+    
+    const colors = [
+        'rgba(255, 99, 132, 0.6)',
+        'rgba(54, 162, 235, 0.6)',
+        'rgba(255, 206, 86, 0.6)',
+        'rgba(75, 192, 192, 0.6)',
+        'rgba(153, 102, 255, 0.6)',
+        'rgba(255, 159, 64, 0.6)',
+        'rgba(199, 199, 199, 0.6)',
+        'rgba(83, 102, 255, 0.6)'
+    ];
+    
+    attractionBubbleChartInstance = new Chart(ctx, {
+        type: 'bubble',
+        data: {
+            datasets: [{
+                label: 'User Activity',
+                data: bubbleData,
+                backgroundColor: bubbleData.map((_, i) => colors[i % colors.length])
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#fff',
+                    borderWidth: 1,
+                    padding: 12,
+                    callbacks: {
+                        label: function(context) {
+                            const point = bubbleData[context.dataIndex];
+                            return [
+                                point.label,
+                                `Tasks: ${point.y}`,
+                                `Points: ${Math.round(point.r * 5)}`,
+                                'Bubble size = points'
+                            ];
+                        }
                     }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'User Rank',
+                        color: 'rgba(255, 255, 255, 0.9)',
+                        font: {
+                            size: 14
+                        }
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        stepSize: 1
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        drawBorder: false
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Tasks Completed',
+                        color: 'rgba(255, 255, 255, 0.9)',
+                        font: {
+                            size: 14
+                        }
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.8)'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        drawBorder: false
+                    },
+                    beginAtZero: true
                 }
             }
         }
