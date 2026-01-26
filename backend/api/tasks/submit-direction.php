@@ -159,6 +159,14 @@ try {
 } catch (PDOException $e) {
     $db->rollBack();
     error_log("Direction task submission error: " . $e->getMessage());
-    Response::serverError("Failed to submit task");
+    error_log("Stack trace: " . $e->getTraceAsString());
+    Response::error("Database error: " . $e->getMessage(), 500);
+} catch (Exception $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    error_log("Direction task error: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
+    Response::error("Error: " . $e->getMessage(), 500);
 }
 ?>
