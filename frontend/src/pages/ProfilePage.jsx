@@ -203,6 +203,11 @@ const ProfilePage = () => {
     total_ep: rewardStats?.total_ep || 0,
     current_level: rewardStats?.current_level || 1,
   };
+  
+  // Debug logging
+  console.log('ProfilePage: Final stats object:', stats);
+  console.log('ProfilePage: statistics from store:', statistics);
+  console.log('ProfilePage: rewardStats from store:', rewardStats);
   return (
     <div className="min-h-screen bg-gradient-to-br from-background-light relative overflow-hidden">
       {" "}
