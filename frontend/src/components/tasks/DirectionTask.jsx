@@ -169,9 +169,9 @@ const DirectionTask = ({ task, onComplete }) => {
         )}
 
         {/* Compass Interface */}
-        <div className="mb-8 px-4">
-          {/* Responsive compass container */}
-          <div className="relative w-full max-w-[280px] sm:max-w-[320px] aspect-square mx-auto">
+        <div className="mb-8 px-4 mt-8">
+          {/* Responsive compass container with extra spacing */}
+          <div className="relative w-full max-w-[280px] sm:max-w-[320px] aspect-square mx-auto mt-12">
             {/* Compass Rose */}
             <div className="absolute inset-0 rounded-full border-4 sm:border-8 border-gray-300 bg-white shadow-2xl flex items-center justify-center">
               {/* Center compass icon */}
@@ -192,11 +192,11 @@ const DirectionTask = ({ task, onComplete }) => {
                     key={direction.name}
                     onClick={() => handleSelectDirection(direction.name)}
                     disabled={isSubmitting}
-                    whileHover={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className={`absolute w-12 h-12 sm:w-14 sm:h-14 rounded-full font-bold text-xs sm:text-sm flex flex-col items-center justify-center transition-all shadow-lg disabled:opacity-50
                       ${isSelected 
-                        ? 'bg-primary-600 text-white ring-2 sm:ring-4 ring-primary-300 scale-110' 
+                        ? 'bg-primary-600 text-white ring-2 sm:ring-4 ring-primary-300' 
                         : 'bg-white text-gray-700 hover:bg-gray-100'
                       }`}
                     style={{
@@ -214,17 +214,17 @@ const DirectionTask = ({ task, onComplete }) => {
               })}
             </div>
 
-            {/* Cardinal direction labels - positioned inside the compass area */}
-            <div className="absolute -top-6 sm:-top-8 left-1/2 -translate-x-1/2 text-red-600 font-bold text-sm sm:text-base">
+            {/* Cardinal direction labels - positioned outside compass area with more spacing */}
+            <div className="absolute -top-10 sm:-top-12 left-1/2 -translate-x-1/2 text-red-600 font-bold text-sm sm:text-base">
               ↑ North
             </div>
-            <div className="absolute -bottom-6 sm:-bottom-8 left-1/2 -translate-x-1/2 text-gray-600 font-bold text-sm sm:text-base">
+            <div className="absolute -bottom-10 sm:-bottom-12 left-1/2 -translate-x-1/2 text-gray-600 font-bold text-sm sm:text-base">
               ↓ South
             </div>
-            <div className="absolute -right-6 sm:-right-8 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-sm sm:text-base whitespace-nowrap">
+            <div className="absolute -right-10 sm:-right-12 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-sm sm:text-base whitespace-nowrap">
               East →
             </div>
-            <div className="absolute -left-6 sm:-left-8 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-sm sm:text-base whitespace-nowrap">
+            <div className="absolute -left-10 sm:-left-12 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-sm sm:text-base whitespace-nowrap">
               ← West
             </div>
           </div>
