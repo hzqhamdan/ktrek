@@ -48,8 +48,11 @@ const ProfilePage = () => {
         console.log('ProfilePage: Progress response:', progressResponse);
         
         if (progressResponse.success) {
-          console.log('ProfilePage: Setting statistics:', progressResponse.data.statistics);
-          setStatistics(progressResponse.data.statistics || {});
+          const stats = progressResponse.data.statistics || {};
+          console.log('ProfilePage: Statistics received:', stats);
+          console.log('ProfilePage: Statistics keys:', Object.keys(stats));
+          console.log('ProfilePage: Statistics values:', Object.values(stats));
+          setStatistics(stats);
         }
       } catch (error) {
         console.error('ProfilePage: Error fetching stats:', error);
