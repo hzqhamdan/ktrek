@@ -59,9 +59,11 @@ try {
     $stmt = $db->prepare($query);
     $stmt->bindParam(':task_id', $task_id);
     $stmt->execute();
+    error_log("Step 2: Options query executed, row count: " . $stmt->rowCount());
 
     if ($stmt->rowCount() === 0) {
         $db->rollBack();
+        error_log("Step 2 ERROR: No question configured");
         Response::error("Direction task has no question configured", 500);
     }
 
@@ -76,9 +78,11 @@ try {
             $correct_direction = $row['option_text'];
         }
     }
+    error_log("Step 2: Found correct direction: $correct_direction");
 
     if (empty($correct_direction)) {
         $db->rollBack();
+        error_log("Step 2 ERROR: No correct direction configured");
         Response::error("No correct direction configured", 500);
     }
 
@@ -89,9 +93,11 @@ try {
     $stmt->bindParam(':user_id', $user['id']);
     $stmt->bindParam(':task_id', $task_id);
     $stmt->execute();
+    error_log("Step 3: Checking if already submitted, found: " . $stmt->rowCount());
 
     if ($stmt->rowCount() > 0) {
         $db->rollBack();
+        error_log("Step 3 ERROR: Already submitted");
         Response::error("You have already submitted this task", 400);
     }
 
