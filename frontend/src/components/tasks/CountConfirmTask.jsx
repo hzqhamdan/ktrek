@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Hash, Plus, Minus, CheckCircle, XCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { tasksAPI } from "../../api/tasks";
 import Card from "../common/Card";
 import Button from "../common/Button";
 
@@ -30,29 +31,17 @@ const CountConfirmTask = ({ task, onComplete }) => {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('http://localhost/backend/api/tasks/submit-count-confirm.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          task_id: task.id,
-          count: count
-        })
-      });
+      const response = await tasksAPI.submitCountConfirm(task.id, count);
 
-      const data = await response.json();
-
-      if (data.success) {
-        setResult(data.data);
+      if (response.success) {
+        setResult(response.data);
         
         // Wait 2 seconds to show result, then call onComplete
         setTimeout(() => {
-          onComplete(data.data);
+          onComplete(response.data);
         }, 2000);
       } else {
-        alert(data.message || 'Failed to submit count');
+        alert(response.message || 'Failed to submit count');
         setIsSubmitting(false);
       }
     } catch (error) {

@@ -6,6 +6,7 @@ import { User, Mail, Lock, Eye, EyeOff, Calendar } from "lucide-react";
 import { useToast } from "../components/ui/toast-1";
 import GoogleAuthButton from "../components/auth/GoogleAuthButton";
 import { useAuthStore } from "../store/authStore";
+import { authAPI } from "../api/auth";
 import { CanvasRevealEffect } from "../components/ui/sign-in-flow-1";
 import { cn } from "../lib/utils";
 
@@ -38,21 +39,14 @@ const RegisterPage = () => {
     }
     setIsLoading(true);
     try {
-      const res = await fetch(
-        "http://localhost/backend/api/auth/register.php",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: formData.username,
-            email: formData.email,
-            full_name: formData.full_name,
-            password: formData.password,
-            date_of_birth: formData.date_of_birth,
-          }),
-        }
-      );
-      const data = await res.json();
+      const data = await authAPI.register({
+        username: formData.username,
+        email: formData.email,
+        full_name: formData.full_name,
+        password: formData.password,
+        date_of_birth: formData.date_of_birth,
+      });
+      
       if (data.success) {
         showToast("Account created! Please login.", "success");
         navigate("/login");

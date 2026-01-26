@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { tasksAPI } from "../../api/tasks";
 import Card from "../common/Card";
 import Button from "../common/Button";
 
@@ -35,21 +36,13 @@ const TimeBasedTask = ({ task, onComplete }) => {
   const handleCheckIn = async () => {
     setIsSubmitting(true);
     try {
-      const response = await fetch('http://localhost/backend/api/tasks/submit-time-based.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ task_id: task.id })
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setResult(data.data);
-        setTimeout(() => onComplete(data.data), 2500);
+      const response = await tasksAPI.submitTimeBased(task.id);
+      
+      if (response.success) {
+        setResult(response.data);
+        setTimeout(() => onComplete(response.data), 2500);
       } else {
-        alert(data.message);
+        alert(response.message);
         setIsSubmitting(false);
       }
     } catch (error) {

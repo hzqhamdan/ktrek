@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Loader2, QrCode, MapPin } from "lucide-react";
 import { tasksAPI } from "../api/tasks";
+import { rewardsAPI } from "../api/rewards";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
 import { GlassButton } from "../components/ui/glass-button";
@@ -35,14 +36,9 @@ const CheckinTaskPage = () => {
   useEffect(() => {
     const initializeTierTracking = async () => {
       try {
-        const response = await fetch('http://localhost/backend/api/rewards/get-user-stats.php', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        const data = await response.json();
-        if (data.success && data.data.categories) {
-          initializePreviousProgress(data.data.categories);
+        const response = await rewardsAPI.getUserStats();
+        if (response.success && response.data.categories) {
+          initializePreviousProgress(response.data.categories);
         }
       } catch (error) {
         console.error('Failed to initialize tier tracking:', error);

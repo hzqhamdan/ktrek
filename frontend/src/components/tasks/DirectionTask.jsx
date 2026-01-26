@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Compass, Navigation, CheckCircle, XCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { tasksAPI } from "../../api/tasks";
 import Card from "../common/Card";
 import Button from "../common/Button";
 
@@ -33,29 +34,17 @@ const DirectionTask = ({ task, onComplete }) => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('http://localhost/backend/api/tasks/submit-direction.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          task_id: task.id,
-          selected_direction: selectedDirection
-        })
-      });
+      const response = await tasksAPI.submitDirection(task.id, selectedDirection);
 
-      const data = await response.json();
-
-      if (data.success) {
-        setResult(data.data);
+      if (response.success) {
+        setResult(response.data);
 
         // Wait 2.5 seconds to show result, then call onComplete
         setTimeout(() => {
-          onComplete(data.data);
+          onComplete(response.data);
         }, 2500);
       } else {
-        alert(data.message || 'Failed to submit direction');
+        alert(response.message || 'Failed to submit direction');
         setIsSubmitting(false);
       }
     } catch (error) {
@@ -169,9 +158,9 @@ const DirectionTask = ({ task, onComplete }) => {
         )}
 
         {/* Compass Interface */}
-        <div className="mb-8 px-4 mt-8">
+        <div className="mb-8 px-4 mt-16">
           {/* Responsive compass container with extra spacing */}
-          <div className="relative w-full max-w-[280px] sm:max-w-[320px] aspect-square mx-auto mt-12">
+          <div className="relative w-full max-w-[280px] sm:max-w-[320px] aspect-square mx-auto mt-16">
             {/* Compass Rose */}
             <div className="absolute inset-0 rounded-full border-4 sm:border-8 border-gray-300 bg-white shadow-2xl flex items-center justify-center">
               {/* Center compass icon */}
@@ -192,12 +181,11 @@ const DirectionTask = ({ task, onComplete }) => {
                     key={direction.name}
                     onClick={() => handleSelectDirection(direction.name)}
                     disabled={isSubmitting}
-                    whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`absolute w-12 h-12 sm:w-14 sm:h-14 rounded-full font-bold text-xs sm:text-sm flex flex-col items-center justify-center transition-all shadow-lg disabled:opacity-50
+                    className={`absolute w-12 h-12 sm:w-14 sm:h-14 rounded-full font-bold text-xs sm:text-sm flex flex-col items-center justify-center transition-colors shadow-lg disabled:opacity-50
                       ${isSelected 
                         ? 'bg-primary-600 text-white ring-2 sm:ring-4 ring-primary-300' 
-                        : 'bg-white text-gray-700 hover:bg-gray-100'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-xl'
                       }`}
                     style={{
                       left: `calc(50% + ${x}px)`,
