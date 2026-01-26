@@ -6,6 +6,7 @@ import { tasksAPI } from '../api/tasks';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import { useToast } from "../components/ui/toast-1";
+import Loading from "../components/common/Loading";
 
 const QRCheckInSuccessPage = () => {
   const { showToast } = useToast();
@@ -80,9 +81,8 @@ const QRCheckInSuccessPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background-light relative overflow-hidden flex items-center justify-center p-4">
         <Card padding="lg" className="max-w-md w-full text-center">
-          <div className="inline-block w-16 h-16 border-4 border-gray-200 border-t-primary-600 rounded-full animate-spin mb-4"></div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Verifying QR Code...</h2>
-          <p className="text-gray-600">Please wait while we verify your check-in.</p>
+          <Loading message="Verifying QR Code..." size="lg" />
+          <p className="text-gray-600 mt-2">Please wait while we verify your check-in.</p>
         </Card>
       </div>
     );

@@ -5,6 +5,7 @@ import { ArrowLeft, CheckCircle, XCircle, BookOpen } from "lucide-react";
 import { tasksAPI } from "../api/tasks";
 import { guidesAPI } from "../api/guides";
 import { useToast } from "../components/ui/toast-1";
+import Loading from "../components/common/Loading";
 const TaskPage = () => {
   const { showToast } = useToast();
   const { taskId } = useParams();
@@ -83,11 +84,7 @@ const TaskPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background-light flex items-center justify-center">
         {" "}
-        <div className="text-center">
-          {" "}
-          <div className="inline-block w-14 h-14 border-4 border-gray-200 border-t-primary-600 rounded-full animate-spin mb-4"></div>{" "}
-          <p className="text-gray-600 font-medium">Loading task...</p>{" "}
-        </div>{" "}
+        <Loading message="Loading task..." />{" "}
       </div>
     );
   }

@@ -114,7 +114,9 @@ const RegisterForm = () => {
 
       if (response.success) {
         showToast("Registration successful! Please login.", "success");
-        navigate("/login");
+        setTimeout(() => {
+          navigate("/login");
+        }, 5000);
       } else {
         // Handle validation errors from backend
         if (response.errors) {

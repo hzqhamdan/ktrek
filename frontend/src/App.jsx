@@ -38,6 +38,8 @@ import SignUpDemoPage from "./pages/SignUpDemoPage";
 import GlassButtonDemo from "./pages/GlassButtonDemo";
 import QRCheckInSuccessPage from "./pages/QRCheckInSuccessPage";
 import TierUnlockTestPage from "./pages/TierUnlockTestPage";
+import LoaderDemoPage from "./pages/LoaderDemoPage";
+import LoaderExampleUsage from "./pages/LoaderExampleUsage";
 // Auth
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -68,6 +70,8 @@ function App() {
           <Route path="/sign-up-demo" element={<SignUpDemoPage />} />
           <Route path="/glass" element={<GlassButtonDemo />} />
           <Route path="/tier-unlock-test" element={<TierUnlockTestPage />} />
+          <Route path="/loader-demo" element={<LoaderDemoPage />} />
+          <Route path="/loader-examples" element={<LoaderExampleUsage />} />
           {/* QR Check-in - Can be accessed without full login (semi-public) */}
           <Route path="/qr-checkin" element={<QRCheckInSuccessPage />} />
           {/* PROTECTED ROUTES */}{" "}

@@ -7,6 +7,7 @@ import QuizTask from "../components/tasks/QuizTask";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
 import { useToast } from "../components/ui/toast-1";
+import Loading from "../components/common/Loading";
 import RewardNotificationModal from "../components/rewards/RewardNotificationModal";
 import TierUnlockModal from "../components/rewards/TierUnlockModal";
 import useRewardStore from "../store/rewardStore";
@@ -87,11 +88,7 @@ const QuizTaskPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background-light flex items-center justify-center">
         {" "}
-        <div className="text-center">
-          {" "}
-          <div className="inline-block w-14 h-14 border-4 border-gray-200 border-t-primary-600 rounded-full animate-spin mb-4"></div>{" "}
-          <p className="text-gray-600 font-medium">Loading quiz...</p>{" "}
-        </div>{" "}
+        <Loading message="Loading quiz..." />{" "}
       </div>
     );
   }

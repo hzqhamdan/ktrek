@@ -12,6 +12,7 @@ import RewardNotificationModal from "../components/rewards/RewardNotificationMod
 import TierUnlockModal from "../components/rewards/TierUnlockModal";
 import useRewardStore from "../store/rewardStore";
 import { useTierUnlockDetection } from "../hooks/useTierUnlockDetection";
+import Loading from "../components/common/Loading";
 
 const CheckinTaskPage = () => {
   const { showToast } = useToast();
@@ -255,11 +256,7 @@ const CheckinTaskPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background-light flex items-center justify-center">
         {" "}
-        <div className="text-center">
-          {" "}
-          <div className="inline-block w-14 h-14 border-4 border-gray-200 border-t-primary-600 rounded-full animate-spin mb-4"></div>{" "}
-          <p className="text-gray-600 font-medium">Loading task...</p>{" "}
-        </div>{" "}
+        <Loading message="Loading task..." />{" "}
       </div>
     );
   }

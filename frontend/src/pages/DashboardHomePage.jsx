@@ -9,6 +9,7 @@ import { useAuthStore } from "../store/authStore";
 import AttractionFeatureSection from "../components/attractions/AttractionFeatureSection";
 import AttractionMap from "../components/map/AttractionMap";
 import { useToast } from "../components/ui/toast-1";
+import Loading from "../components/common/Loading";
 const DashboardHomePage = () => {
   const { showToast } = useToast();
   const user = useAuthStore((state) => state.user);
@@ -82,13 +83,7 @@ const DashboardHomePage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background-light flex items-center justify-center">
         {" "}
-        <div className="text-center">
-          {" "}
-          <div className="inline-block w-14 h-14 border-4 border-gray-200 border-t-primary-600 rounded-full animate-spin mb-4"></div>{" "}
-          <p className="text-gray-600 font-medium">
-            Loading your dashboard...
-          </p>{" "}
-        </div>{" "}
+        <Loading message="Loading your dashboard..." />{" "}
       </div>
     );
   }

@@ -72,7 +72,7 @@ const ModernRegisterPage = () => {
         showToast("Registration successful! Please login.", "success");
         setTimeout(() => {
           navigate('/login');
-        }, 1500);
+        }, 5000);
         return { success: true };
       } else {
         // Handle validation errors from backend

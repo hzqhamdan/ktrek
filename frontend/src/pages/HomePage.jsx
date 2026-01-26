@@ -8,6 +8,7 @@ import AttractionMap from "../components/map/AttractionMap";
 import AuthDivider from "../components/auth/AuthDivider";
 import ScrollExpandMedia from "../components/ui/scroll-expansion-hero";
 import { AdminSidebarIcon } from "../components/ui/admin-sidebar-icon";
+import Loading from "../components/common/Loading";
 
 const HomePage = () => {
   const [attractions, setAttractions] = useState([]);
@@ -91,10 +92,7 @@ const HomePage = () => {
                   className="w-full h-[500px] backdrop-blur-sm rounded-2xl flex items-center justify-center"
                   style={{ backgroundColor: 'rgba(241, 238, 231, 0.9)' }}
                 >
-                  <div className="text-center">
-                    <div className="inline-block w-14 h-14 border-4 border-gray-200 border-t-primary-600 rounded-full animate-spin mb-4" />
-                    <p className="text-gray-600 font-medium">Loading map...</p>
-                  </div>
+                  <Loading message="Loading map..." />
                 </div>
               ) : error ? (
                 <div
