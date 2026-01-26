@@ -44,12 +44,14 @@ const DirectionTask = ({ task, onComplete }) => {
           onComplete(response.data);
         }, 2500);
       } else {
+        console.error('Backend error response:', response);
         alert(response.message || 'Failed to submit direction');
         setIsSubmitting(false);
       }
     } catch (error) {
       console.error('Error submitting direction:', error);
-      alert('Failed to submit direction');
+      console.error('Full error object:', JSON.stringify(error, null, 2));
+      alert(`Failed to submit direction: ${error.message || error.response?.data?.message || 'Unknown error'}`);
       setIsSubmitting(false);
     }
   };
