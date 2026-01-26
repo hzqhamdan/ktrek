@@ -226,14 +226,14 @@ if (session_status() === PHP_SESSION_NONE) {
                             <!-- Creative Charts Grid -->
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-top: 20px; margin-bottom: 20px;">
                                 <!-- Area Chart - Task Completion Trend -->
-                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                    <h4 id="taskCompletionChartTitle" style="color: white; margin-bottom: 15px; margin-top: 0;">📈 Task Completions (Last 7 Days)</h4>
+                                <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+                                    <h4 id="taskCompletionChartTitle" style="color: #5E35B1; margin-bottom: 15px; margin-top: 0;">📈 Task Completions (Last 7 Days)</h4>
                                     <canvas id="taskCompletionChart" style="max-height: 250px;"></canvas>
                                 </div>
                                 
                                 <!-- Radar Chart - User Activity Pattern -->
-                                <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                    <h4 id="userActivityChartTitle" style="color: white; margin-bottom: 15px; margin-top: 0;">🕸️ Activity Pattern (Last 7 Days)</h4>
+                                <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+                                    <h4 id="userActivityChartTitle" style="color: #5E35B1; margin-bottom: 15px; margin-top: 0;">🕸️ Activity Pattern (Last 7 Days)</h4>
                                     <div style="max-width: 300px; max-height: 300px; margin: 0 auto;">
                                         <canvas id="userActivityChart"></canvas>
                                     </div>
@@ -243,14 +243,14 @@ if (session_status() === PHP_SESSION_NONE) {
                             <!-- Full Width Charts -->
                             <div style="display: grid; gap: 20px;">
                                 <!-- Scatter Chart - Task Engagement -->
-                                <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                    <h4 style="color: white; margin-top: 0; margin-bottom: 15px;">🎯 User Engagement Scatter</h4>
+                                <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+                                    <h4 style="color: #5E35B1; margin-top: 0; margin-bottom: 15px;">🎯 User Engagement Scatter</h4>
                                     <canvas id="engagementScatterChart" style="max-height: 300px;"></canvas>
                                 </div>
                                 
                                 <!-- Bubble Chart - Attraction Popularity -->
-                                <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                    <h4 style="color: white; margin-top: 0; margin-bottom: 15px;">💭 Attraction Popularity Bubbles</h4>
+                                <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+                                    <h4 style="color: #5E35B1; margin-top: 0; margin-bottom: 15px;">💭 Attraction Popularity Bubbles</h4>
                                     <canvas id="attractionBubbleChart" style="max-height: 300px;"></canvas>
                                 </div>
                             </div>

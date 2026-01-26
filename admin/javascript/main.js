@@ -1126,14 +1126,14 @@ function renderTaskCompletionChart(chartData) {
             datasets: [{
                 label: 'Task Completions',
                 data: chartData.data,
-                backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                borderColor: 'rgba(255, 255, 255, 0.9)',
+                backgroundColor: 'rgba(94, 53, 177, 0.2)',
+                borderColor: '#5E35B1',
                 borderWidth: 3,
                 fill: true,
                 tension: 0.4,
                 pointRadius: 5,
-                pointBackgroundColor: '#fff',
-                pointBorderColor: 'rgba(255, 255, 255, 0.9)',
+                pointBackgroundColor: '#5E35B1',
+                pointBorderColor: '#fff',
                 pointBorderWidth: 2,
                 pointHoverRadius: 8
             }]
@@ -1146,10 +1146,10 @@ function renderTaskCompletionChart(chartData) {
                     display: false
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    borderColor: '#fff',
+                    backgroundColor: 'rgba(30, 30, 30, 0.9)',
+                    titleColor: '#e0e0e0',
+                    bodyColor: '#ccc',
+                    borderColor: '#5E35B1',
                     borderWidth: 1,
                     padding: 12,
                     displayColors: false,
@@ -1164,20 +1164,20 @@ function renderTaskCompletionChart(chartData) {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        color: 'rgba(255, 255, 255, 0.8)',
+                        color: '#888',
                         stepSize: 1
                     },
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.1)',
+                        color: '#E0E0E0',
                         drawBorder: false
                     }
                 },
                 x: {
                     ticks: {
-                        color: 'rgba(255, 255, 255, 0.8)'
+                        color: '#888'
                     },
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.1)',
+                        color: '#E0E0E0',
                         drawBorder: false
                     }
                 }
@@ -1202,13 +1202,13 @@ function renderUserActivityChart(chartData) {
             datasets: [{
                 label: 'Daily Activity',
                 data: chartData.data,
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                borderColor: 'rgba(255, 255, 255, 0.9)',
+                backgroundColor: 'rgba(46, 125, 50, 0.2)',
+                borderColor: '#2E7D32',
                 borderWidth: 3,
-                pointBackgroundColor: '#fff',
-                pointBorderColor: 'rgba(255, 255, 255, 0.9)',
+                pointBackgroundColor: '#2E7D32',
+                pointBorderColor: '#fff',
                 pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(255, 255, 255, 1)',
+                pointHoverBorderColor: '#2E7D32',
                 pointRadius: 5,
                 pointHoverRadius: 7
             }]
@@ -1221,10 +1221,10 @@ function renderUserActivityChart(chartData) {
                     display: false
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    borderColor: '#fff',
+                    backgroundColor: 'rgba(30, 30, 30, 0.9)',
+                    titleColor: '#e0e0e0',
+                    bodyColor: '#ccc',
+                    borderColor: '#2E7D32',
                     borderWidth: 1,
                     padding: 12,
                     displayColors: false,
@@ -1239,18 +1239,18 @@ function renderUserActivityChart(chartData) {
                 r: {
                     beginAtZero: true,
                     ticks: {
-                        color: 'rgba(255, 255, 255, 0.8)',
+                        color: '#888',
                         backdropColor: 'transparent',
                         stepSize: 1
                     },
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.2)'
+                        color: '#E0E0E0'
                     },
                     angleLines: {
-                        color: 'rgba(255, 255, 255, 0.2)'
+                        color: '#E0E0E0'
                     },
                     pointLabels: {
-                        color: 'rgba(255, 255, 255, 0.9)',
+                        color: '#555',
                         font: {
                             size: 12
                         }
