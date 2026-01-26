@@ -30,6 +30,7 @@ if (empty($selected_direction)) {
 
 try {
     $db->beginTransaction();
+    error_log("Direction task submission started for task_id: $task_id, user_id: {$user['id']}, direction: $selected_direction");
 
     // 1. Get task details
     $query = "SELECT t.*, a.name as attraction_name, a.id as attraction_id, a.category
@@ -39,6 +40,7 @@ try {
     $stmt = $db->prepare($query);
     $stmt->bindParam(':task_id', $task_id);
     $stmt->execute();
+    error_log("Step 1: Query executed, row count: " . $stmt->rowCount());
 
     if ($stmt->rowCount() === 0) {
         $db->rollBack();
@@ -46,6 +48,7 @@ try {
     }
 
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
+    error_log("Step 1: Task found - " . $task['name']);
 
     // 2. Get the question and correct answer
     $query = "SELECT qq.id as question_id, qq.question_text, qo.option_text, qo.is_correct
