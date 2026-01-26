@@ -213,6 +213,49 @@ if (session_status() === PHP_SESSION_NONE) {
                         </div>
                         <br>
                         
+                        <!-- Analytics Charts - Moved to Top -->
+                        <div style="margin-bottom: 30px;">
+                            <div class="analytics-header">
+                                <h3 style="color: #5E35B1; margin: 0;">📊 Real-Time Analytics</h3>
+                                <div class="analytics-period-buttons">
+                                    <button id="toggle7Days" class="add-btn" onclick="toggleChartPeriod(7)" style="padding: 8px 15px; font-size: 14px; background: #5E35B1;">Last 7 Days</button>
+                                    <button id="toggle30Days" class="add-btn" onclick="toggleChartPeriod(30)" style="padding: 8px 15px; font-size: 14px; background: #E0E0E0; color: #666;">Last 30 Days</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Creative Charts Grid -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-top: 20px; margin-bottom: 20px;">
+                                <!-- Area Chart - Task Completion Trend -->
+                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                    <h4 id="taskCompletionChartTitle" style="color: white; margin-bottom: 15px; margin-top: 0;">📈 Task Completions (Last 7 Days)</h4>
+                                    <canvas id="taskCompletionChart" style="max-height: 250px;"></canvas>
+                                </div>
+                                
+                                <!-- Radar Chart - User Activity Pattern -->
+                                <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                    <h4 id="userActivityChartTitle" style="color: white; margin-bottom: 15px; margin-top: 0;">🕸️ Activity Pattern (Last 7 Days)</h4>
+                                    <div style="max-width: 300px; max-height: 300px; margin: 0 auto;">
+                                        <canvas id="userActivityChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Full Width Charts -->
+                            <div style="display: grid; gap: 20px;">
+                                <!-- Scatter Chart - Task Engagement -->
+                                <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                    <h4 style="color: white; margin-top: 0; margin-bottom: 15px;">🎯 User Engagement Scatter</h4>
+                                    <canvas id="engagementScatterChart" style="max-height: 300px;"></canvas>
+                                </div>
+                                
+                                <!-- Bubble Chart - Attraction Popularity -->
+                                <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                    <h4 style="color: white; margin-top: 0; margin-bottom: 15px;">💭 Attraction Popularity Bubbles</h4>
+                                    <canvas id="attractionBubbleChart" style="max-height: 300px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- Alert Notifications -->
                         <div id="alertsContainer" style="display: none; margin-bottom: 20px;">
                             <!-- Alerts will be dynamically inserted here -->
@@ -326,26 +369,6 @@ if (session_status() === PHP_SESSION_NONE) {
                             </button>
                         </div>
 
-                        <!-- Analytics Charts -->
-                        <div class="analytics-header">
-                            <h3 style="color: #5E35B1; margin: 0;">📈 Analytics</h3>
-                            <div class="analytics-period-buttons">
-                                <button id="toggle7Days" class="add-btn" onclick="toggleChartPeriod(7)" style="padding: 8px 15px; font-size: 14px; background: #5E35B1;">Last 7 Days</button>
-                                <button id="toggle30Days" class="add-btn" onclick="toggleChartPeriod(30)" style="padding: 8px 15px; font-size: 14px; background: #E0E0E0; color: #666;">Last 30 Days</button>
-                            </div>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
-                            <!-- Task Completion Trend Chart -->
-                            <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
-                                <h4 id="taskCompletionChartTitle" style="color: #5E35B1; margin-bottom: 15px; margin-top: 0;">Task Completions (Last 7 Days)</h4>
-                                <canvas id="taskCompletionChart" style="max-height: 250px;"></canvas>
-                            </div>
-                            <!-- User Activity Chart -->
-                            <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #E3F2FD; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
-                                <h4 id="userActivityChartTitle" style="color: #5E35B1; margin-bottom: 15px; margin-top: 0;">Active Users (Last 7 Days)</h4>
-                                <canvas id="userActivityChart" style="max-height: 250px;"></canvas>
-                            </div>
-                        </div>
 
                         <!-- Leaderboard -->
                         <h3 style="margin-top: 30px; margin-bottom: 15px; color: #5E35B1;">🏆 Top Performers</h3>
@@ -634,6 +657,25 @@ if (session_status() === PHP_SESSION_NONE) {
                         <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px;">
                             <h3 style="margin-top: 0; color: #333;">User Activity Bubbles</h3>
                             <canvas id="bubbleChart" style="max-height: 400px;"></canvas>
+                        </div>
+                        
+                        <!-- Pie and Doughnut Charts Row -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                            <!-- Overall Progress Chart -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <h3 style="margin-top: 0; color: #333;">Overall Task Completion</h3>
+                                <div style="max-width: 300px; max-height: 300px; margin: 0 auto;">
+                                    <canvas id="overallProgressChart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <!-- Attraction Completion Chart -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <h3 style="margin-top: 0; color: #333;">Attraction Completion Status</h3>
+                                <div style="max-width: 300px; max-height: 300px; margin: 0 auto;">
+                                    <canvas id="attractionCompletionChart"></canvas>
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- Data Table (Collapsible) -->
