@@ -158,9 +158,9 @@ const DirectionTask = ({ task, onComplete }) => {
         )}
 
         {/* Compass Interface */}
-        <div className="mb-8 px-4 mt-16">
+        <div className="mb-8 px-8 mt-16">
           {/* Responsive compass container with extra spacing */}
-          <div className="relative w-full max-w-[280px] sm:max-w-[320px] aspect-square mx-auto mt-16">
+          <div className="relative w-full max-w-[280px] sm:max-w-[320px] aspect-square mx-auto mt-20">
             {/* Compass Rose */}
             <div className="absolute inset-0 rounded-full border-4 sm:border-8 border-gray-300 bg-white shadow-2xl flex items-center justify-center">
               {/* Center compass icon */}
@@ -171,8 +171,8 @@ const DirectionTask = ({ task, onComplete }) => {
               {/* Direction buttons positioned around the compass */}
               {directions.map((direction, index) => {
                 const isSelected = selectedDirection === direction.name;
-                const baseRadius = 95; // Base distance from center
-                const extendedRadius = 115; // Extended distance when selected
+                const baseRadius = 90; // Base distance from center
+                const extendedRadius = 105; // Extended distance when selected (reduced)
                 const radius = isSelected ? extendedRadius : baseRadius;
                 const angleRad = (direction.angle - 90) * (Math.PI / 180);
                 const x = Math.cos(angleRad) * radius;
@@ -212,16 +212,16 @@ const DirectionTask = ({ task, onComplete }) => {
             </div>
 
             {/* Cardinal direction labels - positioned outside compass area with more spacing */}
-            <div className="absolute -top-10 sm:-top-12 left-1/2 -translate-x-1/2 text-red-600 font-bold text-sm sm:text-base">
+            <div className="absolute -top-14 sm:-top-16 left-1/2 -translate-x-1/2 text-red-600 font-bold text-sm sm:text-base">
               ↑ North
             </div>
-            <div className="absolute -bottom-10 sm:-bottom-12 left-1/2 -translate-x-1/2 text-gray-600 font-bold text-sm sm:text-base">
+            <div className="absolute -bottom-14 sm:-bottom-16 left-1/2 -translate-x-1/2 text-gray-600 font-bold text-sm sm:text-base">
               ↓ South
             </div>
-            <div className="absolute -right-10 sm:-right-12 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-sm sm:text-base whitespace-nowrap">
+            <div className="absolute -right-16 sm:-right-20 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-sm sm:text-base whitespace-nowrap">
               East →
             </div>
-            <div className="absolute -left-10 sm:-left-12 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-sm sm:text-base whitespace-nowrap">
+            <div className="absolute -left-16 sm:-left-20 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-sm sm:text-base whitespace-nowrap">
               ← West
             </div>
           </div>
