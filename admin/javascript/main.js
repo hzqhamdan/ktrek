@@ -3342,6 +3342,7 @@ async function deleteAdminUser(id) {
 let overallProgressChart = null;
 let attractionCompletionChart = null;
 let userProgressChart = null;
+let progressTrendChart = null;
 
 // User Progress functions
 async function loadUserProgress() {

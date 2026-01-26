@@ -624,6 +624,12 @@ if (session_status() === PHP_SESSION_NONE) {
                             <canvas id="userProgressChart" style="max-height: 400px;"></canvas>
                         </div>
                         
+                        <!-- Progress Trend Line Chart -->
+                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                            <h3 style="margin-top: 0; color: #333;">Attraction Progress Trends</h3>
+                            <canvas id="progressTrendChart" style="max-height: 400px;"></canvas>
+                        </div>
+                        
                         <!-- Data Table (Collapsible) -->
                         <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
