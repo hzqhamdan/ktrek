@@ -3410,6 +3410,21 @@ function createProgressCharts(progressData) {
         userProgress[p.user_id].total += parseInt(p.total_tasks);
     });
     
+    // Group by attraction (needed for multiple charts)
+    const attractionProgress = {};
+    progressData.forEach(p => {
+        const key = p.attraction_name || 'Unknown';
+        if (!attractionProgress[key]) {
+            attractionProgress[key] = {
+                completed: 0,
+                total: 0,
+                percentage: 0
+            };
+        }
+        attractionProgress[key].completed += parseInt(p.completed_tasks);
+        attractionProgress[key].total += parseInt(p.total_tasks);
+    });
+    
     // 1. Overall Progress Chart (Doughnut)
     const overallCtx = document.getElementById('overallProgressChart');
     if (overallProgressChart) overallProgressChart.destroy();
