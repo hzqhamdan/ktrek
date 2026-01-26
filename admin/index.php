@@ -618,16 +618,41 @@ if (session_status() === PHP_SESSION_NONE) {
                             </div>
                         </div>
                         
-                        <!-- User Progress Distribution Chart -->
-                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px;">
-                            <h3 style="margin-top: 0; color: #333;">User Progress Distribution</h3>
-                            <canvas id="userProgressChart" style="max-height: 400px;"></canvas>
+                        <!-- Multi-chart Row -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                            <!-- Radar Chart - User Comparison -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <h3 style="margin-top: 0; color: #333;">User Engagement Radar</h3>
+                                <div style="max-width: 400px; max-height: 400px; margin: 0 auto;">
+                                    <canvas id="userRadarChart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <!-- Polar Area Chart - Category Distribution -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <h3 style="margin-top: 0; color: #333;">Attraction Engagement Levels</h3>
+                                <div style="max-width: 400px; max-height: 400px; margin: 0 auto;">
+                                    <canvas id="polarAreaChart"></canvas>
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- Progress Trend Line Chart -->
                         <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px;">
                             <h3 style="margin-top: 0; color: #333;">Attraction Progress Trends</h3>
                             <canvas id="progressTrendChart" style="max-height: 400px;"></canvas>
+                        </div>
+                        
+                        <!-- Scatter Chart -->
+                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                            <h3 style="margin-top: 0; color: #333;">Attraction Complexity vs Completion</h3>
+                            <canvas id="scatterChart" style="max-height: 400px;"></canvas>
+                        </div>
+                        
+                        <!-- Bubble Chart -->
+                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                            <h3 style="margin-top: 0; color: #333;">User Activity Bubbles</h3>
+                            <canvas id="bubbleChart" style="max-height: 400px;"></canvas>
                         </div>
                         
                         <!-- Data Table (Collapsible) -->

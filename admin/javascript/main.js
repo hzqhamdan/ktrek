@@ -3341,8 +3341,11 @@ async function deleteAdminUser(id) {
 // Chart instances (to destroy before recreating)
 let overallProgressChart = null;
 let attractionCompletionChart = null;
-let userProgressChart = null;
 let progressTrendChart = null;
+let userRadarChart = null;
+let polarAreaChart = null;
+let scatterChart = null;
+let bubbleChart = null;
 
 // User Progress functions
 async function loadUserProgress() {
@@ -3477,40 +3480,243 @@ function createProgressCharts(progressData) {
         }
     });
     
-    // 3. User Progress Distribution Chart (Bar)
-    const userCtx = document.getElementById('userProgressChart');
-    if (userProgressChart) userProgressChart.destroy();
+    // 3. Radar Chart - User Engagement Comparison
+    const radarCtx = document.getElementById('userRadarChart');
+    if (userRadarChart) userRadarChart.destroy();
     
     const userIds = Object.keys(userProgress);
-    const userCompletionRates = userIds.map(userId => {
-        const up = userProgress[userId];
-        return up.total > 0 ? ((up.completed / up.total) * 100).toFixed(1) : 0;
+    const topUsers = userIds.slice(0, 5); // Show top 5 users
+    
+    // Get top attractions
+    const topAttractions = Object.keys(attractionProgress).slice(0, 8);
+    
+    // Create datasets for each user
+    const radarDatasets = topUsers.map((userId, index) => {
+        const colors = [
+            'rgba(255, 99, 132, 0.5)',
+            'rgba(54, 162, 235, 0.5)',
+            'rgba(255, 206, 86, 0.5)',
+            'rgba(75, 192, 192, 0.5)',
+            'rgba(153, 102, 255, 0.5)'
+        ];
+        
+        // Get user's progress for each attraction
+        const userAttractionProgress = topAttractions.map(attraction => {
+            const records = progressData.filter(p => 
+                p.user_id == userId && p.attraction_name === attraction
+            );
+            if (records.length > 0) {
+                return parseFloat(records[0].progress_percentage);
+            }
+            return 0;
+        });
+        
+        return {
+            label: `User ${userId}`,
+            data: userAttractionProgress,
+            backgroundColor: colors[index % colors.length],
+            borderColor: colors[index % colors.length].replace('0.5', '1'),
+            borderWidth: 2,
+            pointRadius: 3,
+            pointHoverRadius: 5
+        };
     });
     
-    userProgressChart = new Chart(userCtx, {
-        type: 'bar',
+    userRadarChart = new Chart(radarCtx, {
+        type: 'radar',
         data: {
-            labels: userIds.map(id => `User ${id}`),
+            labels: topAttractions.map(name => name.substring(0, 15) + '...'),
+            datasets: radarDatasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        stepSize: 20
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // 4. Polar Area Chart - Attraction Engagement
+    const polarCtx = document.getElementById('polarAreaChart');
+    if (polarAreaChart) polarAreaChart.destroy();
+    
+    const attractionNames = Object.keys(attractionProgress).slice(0, 10);
+    const attractionEngagement = attractionNames.map(name => {
+        return attractionProgress[name].completed;
+    });
+    
+    polarAreaChart = new Chart(polarCtx, {
+        type: 'polarArea',
+        data: {
+            labels: attractionNames.map(name => name.substring(0, 20)),
             datasets: [{
-                label: 'Completion Rate (%)',
-                data: userCompletionRates,
-                backgroundColor: '#2196F3',
-                borderColor: '#1976D2',
-                borderWidth: 1
+                data: attractionEngagement,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                    'rgba(255, 159, 64, 0.6)',
+                    'rgba(199, 199, 199, 0.6)',
+                    'rgba(83, 102, 255, 0.6)',
+                    'rgba(255, 102, 178, 0.6)',
+                    'rgba(102, 255, 178, 0.6)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        font: {
+                            size: 10
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.parsed.r} tasks completed`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // 5. Scatter Chart - Complexity vs Completion
+    const scatterCtx = document.getElementById('scatterChart');
+    if (scatterChart) scatterChart.destroy();
+    
+    const scatterData = Object.keys(attractionProgress).map(name => ({
+        x: attractionProgress[name].total, // Total tasks (complexity)
+        y: attractionProgress[name].completed, // Completed tasks
+        name: name
+    }));
+    
+    scatterChart = new Chart(scatterCtx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Attractions',
+                data: scatterData,
+                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                pointRadius: 8,
+                pointHoverRadius: 12
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: true,
             scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Total Tasks (Complexity)'
+                    },
+                    beginAtZero: true
+                },
                 y: {
-                    beginAtZero: true,
-                    max: 100,
-                    ticks: {
-                        callback: function(value) {
-                            return value + '%';
+                    title: {
+                        display: true,
+                        text: 'Completed Tasks'
+                    },
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const point = scatterData[context.dataIndex];
+                            const percentage = point.x > 0 ? ((point.y / point.x) * 100).toFixed(1) : 0;
+                            return [
+                                point.name,
+                                `Total: ${point.x} tasks`,
+                                `Completed: ${point.y} tasks`,
+                                `Progress: ${percentage}%`
+                            ];
                         }
                     }
+                }
+            }
+        }
+    });
+    
+    // 6. Bubble Chart - User Activity
+    const bubbleCtx = document.getElementById('bubbleChart');
+    if (bubbleChart) bubbleChart.destroy();
+    
+    const bubbleData = userIds.map((userId, index) => {
+        const up = userProgress[userId];
+        const completionRate = up.total > 0 ? (up.completed / up.total) * 100 : 0;
+        
+        return {
+            x: index + 1, // User position
+            y: completionRate, // Completion rate
+            r: up.total / 2, // Bubble size based on total tasks
+            userId: userId,
+            completed: up.completed,
+            total: up.total
+        };
+    });
+    
+    bubbleChart = new Chart(bubbleCtx, {
+        type: 'bubble',
+        data: {
+            datasets: [{
+                label: 'User Activity',
+                data: bubbleData,
+                backgroundColor: bubbleData.map((_, i) => {
+                    const colors = [
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(153, 102, 255, 0.6)',
+                        'rgba(255, 159, 64, 0.6)'
+                    ];
+                    return colors[i % colors.length];
+                })
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'User Index'
+                    },
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Completion Rate (%)'
+                    },
+                    beginAtZero: true,
+                    max: 100
                 }
             },
             plugins: {
@@ -3520,9 +3726,108 @@ function createProgressCharts(progressData) {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            const userId = userIds[context.dataIndex];
-                            const up = userProgress[userId];
-                            return `${context.parsed.y}% (${up.completed}/${up.total} tasks)`;
+                            const point = bubbleData[context.dataIndex];
+                            return [
+                                `User ${point.userId}`,
+                                `Completion: ${point.y.toFixed(1)}%`,
+                                `Tasks: ${point.completed}/${point.total}`,
+                                `Bubble size = total tasks`
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // 4. Progress Trend Line Chart
+    const trendCtx = document.getElementById('progressTrendChart');
+    if (progressTrendChart) progressTrendChart.destroy();
+    
+    // Group by attraction and sort by progress percentage
+    const attractionProgress = {};
+    progressData.forEach(p => {
+        const key = p.attraction_name || 'Unknown';
+        if (!attractionProgress[key]) {
+            attractionProgress[key] = {
+                completed: 0,
+                total: 0,
+                percentage: 0
+            };
+        }
+        attractionProgress[key].completed += parseInt(p.completed_tasks);
+        attractionProgress[key].total += parseInt(p.total_tasks);
+    });
+    
+    // Calculate percentages and sort
+    const attractions = Object.keys(attractionProgress).map(name => ({
+        name: name,
+        completed: attractionProgress[name].completed,
+        total: attractionProgress[name].total,
+        percentage: attractionProgress[name].total > 0 
+            ? ((attractionProgress[name].completed / attractionProgress[name].total) * 100).toFixed(1)
+            : 0
+    })).sort((a, b) => parseFloat(b.percentage) - parseFloat(a.percentage));
+    
+    // Create datasets for completed and total tasks
+    progressTrendChart = new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: attractions.map(a => a.name),
+            datasets: [
+                {
+                    label: 'Completed Tasks',
+                    data: attractions.map(a => a.completed),
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Total Tasks',
+                    data: attractions.map(a => a.total),
+                    borderColor: '#2196F3',
+                    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+                x: {
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        afterLabel: function(context) {
+                            const index = context.dataIndex;
+                            const attraction = attractions[index];
+                            return `Progress: ${attraction.percentage}%`;
                         }
                     }
                 }
