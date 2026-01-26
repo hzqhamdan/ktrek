@@ -600,17 +600,21 @@ if (session_status() === PHP_SESSION_NONE) {
                         <h2>User Progress Analytics</h2>
                         
                         <!-- Charts Section -->
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-bottom: 30px;">
                             <!-- Overall Progress Chart -->
                             <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                                 <h3 style="margin-top: 0; color: #333;">Overall Task Completion</h3>
-                                <canvas id="overallProgressChart"></canvas>
+                                <div style="max-width: 300px; max-height: 300px; margin: 0 auto;">
+                                    <canvas id="overallProgressChart"></canvas>
+                                </div>
                             </div>
                             
                             <!-- Attraction Completion Chart -->
                             <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                                 <h3 style="margin-top: 0; color: #333;">Attraction Completion Status</h3>
-                                <canvas id="attractionCompletionChart"></canvas>
+                                <div style="max-width: 300px; max-height: 300px; margin: 0 auto;">
+                                    <canvas id="attractionCompletionChart"></canvas>
+                                </div>
                             </div>
                         </div>
                         
