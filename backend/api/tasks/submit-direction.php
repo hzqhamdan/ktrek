@@ -138,15 +138,9 @@ try {
         );
     }
 
-    // 7. Update progress
-    $query = "INSERT INTO progress (user_id, attraction_id, task_id, completed_at)
-              VALUES (:user_id, :attraction_id, :task_id, NOW())
-              ON DUPLICATE KEY UPDATE completed_at = NOW()";
-    $stmt = $db->prepare($query);
-    $stmt->bindParam(':user_id', $user['id']);
-    $stmt->bindParam(':attraction_id', $task['attraction_id']);
-    $stmt->bindParam(':task_id', $task_id);
-    $stmt->execute();
+    // 7. Update progress - Note: progress table tracks by attraction, not individual tasks
+    // The progress table is updated through triggers or separate logic
+    error_log("Step 7: Skipping progress table update (handled by triggers)");
 
     $db->commit();
 
