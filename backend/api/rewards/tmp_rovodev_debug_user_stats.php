@@ -1,15 +1,13 @@
 <?php
 require_once '../../config/database.php';
-require_once '../../middleware/auth-middleware.php';
 
 header('Content-Type: text/plain');
 
 $database = new Database();
 $db = $database->getConnection();
 
-$auth = new AuthMiddleware($db);
-$user = $auth->verifySession();
-$userId = $user['id'];
+// For debugging, allow passing user_id as query parameter
+$userId = isset($_GET['user_id']) ? intval($_GET['user_id']) : 5;
 
 echo "=== DEBUG USER STATS FOR USER $userId ===\n\n";
 
