@@ -11,7 +11,7 @@ $db = $database->getConnection();
 echo "=== CHECKING BADGES FOR USER $userId ===\n\n";
 
 // Check user_rewards table for badges
-$query = "SELECT ur.*, r.name as reward_name, r.type, r.rarity
+$query = "SELECT ur.*, r.title as reward_name, r.type, r.rarity
           FROM user_rewards ur
           JOIN rewards r ON ur.reward_id = r.id
           WHERE ur.user_id = :user_id AND r.type = 'badge'
