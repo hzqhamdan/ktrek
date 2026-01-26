@@ -27,7 +27,7 @@ import EPDisplay from "../components/rewards/EPDisplay";
 const ProfilePage = () => {
   const { showToast } = useToast();
   const { user, logout, updateUser } = useAuthStore();
-  const { statistics } = useProgressStore();
+  const { statistics, setStatistics } = useProgressStore();
   const { stats: rewardStats, fetchUserStats } = useRewardStore();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -36,24 +36,28 @@ const ProfilePage = () => {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('ProfilePage: Fetching stats...');
+        
         // Fetch both reward stats and progress statistics
         await fetchUserStats();
+        console.log('ProfilePage: Reward stats fetched');
         
-        // Fetch progress statistics if not already loaded
+        // Fetch progress statistics
         const { progressAPI } = await import('../api/progress');
         const progressResponse = await progressAPI.getUserProgress();
+        console.log('ProfilePage: Progress response:', progressResponse);
+        
         if (progressResponse.success) {
-          // Update progress store statistics
-          const { setStatistics } = useProgressStore.getState();
+          console.log('ProfilePage: Setting statistics:', progressResponse.data.statistics);
           setStatistics(progressResponse.data.statistics || {});
         }
       } catch (error) {
-        console.error('Error fetching profile stats:', error);
+        console.error('ProfilePage: Error fetching stats:', error);
       }
     };
     
     fetchData();
-  }, [fetchUserStats]);
+  }, [fetchUserStats, setStatistics]);
 
   // Edit profile modal state
   const [showEditModal, setShowEditModal] = useState(false);
