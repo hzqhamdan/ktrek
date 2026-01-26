@@ -10,16 +10,16 @@ const DirectionTask = ({ task, onComplete }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState(null);
 
-  // Compass directions with angles for visual positioning
+  // Direction options (simplified list format like Quiz task)
   const directions = [
-    { name: "North", short: "N", angle: 0, color: "#ef4444" },
-    { name: "Northeast", short: "NE", angle: 45, color: "#f97316" },
-    { name: "East", short: "E", angle: 90, color: "#eab308" },
-    { name: "Southeast", short: "SE", angle: 135, color: "#84cc16" },
-    { name: "South", short: "S", angle: 180, color: "#22c55e" },
-    { name: "Southwest", short: "SW", angle: 225, color: "#14b8a6" },
-    { name: "West", short: "W", angle: 270, color: "#3b82f6" },
-    { name: "Northwest", short: "NW", angle: 315, color: "#8b5cf6" },
+    { name: "North", icon: "↑" },
+    { name: "Northeast", icon: "↗" },
+    { name: "East", icon: "→" },
+    { name: "Southeast", icon: "↘" },
+    { name: "South", icon: "↓" },
+    { name: "Southwest", icon: "↙" },
+    { name: "West", icon: "←" },
+    { name: "Northwest", icon: "↖" },
   ];
 
   const handleSelectDirection = (direction) => {
@@ -157,86 +157,40 @@ const DirectionTask = ({ task, onComplete }) => {
           </Card>
         )}
 
-        {/* Compass Interface */}
-        <div className="mb-8 px-8 mt-16">
-          {/* Responsive compass container with extra spacing */}
-          <div className="relative w-full max-w-[280px] sm:max-w-[320px] aspect-square mx-auto mt-20">
-            {/* Compass Rose */}
-            <div className="absolute inset-0 rounded-full border-4 sm:border-8 border-gray-300 bg-white shadow-2xl flex items-center justify-center">
-              {/* Center compass icon */}
-              <div className="absolute">
-                <Navigation className="w-8 h-8 sm:w-12 sm:h-12 text-gray-400" style={{ transform: 'rotate(45deg)' }} />
-              </div>
-
-              {/* Direction buttons positioned around the compass */}
-              {directions.map((direction, index) => {
-                const isSelected = selectedDirection === direction.name;
-                const baseRadius = 90; // Base distance from center
-                const extendedRadius = 105; // Extended distance when selected (reduced)
-                const radius = isSelected ? extendedRadius : baseRadius;
-                const angleRad = (direction.angle - 90) * (Math.PI / 180);
-                const x = Math.cos(angleRad) * radius;
-                const y = Math.sin(angleRad) * radius;
-
-                return (
-                  <motion.button
-                    key={direction.name}
-                    onClick={() => handleSelectDirection(direction.name)}
-                    disabled={isSubmitting}
-                    animate={{
-                      left: `calc(50% + ${x}px)`,
-                      top: `calc(50% + ${y}px)`,
-                    }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 25
-                    }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`absolute w-12 h-12 sm:w-14 sm:h-14 rounded-full font-bold text-xs sm:text-sm flex flex-col items-center justify-center transition-colors shadow-lg disabled:opacity-50
-                      ${isSelected 
-                        ? 'bg-primary-600 text-white ring-2 sm:ring-4 ring-primary-300' 
-                        : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-xl'
-                      }`}
-                    style={{
-                      transform: 'translate(-50%, -50%)',
-                    }}
-                  >
-                    <span className="text-[10px] sm:text-xs font-semibold">{direction.short}</span>
-                    {direction.short.length === 1 && (
-                      <span className="text-[8px] sm:text-[10px] opacity-70 mt-0.5">{direction.name}</span>
-                    )}
-                  </motion.button>
-                );
-              })}
-            </div>
-
-            {/* Cardinal direction labels - positioned outside compass area with more spacing */}
-            <div className="absolute -top-14 sm:-top-16 left-1/2 -translate-x-1/2 text-red-600 font-bold text-sm sm:text-base">
-              ↑ North
-            </div>
-            <div className="absolute -bottom-14 sm:-bottom-16 left-1/2 -translate-x-1/2 text-gray-600 font-bold text-sm sm:text-base">
-              ↓ South
-            </div>
-            <div className="absolute -right-16 sm:-right-20 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-sm sm:text-base whitespace-nowrap">
-              East →
-            </div>
-            <div className="absolute -left-16 sm:-left-20 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-sm sm:text-base whitespace-nowrap">
-              ← West
-            </div>
-          </div>
-
-          {selectedDirection && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center mt-6"
-            >
-              <p className="text-lg text-gray-700">
-                Selected: <span className="font-bold text-primary-600">{selectedDirection}</span>
-              </p>
-            </motion.div>
-          )}
+        {/* Direction Options (Simple List Format) */}
+        <div className="space-y-3 mb-8">
+          {directions.map((direction, index) => {
+            const isSelected = selectedDirection === direction.name;
+            
+            return (
+              <motion.div
+                key={direction.name}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <button
+                  type="button"
+                  onClick={() => handleSelectDirection(direction.name)}
+                  disabled={isSubmitting}
+                  className={`w-full text-left p-4 rounded-lg border-2 transition-all duration-200
+                    ${isSelected 
+                      ? 'border-primary-500 bg-orange-50 shadow-lg scale-[1.02]' 
+                      : 'border-gray-200 hover:border-primary-300 bg-white hover:shadow-md'
+                    }
+                    ${isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                  `}
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-2xl">{direction.icon}</span>
+                    <span className={`font-medium text-lg ${isSelected ? 'text-primary-700' : 'text-gray-700'}`}>
+                      {direction.name}
+                    </span>
+                  </div>
+                </button>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Submit Button */}
