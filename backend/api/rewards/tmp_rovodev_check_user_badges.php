@@ -10,41 +10,48 @@ $db = $database->getConnection();
 
 echo "=== CHECKING BADGES FOR USER $userId ===\n\n";
 
-// Check user_rewards table for badges
-$query = "SELECT ur.*, r.title as reward_name, r.type, r.rarity
-          FROM user_rewards ur
-          JOIN rewards r ON ur.reward_id = r.id
-          WHERE ur.user_id = :user_id AND r.type = 'badge'
-          ORDER BY ur.unlocked_at DESC";
+// First, let's check what tables exist
+echo "Checking database tables...\n";
+$query = "SHOW TABLES LIKE '%reward%'";
 $stmt = $db->prepare($query);
-$stmt->bindParam(':user_id', $userId);
 $stmt->execute();
-$badges = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$tables = $stmt->fetchAll(PDO::FETCH_COLUMN);
+echo "Tables with 'reward' in name:\n";
+foreach ($tables as $table) {
+    echo "  - $table\n";
+}
+echo "\n";
 
-echo "Badges in user_rewards table: " . count($badges) . "\n\n";
-foreach ($badges as $badge) {
-    echo "- {$badge['reward_name']} ({$badge['rarity']}) - Unlocked: {$badge['unlocked_at']}\n";
+// Check if user_rewards exists
+if (in_array('user_rewards', $tables)) {
+    echo "Checking user_rewards table...\n";
+    $query = "DESCRIBE user_rewards";
+    $stmt = $db->prepare($query);
+    $stmt->execute();
+    $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    echo "Columns: ";
+    foreach ($columns as $col) {
+        echo $col['Field'] . ", ";
+    }
+    echo "\n\n";
+    
+    // Count badges
+    $query = "SELECT COUNT(*) as count FROM user_rewards WHERE user_id = :user_id";
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':user_id', $userId);
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    echo "Total rewards in user_rewards: {$result['count']}\n\n";
 }
 
 // Check user_stats
-$query = "SELECT total_badges FROM user_stats WHERE user_id = :user_id";
+$query = "SELECT total_badges, total_titles FROM user_stats WHERE user_id = :user_id";
 $stmt = $db->prepare($query);
 $stmt->bindParam(':user_id', $userId);
 $stmt->execute();
 $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
-echo "\nuser_stats.total_badges: " . ($stats['total_badges'] ?? 'NULL') . "\n";
-
-// Check if there's a mismatch
-$actualCount = count($badges);
-$statsCount = $stats['total_badges'] ?? 0;
-
-if ($actualCount != $statsCount) {
-    echo "\n⚠️ MISMATCH DETECTED!\n";
-    echo "Actual badges in user_rewards: $actualCount\n";
-    echo "user_stats.total_badges: $statsCount\n";
-    echo "\nThis needs to be updated!\n";
-} else {
-    echo "\n✅ Counts match!\n";
-}
+echo "user_stats data:\n";
+echo "  total_badges: " . ($stats['total_badges'] ?? 'NULL') . "\n";
+echo "  total_titles: " . ($stats['total_titles'] ?? 'NULL') . "\n";
 ?>
