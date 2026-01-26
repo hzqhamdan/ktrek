@@ -34,7 +34,25 @@ const ProfilePage = () => {
 
   // Fetch user stats on mount
   React.useEffect(() => {
-    fetchUserStats();
+    const fetchData = async () => {
+      try {
+        // Fetch both reward stats and progress statistics
+        await fetchUserStats();
+        
+        // Fetch progress statistics if not already loaded
+        const { progressAPI } = await import('../api/progress');
+        const progressResponse = await progressAPI.getUserProgress();
+        if (progressResponse.success) {
+          // Update progress store statistics
+          const { setStatistics } = useProgressStore.getState();
+          setStatistics(progressResponse.data.statistics || {});
+        }
+      } catch (error) {
+        console.error('Error fetching profile stats:', error);
+      }
+    };
+    
+    fetchData();
   }, [fetchUserStats]);
 
   // Edit profile modal state
