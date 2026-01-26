@@ -597,24 +597,55 @@ if (session_status() === PHP_SESSION_NONE) {
 
                     <!-- User Progress Section -->
                     <div id="userProgress" class="content-section">
-                        <h2>User Progress</h2>
-                        <div class="data-table">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>User ID</th>
-                                        <th>Attraction</th>
-                                        <th>Completed Tasks</th>
-                                        <th>Total Tasks</th>
-                                        <th>Progress %</th>
-                                        <th>Is Unlocked</th>
-                                        <th>Last Updated</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="progressTable">
-                                    <tr><td colspan="7" class="loading">Loading...</td></tr>
-                                </tbody>
-                            </table>
+                        <h2>User Progress Analytics</h2>
+                        
+                        <!-- Charts Section -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                            <!-- Overall Progress Chart -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <h3 style="margin-top: 0; color: #333;">Overall Task Completion</h3>
+                                <canvas id="overallProgressChart"></canvas>
+                            </div>
+                            
+                            <!-- Attraction Completion Chart -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <h3 style="margin-top: 0; color: #333;">Attraction Completion Status</h3>
+                                <canvas id="attractionCompletionChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- User Progress Distribution Chart -->
+                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                            <h3 style="margin-top: 0; color: #333;">User Progress Distribution</h3>
+                            <canvas id="userProgressChart" style="max-height: 400px;"></canvas>
+                        </div>
+                        
+                        <!-- Data Table (Collapsible) -->
+                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <h3 style="margin: 0; color: #333;">Detailed Progress Data</h3>
+                                <button onclick="toggleProgressTable()" style="padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                    Toggle Table
+                                </button>
+                            </div>
+                            <div id="progressTableContainer" class="data-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>User ID</th>
+                                            <th>Attraction</th>
+                                            <th>Completed Tasks</th>
+                                            <th>Total Tasks</th>
+                                            <th>Progress %</th>
+                                            <th>Is Unlocked</th>
+                                            <th>Last Updated</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="progressTable">
+                                        <tr><td colspan="7" class="loading">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 

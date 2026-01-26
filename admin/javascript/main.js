@@ -3338,6 +3338,11 @@ async function deleteAdminUser(id) {
     }
 }
 
+// Chart instances (to destroy before recreating)
+let overallProgressChart = null;
+let attractionCompletionChart = null;
+let userProgressChart = null;
+
 // User Progress functions
 async function loadUserProgress() {
     showTableLoading('progressTable'); // Show loading before fetch
@@ -3347,6 +3352,7 @@ async function loadUserProgress() {
 
         const tbody = document.getElementById('progressTable');
         if (data.success && data.progress.length > 0) {
+            // Populate table
             tbody.innerHTML = data.progress.map(record => `
                 <tr>
                     <td>${record.user_id}</td>
@@ -3358,6 +3364,9 @@ async function loadUserProgress() {
                     <td>${new Date(record.updated_at).toLocaleString()}</td>
                 </tr>
             `).join('');
+            
+            // Generate charts
+            createProgressCharts(data.progress);
         } else if (data.success && data.progress.length === 0) {
             // Handle case where the backend returned success but the list is empty
             tbody.innerHTML = '<tr><td colspan="7">No user progress data found.</td></tr>';
@@ -3373,6 +3382,161 @@ async function loadUserProgress() {
         showAlert('Connection error while loading user progress. Please try again.', 'error');
         const tbody = document.getElementById('progressTable');
         tbody.innerHTML = '<tr><td colspan="7">Connection error.</td></tr>';
+    }
+}
+
+// Create progress charts
+function createProgressCharts(progressData) {
+    // Calculate statistics
+    const totalCompleted = progressData.reduce((sum, p) => sum + parseInt(p.completed_tasks), 0);
+    const totalTasks = progressData.reduce((sum, p) => sum + parseInt(p.total_tasks), 0);
+    const totalPending = totalTasks - totalCompleted;
+    
+    const completedAttractions = progressData.filter(p => parseFloat(p.progress_percentage) >= 100).length;
+    const inProgressAttractions = progressData.filter(p => parseFloat(p.progress_percentage) > 0 && parseFloat(p.progress_percentage) < 100).length;
+    const notStartedAttractions = progressData.filter(p => parseFloat(p.progress_percentage) === 0).length;
+    
+    // Group by user
+    const userProgress = {};
+    progressData.forEach(p => {
+        if (!userProgress[p.user_id]) {
+            userProgress[p.user_id] = { completed: 0, total: 0 };
+        }
+        userProgress[p.user_id].completed += parseInt(p.completed_tasks);
+        userProgress[p.user_id].total += parseInt(p.total_tasks);
+    });
+    
+    // 1. Overall Progress Chart (Doughnut)
+    const overallCtx = document.getElementById('overallProgressChart');
+    if (overallProgressChart) overallProgressChart.destroy();
+    overallProgressChart = new Chart(overallCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Completed Tasks', 'Pending Tasks'],
+            datasets: [{
+                data: [totalCompleted, totalPending],
+                backgroundColor: ['#4CAF50', '#FF9800'],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed;
+                            const total = totalCompleted + totalPending;
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // 2. Attraction Completion Chart (Pie)
+    const attractionCtx = document.getElementById('attractionCompletionChart');
+    if (attractionCompletionChart) attractionCompletionChart.destroy();
+    attractionCompletionChart = new Chart(attractionCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Completed', 'In Progress', 'Not Started'],
+            datasets: [{
+                data: [completedAttractions, inProgressAttractions, notStartedAttractions],
+                backgroundColor: ['#4CAF50', '#2196F3', '#9E9E9E'],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed;
+                            return `${label}: ${value} attractions`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // 3. User Progress Distribution Chart (Bar)
+    const userCtx = document.getElementById('userProgressChart');
+    if (userProgressChart) userProgressChart.destroy();
+    
+    const userIds = Object.keys(userProgress);
+    const userCompletionRates = userIds.map(userId => {
+        const up = userProgress[userId];
+        return up.total > 0 ? ((up.completed / up.total) * 100).toFixed(1) : 0;
+    });
+    
+    userProgressChart = new Chart(userCtx, {
+        type: 'bar',
+        data: {
+            labels: userIds.map(id => `User ${id}`),
+            datasets: [{
+                label: 'Completion Rate (%)',
+                data: userCompletionRates,
+                backgroundColor: '#2196F3',
+                borderColor: '#1976D2',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const userId = userIds[context.dataIndex];
+                            const up = userProgress[userId];
+                            return `${context.parsed.y}% (${up.completed}/${up.total} tasks)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Toggle progress table visibility
+function toggleProgressTable() {
+    const container = document.getElementById('progressTableContainer');
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+    } else {
+        container.style.display = 'none';
     }
 }
 
