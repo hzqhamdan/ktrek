@@ -171,7 +171,9 @@ const DirectionTask = ({ task, onComplete }) => {
               {/* Direction buttons positioned around the compass */}
               {directions.map((direction, index) => {
                 const isSelected = selectedDirection === direction.name;
-                const radius = 95; // Distance from center (adjusted for mobile)
+                const baseRadius = 95; // Base distance from center
+                const extendedRadius = 115; // Extended distance when selected
+                const radius = isSelected ? extendedRadius : baseRadius;
                 const angleRad = (direction.angle - 90) * (Math.PI / 180);
                 const x = Math.cos(angleRad) * radius;
                 const y = Math.sin(angleRad) * radius;
@@ -181,6 +183,15 @@ const DirectionTask = ({ task, onComplete }) => {
                     key={direction.name}
                     onClick={() => handleSelectDirection(direction.name)}
                     disabled={isSubmitting}
+                    animate={{
+                      left: `calc(50% + ${x}px)`,
+                      top: `calc(50% + ${y}px)`,
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 25
+                    }}
                     whileTap={{ scale: 0.95 }}
                     className={`absolute w-12 h-12 sm:w-14 sm:h-14 rounded-full font-bold text-xs sm:text-sm flex flex-col items-center justify-center transition-colors shadow-lg disabled:opacity-50
                       ${isSelected 
@@ -188,8 +199,6 @@ const DirectionTask = ({ task, onComplete }) => {
                         : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-xl'
                       }`}
                     style={{
-                      left: `calc(50% + ${x}px)`,
-                      top: `calc(50% + ${y}px)`,
                       transform: 'translate(-50%, -50%)',
                     }}
                   >
