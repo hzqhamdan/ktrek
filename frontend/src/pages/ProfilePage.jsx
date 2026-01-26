@@ -237,8 +237,8 @@ const ProfilePage = () => {
               </div>
 
                 {/* Avatar */}{" "}
-                <div className="flex items-center justify-between pb-6 border-b border-gray-200">
-                  <div className="flex items-center gap-8">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between pb-6 border-b border-gray-200">
+                  <div className="flex items-center gap-4">
                 {" "}
                 <div className="flex-shrink-0">
                   {" "}
@@ -255,19 +255,19 @@ const ProfilePage = () => {
                     </div>
                   )}{" "}
                 </div>{" "}
-                <div>
+                <div className="flex-1 min-w-0">
                   {" "}
-                  <h3 className="text-2xl font-bold text-gray-900">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">
                     {user?.full_name}
                   </h3>{" "}
-                  <p className="text-gray-600">@{user?.username}</p>{" "}
+                  <p className="text-gray-600 text-sm sm:text-base">@{user?.username}</p>{" "}
                 </div>{" "}
                   </div>
 
                   <Button
                     variant="glass"
                     size="sm"
-                    className="font-medium"
+                    className="font-medium flex-shrink-0 self-start sm:self-auto"
                     onClick={() => navigate("/onboarding/avatar?redirect=/dashboard/profile")}
                   >
                     Change Avatar
