@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Compass, Navigation, CheckCircle, XCircle } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Compass, CheckCircle, XCircle } from "lucide-react";
+import { motion } from "framer-motion";
 import { tasksAPI } from "../../api/tasks";
 import Card from "../common/Card";
 import Button from "../common/Button";
