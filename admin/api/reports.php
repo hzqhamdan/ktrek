@@ -37,8 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $action = $_GET['action'] ?? 'list';
 
     if ($action === 'list') {
-        // Base query - Join reports with attractions to get attraction name
-        $query = "SELECT r.*, a.name as attraction_name FROM reports r LEFT JOIN attractions a ON r.attraction_id = a.id";
+        // Base query - Join reports with attractions and users to get names
+        $query = "SELECT r.*, a.name as attraction_name, u.full_name as user_name, u.email as user_email, u.username 
+                  FROM reports r 
+                  LEFT JOIN attractions a ON r.attraction_id = a.id 
+                  LEFT JOIN users u ON r.user_id = u.id";
 
         $params = [];
         $types = "";
@@ -93,7 +96,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
     elseif ($action === 'get' && isset($_GET['id'])) {
         $id = intval($_GET['id']);
-        $query = "SELECT r.*, a.name as attraction_name FROM reports r LEFT JOIN attractions a ON r.attraction_id = a.id WHERE r.id = ?";
+        $query = "SELECT r.*, a.name as attraction_name, u.full_name as user_name, u.email as user_email, u.username 
+                  FROM reports r 
+                  LEFT JOIN attractions a ON r.attraction_id = a.id 
+                  LEFT JOIN users u ON r.user_id = u.id 
+                  WHERE r.id = ?";
         $stmt = $conn->prepare($query);
         $stmt->bind_param("i", $id);
         $stmt->execute();

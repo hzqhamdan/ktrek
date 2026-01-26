@@ -389,6 +389,10 @@ function showSuperadminDashboard() {
 let saUsersChart = null;
 let saAttractionsChart = null;
 let saEngagementChart = null;
+let saManagerPerformanceChart = null;
+let saEfficiencyScatterChart = null;
+let saActivityBubbleChart = null;
+let saReportPolarChart = null;
 
 async function loadSuperadminDashboard(periodDays = 30) {
     try {
@@ -415,6 +419,7 @@ async function loadSuperadminDashboard(periodDays = 30) {
         renderSaRisk(payload.risk_indicators, payload.meta);
         renderSaManagersTable(payload.manager_performance);
         renderSaGrowth(payload.growth);
+        renderSaNewCharts(payload); // Render new creative charts
         renderSaRecent(payload.recent_activity);
 
     } catch (e) {
@@ -561,9 +566,225 @@ function renderSaGrowth(growth) {
         }
     });
 
-    saUsersChart = saRenderLineChart('saUsersGrowthChart', saUsersChart, labels, growth.users_new || [], '#36a2eb');
-    saAttractionsChart = saRenderLineChart('saAttractionsGrowthChart', saAttractionsChart, labels, growth.attractions_new || [], '#5E35B1');
+    // Convert to area charts
+    saUsersChart = saRenderAreaChart('saUsersGrowthChart', saUsersChart, labels, growth.users_new || [], '#36a2eb');
+    saAttractionsChart = saRenderAreaChart('saAttractionsGrowthChart', saAttractionsChart, labels, growth.attractions_new || [], '#5E35B1');
     saEngagementChart = saRenderLineChart('saEngagementChart', saEngagementChart, labels, growth.task_submissions || [], '#10b981');
+}
+
+function saRenderAreaChart(canvasId, existingChart, labels, series, color) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return existingChart;
+
+    const ctx = canvas.getContext('2d');
+
+    if (existingChart) {
+        existingChart.destroy();
+    }
+
+    return new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                data: series,
+                borderColor: color,
+                backgroundColor: color + '33',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: color,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(30, 30, 30, 0.9)',
+                    titleColor: '#e0e0e0',
+                    bodyColor: '#ccc'
+                }
+            },
+            scales: {
+                x: { ticks: { color: '#888' }, grid: { color: '#E0E0E0', drawBorder: false } },
+                y: { ticks: { color: '#888' }, grid: { color: '#E0E0E0', drawBorder: false }, beginAtZero: true }
+            }
+        }
+    });
+}
+
+function renderSaNewCharts(payload) {
+    const managers = payload.manager_performance || [];
+    
+    // 1. Radar Chart - Manager Performance
+    const radarCtx = document.getElementById('saManagerPerformanceChart');
+    if (radarCtx) {
+        if (saManagerPerformanceChart) saManagerPerformanceChart.destroy();
+        
+        const topManagers = managers.slice(0, 5);
+        const metrics = ['Attractions', 'Tasks', 'Reports Handled', 'Response Time', 'Activity'];
+        
+        const radarData = topManagers.map((m, i) => {
+            const colors = ['rgba(94, 53, 177, 0.3)', 'rgba(33, 150, 243, 0.3)', 'rgba(76, 175, 80, 0.3)', 'rgba(255, 152, 0, 0.3)', 'rgba(244, 67, 54, 0.3)'];
+            return {
+                label: m.full_name || `Manager ${i+1}`,
+                data: [
+                    m.attractions_added || 0,
+                    m.tasks_created || 0,
+                    (m.reports_open || 0) > 0 ? 100 - (m.reports_open * 10) : 100,
+                    m.avg_response_minutes ? Math.max(0, 100 - m.avg_response_minutes) : 50,
+                    m.last_login ? 80 : 20
+                ],
+                backgroundColor: colors[i],
+                borderColor: colors[i].replace('0.3', '1'),
+                borderWidth: 2
+            };
+        });
+        
+        saManagerPerformanceChart = new Chart(radarCtx, {
+            type: 'radar',
+            data: { labels: metrics, datasets: radarData },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        ticks: { color: '#888', backdropColor: 'transparent' },
+                        grid: { color: '#E0E0E0' },
+                        angleLines: { color: '#E0E0E0' },
+                        pointLabels: { color: '#555', font: { size: 10 } }
+                    }
+                },
+                plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }
+            }
+        });
+    }
+    
+    // 2. Scatter Chart - Manager Efficiency
+    const scatterCtx = document.getElementById('saEfficiencyScatterChart');
+    if (scatterCtx) {
+        if (saEfficiencyScatterChart) saEfficiencyScatterChart.destroy();
+        
+        const scatterData = managers.map(m => ({
+            x: m.attractions_added || 0,
+            y: m.tasks_created || 0,
+            name: m.full_name || m.email
+        }));
+        
+        saEfficiencyScatterChart = new Chart(scatterCtx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    data: scatterData,
+                    backgroundColor: 'rgba(33, 150, 243, 0.6)',
+                    borderColor: '#2196F3',
+                    pointRadius: 8,
+                    pointHoverRadius: 12
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const p = scatterData[ctx.dataIndex];
+                                return [p.name, `Attractions: ${p.x}`, `Tasks: ${p.y}`];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Attractions Added', color: '#555' }, ticks: { color: '#888' }, grid: { color: '#E0E0E0' }, beginAtZero: true },
+                    y: { title: { display: true, text: 'Tasks Created', color: '#555' }, ticks: { color: '#888' }, grid: { color: '#E0E0E0' }, beginAtZero: true }
+                }
+            }
+        });
+    }
+    
+    // 3. Bubble Chart - Manager Activity
+    const bubbleCtx = document.getElementById('saActivityBubbleChart');
+    if (bubbleCtx) {
+        if (saActivityBubbleChart) saActivityBubbleChart.destroy();
+        
+        const bubbleData = managers.slice(0, 8).map((m, i) => ({
+            x: i + 1,
+            y: (m.attractions_added || 0) + (m.tasks_created || 0),
+            r: (m.reports_open || 0) + 5,
+            name: m.full_name || m.email
+        }));
+        
+        const colors = ['rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)', 'rgba(199, 199, 199, 0.6)', 'rgba(83, 102, 255, 0.6)'];
+        
+        saActivityBubbleChart = new Chart(bubbleCtx, {
+            type: 'bubble',
+            data: {
+                datasets: [{
+                    data: bubbleData,
+                    backgroundColor: bubbleData.map((_, i) => colors[i])
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const p = bubbleData[ctx.dataIndex];
+                                return [p.name, `Total Work: ${p.y}`, `Open Reports: ${p.r - 5}`];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Manager Rank', color: '#555' }, ticks: { color: '#888' }, grid: { color: '#E0E0E0' } },
+                    y: { title: { display: true, text: 'Total Work Items', color: '#555' }, ticks: { color: '#888' }, grid: { color: '#E0E0E0' }, beginAtZero: true }
+                }
+            }
+        });
+    }
+    
+    // 4. Polar Area Chart - Report Distribution
+    const polarCtx = document.getElementById('saReportPolarChart');
+    if (polarCtx) {
+        if (saReportPolarChart) saReportPolarChart.destroy();
+        
+        const topReportManagers = managers.filter(m => (m.reports_open || 0) > 0).slice(0, 8);
+        
+        saReportPolarChart = new Chart(polarCtx, {
+            type: 'polarArea',
+            data: {
+                labels: topReportManagers.map(m => (m.full_name || m.email || '').substring(0, 15)),
+                datasets: [{
+                    data: topReportManagers.map(m => m.reports_open || 0),
+                    backgroundColor: ['rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)', 'rgba(199, 199, 199, 0.6)', 'rgba(83, 102, 255, 0.6)']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'right', labels: { font: { size: 10 } } }
+                },
+                scales: {
+                    r: {
+                        ticks: { color: '#888', backdropColor: 'transparent' },
+                        grid: { color: '#E0E0E0' }
+                    }
+                }
+            }
+        });
+    }
 }
 
 function renderSaRecent(recent) {
@@ -3368,8 +3589,8 @@ async function loadReports() {
             tbody.innerHTML = data.reports.map(report => `
                 <tr>
                     <td>${report.id}</td>
-                    <td>${report.firebase_user_email || report.firebase_user_id}</td>
-                    <td>${report.attraction_name || 'N/A'}</td>
+                    <td>${report.user_name || report.user_email || report.username || 'User #' + report.user_id}</td>
+                    <td>${report.attraction_name || 'General'}</td>
                     <td>${report.message.substring(0, 50)}...</td>
                     <td>${report.created_at}</td>
                     <td>${report.status || 'Pending'}</td>
