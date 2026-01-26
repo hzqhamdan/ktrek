@@ -99,6 +99,10 @@ class Email {
     public static function sendPasswordReset($to, $resetToken, $appUrl = 'http://localhost:5173') {
         $resetLink = $appUrl . '/reset-password?token=' . $resetToken;
         
+        // DEBUG: Log the reset link being sent
+        error_log("DEBUG Email: Reset link = " . $resetLink);
+        error_log("DEBUG Email: appUrl parameter = " . $appUrl);
+        
         $subject = 'Reset Your K-Trek Password';
         
         $htmlContent = self::getPasswordResetHtml($resetLink);

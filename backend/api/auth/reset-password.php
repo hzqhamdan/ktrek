@@ -59,6 +59,11 @@ if (isset($data['action']) && $data['action'] === 'request') {
         
         // Send password reset email
         $appUrl = defined('APP_URL') ? APP_URL : 'http://localhost:5173';
+        
+        // DEBUG: Log the APP_URL being used
+        error_log("DEBUG: APP_URL = " . $appUrl);
+        error_log("DEBUG: APP_URL defined? " . (defined('APP_URL') ? 'YES' : 'NO'));
+        
         $emailSent = Email::sendPasswordReset($email, $token, $appUrl);
         
         if (!$emailSent) {

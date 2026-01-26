@@ -169,19 +169,20 @@ const DirectionTask = ({ task, onComplete }) => {
         )}
 
         {/* Compass Interface */}
-        <div className="mb-8">
-          <div className="relative w-80 h-80 mx-auto">
+        <div className="mb-8 px-4">
+          {/* Responsive compass container */}
+          <div className="relative w-full max-w-[280px] sm:max-w-[320px] aspect-square mx-auto">
             {/* Compass Rose */}
-            <div className="absolute inset-0 rounded-full border-8 border-gray-300 bg-white shadow-2xl flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full border-4 sm:border-8 border-gray-300 bg-white shadow-2xl flex items-center justify-center">
               {/* Center compass icon */}
               <div className="absolute">
-                <Navigation className="w-12 h-12 text-gray-400" style={{ transform: 'rotate(45deg)' }} />
+                <Navigation className="w-8 h-8 sm:w-12 sm:h-12 text-gray-400" style={{ transform: 'rotate(45deg)' }} />
               </div>
 
               {/* Direction buttons positioned around the compass */}
               {directions.map((direction, index) => {
                 const isSelected = selectedDirection === direction.name;
-                const radius = 120; // Distance from center
+                const radius = 95; // Distance from center (adjusted for mobile)
                 const angleRad = (direction.angle - 90) * (Math.PI / 180);
                 const x = Math.cos(angleRad) * radius;
                 const y = Math.sin(angleRad) * radius;
@@ -193,9 +194,9 @@ const DirectionTask = ({ task, onComplete }) => {
                     disabled={isSubmitting}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`absolute w-16 h-16 rounded-full font-bold text-sm flex flex-col items-center justify-center transition-all shadow-lg disabled:opacity-50
+                    className={`absolute w-12 h-12 sm:w-14 sm:h-14 rounded-full font-bold text-xs sm:text-sm flex flex-col items-center justify-center transition-all shadow-lg disabled:opacity-50
                       ${isSelected 
-                        ? 'bg-primary-600 text-white ring-4 ring-primary-300 scale-110' 
+                        ? 'bg-primary-600 text-white ring-2 sm:ring-4 ring-primary-300 scale-110' 
                         : 'bg-white text-gray-700 hover:bg-gray-100'
                       }`}
                     style={{
@@ -204,26 +205,26 @@ const DirectionTask = ({ task, onComplete }) => {
                       transform: 'translate(-50%, -50%)',
                     }}
                   >
-                    <span className="text-xs font-semibold">{direction.short}</span>
+                    <span className="text-[10px] sm:text-xs font-semibold">{direction.short}</span>
                     {direction.short.length === 1 && (
-                      <span className="text-[10px] opacity-70 mt-1">{direction.name}</span>
+                      <span className="text-[8px] sm:text-[10px] opacity-70 mt-0.5">{direction.name}</span>
                     )}
                   </motion.button>
                 );
               })}
             </div>
 
-            {/* Cardinal direction labels */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-8 text-red-600 font-bold text-lg">
+            {/* Cardinal direction labels - positioned inside the compass area */}
+            <div className="absolute -top-6 sm:-top-8 left-1/2 -translate-x-1/2 text-red-600 font-bold text-sm sm:text-base">
               ↑ North
             </div>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-8 text-gray-600 font-bold text-lg">
+            <div className="absolute -bottom-6 sm:-bottom-8 left-1/2 -translate-x-1/2 text-gray-600 font-bold text-sm sm:text-base">
               ↓ South
             </div>
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-10 text-gray-600 font-bold text-lg">
-              → East
+            <div className="absolute -right-6 sm:-right-8 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-sm sm:text-base whitespace-nowrap">
+              East →
             </div>
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-10 text-gray-600 font-bold text-lg">
+            <div className="absolute -left-6 sm:-left-8 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-sm sm:text-base whitespace-nowrap">
               ← West
             </div>
           </div>
