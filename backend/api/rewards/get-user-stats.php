@@ -36,9 +36,6 @@ try {
                 us.xp_to_next_level,
                 us.total_badges,
                 us.total_titles,
-                us.total_cosmetics,
-                us.total_photo_cards,
-                us.total_stamps,
                 us.created_at,
                 us.updated_at
             FROM user_stats us
