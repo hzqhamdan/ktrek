@@ -7,6 +7,8 @@ let currentUser = null;
 let currentAttractionIdForTaskGuide = null;
 let taskCompletionChartInstance = null;
 let userActivityChartInstance = null;
+let engagementScatterChartInstance = null;
+let attractionBubbleChartInstance = null;
 let currentChartPeriod = 7; // Default to 7 days
 let allTasks = []; // Store all tasks for filtering
 let allGuides = []; // Store all guides for filtering
@@ -1106,7 +1108,7 @@ async function loadDashboardStats() {
     }
 }
 
-// Function to render Task Completion Chart
+// Function to render Task Completion Chart (Area Chart)
 function renderTaskCompletionChart(chartData) {
     const ctx = document.getElementById('taskCompletionChart').getContext('2d');
     
@@ -1122,16 +1124,16 @@ function renderTaskCompletionChart(chartData) {
             datasets: [{
                 label: 'Task Completions',
                 data: chartData.data,
-                backgroundColor: 'rgba(94, 53, 177, 0.2)',
-                borderColor: '#5E35B1',
-                borderWidth: 2,
+                backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                borderColor: 'rgba(255, 255, 255, 0.9)',
+                borderWidth: 3,
                 fill: true,
                 tension: 0.4,
-                pointRadius: 4,
-                pointBackgroundColor: '#5E35B1',
-                pointBorderColor: '#fff',
+                pointRadius: 5,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: 'rgba(255, 255, 255, 0.9)',
                 pointBorderWidth: 2,
-                pointHoverRadius: 6
+                pointHoverRadius: 8
             }]
         },
         options: {
@@ -1142,12 +1144,12 @@ function renderTaskCompletionChart(chartData) {
                     display: false
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(30, 30, 30, 0.9)',
-                    titleColor: '#e0e0e0',
-                    bodyColor: '#ccc',
-                    borderColor: '#5E35B1',
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#fff',
                     borderWidth: 1,
-                    padding: 10,
+                    padding: 12,
                     displayColors: false,
                     callbacks: {
                         label: function(context) {
@@ -1160,19 +1162,21 @@ function renderTaskCompletionChart(chartData) {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        color: '#888',
+                        color: 'rgba(255, 255, 255, 0.8)',
                         stepSize: 1
                     },
                     grid: {
-                        display: false
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        drawBorder: false
                     }
                 },
                 x: {
                     ticks: {
-                        color: '#888'
+                        color: 'rgba(255, 255, 255, 0.8)'
                     },
                     grid: {
-                        display: false
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        drawBorder: false
                     }
                 }
             }
@@ -3758,21 +3762,6 @@ function createProgressCharts(progressData) {
     // 4. Progress Trend Line Chart
     const trendCtx = document.getElementById('progressTrendChart');
     if (progressTrendChart) progressTrendChart.destroy();
-    
-    // Group by attraction and sort by progress percentage
-    const attractionProgress = {};
-    progressData.forEach(p => {
-        const key = p.attraction_name || 'Unknown';
-        if (!attractionProgress[key]) {
-            attractionProgress[key] = {
-                completed: 0,
-                total: 0,
-                percentage: 0
-            };
-        }
-        attractionProgress[key].completed += parseInt(p.completed_tasks);
-        attractionProgress[key].total += parseInt(p.total_tasks);
-    });
     
     // Calculate percentages and sort
     const attractions = Object.keys(attractionProgress).map(name => ({
