@@ -5542,10 +5542,12 @@ async function addMoreTaskAndGuide() {
 
         // --- Save Task ---
         if (taskId) { // If editing existing task
+            const updatePayload = { action: 'update', id: taskId, ...taskDataObject };
+            console.log('🔍 DEBUG: Sending UPDATE request with payload:', JSON.stringify(updatePayload, null, 2));
             const taskUpdateResponse = await fetch(API_BASE + 'tasks.php', {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify({ action: 'update', id: taskId, ...taskDataObject })
+               body: JSON.stringify(updatePayload)
            });
            const taskResponseData = await taskUpdateResponse.json();
            if (taskResponseData.success) {
