@@ -590,11 +590,12 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // $verify_result = $verify_stmt->get_result();
         // if (!$verify_result || $verify_result->num_rows !== 1) { ... }
 
-        $stmt = $conn->prepare("UPDATE tasks SET attraction_id = ?, name = ?, type = ?, description = ?, qr_code = ?, media_url = ? WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE tasks SET attraction_id = ?, name = ?, type = ?, description = ?, qr_code = ?, media_url = ?, task_config = ? WHERE id = ?");
         $qr_code = $input['qr_code'] ?? null;
         $media_url = $input['media_url'] ?? null;
-        // 7 placeholders: attraction_id (i), name (s), type (s), description (s), qr_code (s), media_url (s), id (i)
-        $stmt->bind_param("isssssi", $input['attraction_id'], $input['name'], $input['type'], $input['description'], $qr_code, $media_url, $id);
+        $task_config = isset($input['task_config']) ? json_encode($input['task_config']) : null;
+        // 8 placeholders: attraction_id (i), name (s), type (s), description (s), qr_code (s), media_url (s), task_config (s), id (i)
+        $stmt->bind_param("issssssi", $input['attraction_id'], $input['name'], $input['type'], $input['description'], $qr_code, $media_url, $task_config, $id);
 
         if ($stmt->execute()) {
             $questions_updated = false;
@@ -666,6 +667,7 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (isset($input['description'])) $changes[] = 'description';
                 if (isset($input['qr_code'])) $changes[] = 'QR code';
                 if (isset($input['media_url'])) $changes[] = 'media';
+                if (isset($input['task_config'])) $changes[] = 'task configuration';
                 if (isset($input['attraction_id']) && $input['attraction_id'] != $existing_task['attraction_id']) $changes[] = 'attraction';
                 if ($questions_updated) $changes[] = 'questions/options';
                 $changes_summary = 'Updated: ' . implode(', ', $changes);
