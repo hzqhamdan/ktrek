@@ -39,6 +39,9 @@ try {
     }
 
     $task = $stmt->fetch();
+    
+    // Add server time for time-based tasks
+    $task['server_time'] = date('H:i:s');
 
     Response::success($task, "Task details retrieved");
 

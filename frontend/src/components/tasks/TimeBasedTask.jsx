@@ -29,19 +29,25 @@ const TimeBasedTask = ({ task, onComplete }) => {
       setConfig(cfg);
     }
     
-    // Fetch server time once on mount
+    // Set initial server time from task response
+    if (task.server_time) {
+      setServerTime(task.server_time);
+    }
+    
+    // Fetch updated server time periodically
     const fetchServerTime = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/debug/server-time.php`);
-        const data = await response.json();
-        if (data.success) {
-          setServerTime(data.data.server_time);
+        const response = await tasksAPI.getById(task.id);
+        if (response.success && response.data.server_time) {
+          setServerTime(response.data.server_time);
+        } else if (response.server_time) {
+          setServerTime(response.server_time);
         }
       } catch (error) {
         console.error('Failed to fetch server time:', error);
       }
     };
-    fetchServerTime();
+    
     const serverTimeInterval = setInterval(fetchServerTime, 5000); // Update every 5 seconds
     
     return () => clearInterval(serverTimeInterval);
