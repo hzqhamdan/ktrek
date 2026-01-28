@@ -324,11 +324,21 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        $stmt = $conn->prepare("INSERT INTO tasks (attraction_id, name, type, description, qr_code, media_url) VALUES (?, ?, ?, ?, ?, ?)");
+        // Consolidate task-specific configs into task_config
+        $task_config = null;
+        if (isset($input['time_config'])) {
+            $task_config = json_encode($input['time_config']);
+        } elseif (isset($input['count_config'])) {
+            $task_config = json_encode($input['count_config']);
+        } elseif (isset($input['direction_config'])) {
+            $task_config = json_encode($input['direction_config']);
+        }
+        
+        $stmt = $conn->prepare("INSERT INTO tasks (attraction_id, name, type, description, qr_code, media_url, task_config) VALUES (?, ?, ?, ?, ?, ?, ?)");
         // Assuming qr_code and media_url might be part of input, adjust as needed
         $qr_code = $input['qr_code'] ?? null;
         $media_url = $input['media_url'] ?? null;
-        $stmt->bind_param("isssss", $input['attraction_id'], $input['name'], $input['type'], $input['description'], $qr_code, $media_url);
+        $stmt->bind_param("issssss", $input['attraction_id'], $input['name'], $input['type'], $input['description'], $qr_code, $media_url, $task_config);
 
         if ($stmt->execute()) {
             $task_id = $conn->insert_id;
@@ -590,10 +600,21 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // $verify_result = $verify_stmt->get_result();
         // if (!$verify_result || $verify_result->num_rows !== 1) { ... }
 
+        // Consolidate task-specific configs into task_config
+        $task_config = null;
+        if (isset($input['task_config'])) {
+            $task_config = json_encode($input['task_config']);
+        } elseif (isset($input['time_config'])) {
+            $task_config = json_encode($input['time_config']);
+        } elseif (isset($input['count_config'])) {
+            $task_config = json_encode($input['count_config']);
+        } elseif (isset($input['direction_config'])) {
+            $task_config = json_encode($input['direction_config']);
+        }
+        
         $stmt = $conn->prepare("UPDATE tasks SET attraction_id = ?, name = ?, type = ?, description = ?, qr_code = ?, media_url = ?, task_config = ? WHERE id = ?");
         $qr_code = $input['qr_code'] ?? null;
         $media_url = $input['media_url'] ?? null;
-        $task_config = isset($input['task_config']) ? json_encode($input['task_config']) : null;
         // 8 placeholders: attraction_id (i), name (s), type (s), description (s), qr_code (s), media_url (s), task_config (s), id (i)
         $stmt->bind_param("issssssi", $input['attraction_id'], $input['name'], $input['type'], $input['description'], $qr_code, $media_url, $task_config, $id);
 
