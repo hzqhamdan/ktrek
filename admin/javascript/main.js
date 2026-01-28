@@ -3196,14 +3196,17 @@ async function handleTaskSubmit(e) {
     }
 
     try {
+        const payload = {
+            action: id ? 'update' : 'create',
+            id: id || undefined,
+            ...formData
+        };
+        console.log('🔍 SENDING PAYLOAD:', JSON.stringify(payload, null, 2));
+        
         const response = await fetch(API_BASE + 'tasks.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: id ? 'update' : 'create',
-                id: id || undefined,
-                ...formData
-            })
+            body: JSON.stringify(payload)
         });
 
         const responseText = await response.text();
