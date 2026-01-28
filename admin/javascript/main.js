@@ -3016,7 +3016,9 @@ function closeTaskModal() {
 
 async function handleTaskSubmit(e) {
     e.preventDefault();
+    console.log('🔍🔍🔍 handleTaskSubmit called! Version: 2026-01-29 06:43');
     const id = document.getElementById('taskId').value;
+    console.log('🔍 Task ID:', id);
     const name = document.getElementById('taskName').value;
     const attraction_id = document.getElementById('taskAttraction').value;
     const type = document.getElementById('taskType').value;
