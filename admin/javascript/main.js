@@ -99,25 +99,45 @@ function checkSession() {
 
 
 function setupEventListeners() {
-    document.getElementById('loginForm').addEventListener('submit', handleLogin);
-    document.getElementById('registerForm').addEventListener('submit', handleRegister);
-    document.getElementById('attractionForm').addEventListener('submit', handleAttractionSubmit);
-    document.getElementById('taskForm').addEventListener('submit', handleTaskSubmit);
-    document.getElementById('taskAndGuideForm').addEventListener('submit', handleTaskAndGuideSubmit);
-    document.getElementById('guideForm').addEventListener('submit', handleGuideSubmit);
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) loginForm.addEventListener('submit', handleLogin);
+    
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) registerForm.addEventListener('submit', handleRegister);
+    
+    const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+    if (forgotPasswordForm) forgotPasswordForm.addEventListener('submit', handleForgotPassword);
+    
+    const attractionForm = document.getElementById('attractionForm');
+    if (attractionForm) attractionForm.addEventListener('submit', handleAttractionSubmit);
+    
+    const taskForm = document.getElementById('taskForm');
+    if (taskForm) taskForm.addEventListener('submit', handleTaskSubmit);
+    
+    const taskAndGuideForm = document.getElementById('taskAndGuideForm');
+    if (taskAndGuideForm) taskAndGuideForm.addEventListener('submit', handleTaskAndGuideSubmit);
+    
+    const guideForm = document.getElementById('guideForm');
+    if (guideForm) guideForm.addEventListener('submit', handleGuideSubmit);
+    
     // rewardForm is now handled in rewards.js
-    document.getElementById('replyForm').addEventListener('submit', handleReplySubmit);
+    const replyForm = document.getElementById('replyForm');
+    if (replyForm) replyForm.addEventListener('submit', handleReplySubmit);
     
     // Add event listener for attraction change in guide modal to load tasks
-    document.getElementById('guideAttraction').addEventListener('change', function() {
-        const attractionId = this.value;
-        if (attractionId) {
-            loadTasksDropdown('guideTask', attractionId);
-        } else {
-            // Clear tasks dropdown if no attraction selected
-            document.getElementById('guideTask').innerHTML = '<option value="">Select Task</option>';
-        }
-    });
+    const guideAttraction = document.getElementById('guideAttraction');
+    if (guideAttraction) {
+        guideAttraction.addEventListener('change', function() {
+            const attractionId = this.value;
+            if (attractionId) {
+                loadTasksDropdown('guideTask', attractionId);
+            } else {
+                // Clear tasks dropdown if no attraction selected
+                const guideTask = document.getElementById('guideTask');
+                if (guideTask) guideTask.innerHTML = '<option value="">Select Task</option>';
+            }
+        });
+    }
 }
 
 // Toggle between login and register forms
@@ -128,7 +148,14 @@ function showRegisterForm() {
 
 function showLoginForm() {
     document.getElementById('registerScreen').classList.add('hidden');
+    document.getElementById('forgotPasswordScreen').classList.add('hidden');
     document.getElementById('loginScreen').classList.remove('hidden');
+}
+
+function showForgotPasswordForm() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('registerScreen').classList.add('hidden');
+    document.getElementById('forgotPasswordScreen').classList.remove('hidden');
 }
 
 // Handle registration
@@ -181,6 +208,37 @@ async function handleRegister(e) {
     } catch (error) {
         console.error('Registration network error:', error);
         showRegisterAlert('Connection error. Please check your internet connection and try again.', 'error');
+    }
+}
+
+// Handle forgot password request
+async function handleForgotPassword(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('forgotPasswordEmail').value;
+    const message = document.getElementById('forgotPasswordMessage').value;
+    
+    try {
+        const response = await fetch(API_BASE + 'password_reset_request.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, message })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showForgotPasswordAlert(data.message, 'success');
+            setTimeout(() => {
+                showLoginForm();
+                document.getElementById('forgotPasswordForm').reset();
+            }, 3000);
+        } else {
+            showForgotPasswordAlert(data.message || 'Error submitting request', 'error');
+        }
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        showForgotPasswordAlert('Connection error. Please try again.', 'error');
     }
 }
 
@@ -279,8 +337,12 @@ function showDashboard() {
         const adminUsersLink = document.getElementById('adminUsersNavLink');
         const reportsTabLink = document.getElementById('reportsTab');
 
+        console.log("DEBUG: adminUsersLink element found?", adminUsersLink);
         if (adminUsersLink) {
             adminUsersLink.style.display = ''; // Show Admin Users link
+            console.log("DEBUG: Set adminUsersLink display to empty string (should be visible now)");
+        } else {
+            console.error("DEBUG: adminUsersNavLink element NOT FOUND in DOM!");
         }
 
         if (reportsTabLink) {
@@ -3670,6 +3732,12 @@ async function handleReplySubmit(e) {
 async function loadAdminUsers() {
     console.log("loadAdminUsers: Function called.");
     showTableLoading('adminUsersTable'); // Show loading state in the table before fetching data
+    
+    // Load pending password reset requests if superadmin
+    if (currentUser?.role === 'superadmin') {
+        loadPendingResetRequests();
+    }
+    
     try {
         console.log("loadAdminUsers: Fetching admin users from API...");
         const response = await fetch(API_BASE + 'admin_users.php?action=list');
@@ -3709,6 +3777,7 @@ async function loadAdminUsers() {
                     <td>
                         <button class="action-btn edit-btn" onclick="toggleAdminStatus(${admin.id})">${admin.is_active ? 'Deactivate' : 'Activate'}</button>
                         ${!isCurrentUser ? `<button class="action-btn delete-btn" onclick="deleteAdminUser(${admin.id})">Delete</button>` : ''} <!-- Use the defined variable here -->
+                        ${admin.role === 'manager' ? `<button class="action-btn" onclick="resetManagerPassword(${admin.id}, '${admin.full_name.replace(/'/g, "\\'")}', '${admin.email}')" style="background: #ef4444; color: white;">Reset Password</button>` : ''}
                     </td>
                 </tr>
             `;
@@ -3752,6 +3821,136 @@ async function toggleAdminStatus(id) {
             showAlert(data.message || 'Error updating status', 'error');
         }
     } catch (error) {
+        showAlert('Connection error. Please try again.', 'error');
+    }
+}
+
+// Reset manager password
+async function resetManagerPassword(adminId, managerName, managerEmail) {
+    const confirmed = confirm(`Are you sure you want to reset the password for ${managerName}?\n\nThis will generate a new temporary password and the manager will be required to change it on next login.`);
+    
+    if (!confirmed) return;
+    
+    try {
+        const response = await fetch(API_BASE + 'reset_manager_password.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ admin_id: adminId })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show success message with temporary password
+            const tempPassword = data.temporary_password;
+            alert(`✅ Password reset successfully!\n\n` +
+                  `Manager: ${data.manager_name}\n` +
+                  `Email: ${data.manager_email}\n\n` +
+                  `Temporary Password: ${tempPassword}\n\n` +
+                  `⚠️ IMPORTANT:\n` +
+                  `• Please share this password with the manager securely\n` +
+                  `• They will be required to change it on next login\n` +
+                  `• This password cannot be recovered later`);
+            
+            loadAdminUsers(); // Reload the table
+        } else {
+            showAlert(data.message || 'Error resetting password', 'error');
+        }
+    } catch (error) {
+        console.error('Reset password error:', error);
+        showAlert('Connection error. Please try again.', 'error');
+    }
+}
+
+// Load pending password reset requests
+async function loadPendingResetRequests() {
+    try {
+        const response = await fetch(API_BASE + 'get_reset_requests.php?status=pending');
+        const data = await response.json();
+        
+        if (!data.success) return;
+        
+        const requests = data.requests || [];
+        const panel = document.getElementById('pendingResetRequests');
+        const count = document.getElementById('pendingCount');
+        const list = document.getElementById('pendingRequestsList');
+        
+        if (requests.length === 0) {
+            panel.style.display = 'none';
+            return;
+        }
+        
+        panel.style.display = 'block';
+        count.textContent = requests.length;
+        
+        list.innerHTML = requests.map(req => `
+            <div style="background: white; border-radius: 6px; padding: 16px; margin-bottom: 10px; border-left: 4px solid #ef4444;">
+                <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 16px; color: #1f2937; margin-bottom: 6px;">
+                            ${req.manager_name}
+                        </div>
+                        <div style="color: #6b7280; font-size: 14px; margin-bottom: 4px;">
+                            📧 ${req.manager_email}
+                        </div>
+                        <div style="color: #9ca3af; font-size: 12px; margin-bottom: 8px;">
+                            ⏰ Requested: ${new Date(req.requested_at).toLocaleString()}
+                        </div>
+                        ${req.request_message ? `
+                            <div style="margin-top: 8px; padding: 10px; background: #f9fafb; border-radius: 4px; border-left: 3px solid #d1d5db;">
+                                <div style="font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Message:</div>
+                                <div style="font-style: italic; color: #374151; font-size: 14px;">"${req.request_message}"</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <button class="action-btn" onclick="approveResetRequest(${req.id}, ${req.admin_id}, '${req.manager_name.replace(/'/g, "\\'")}', '${req.manager_email}')" 
+                            style="background: #ef4444; color: white; white-space: nowrap; padding: 10px 20px; font-weight: 600;">
+                        🔑 Reset Password
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading pending requests:', error);
+    }
+}
+
+// Approve password reset request
+async function approveResetRequest(requestId, adminId, managerName, managerEmail) {
+    const confirmed = confirm(`Are you sure you want to reset the password for ${managerName}?\n\nThis will approve their request and generate a new temporary password.`);
+    if (!confirmed) return;
+    
+    try {
+        const response = await fetch(API_BASE + 'reset_manager_password.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                admin_id: adminId,
+                request_id: requestId,
+                action: 'approve_request'
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`✅ Password reset successfully!\n\n` +
+                  `Manager: ${data.manager_name}\n` +
+                  `Email: ${data.manager_email}\n\n` +
+                  `Temporary Password: ${data.temporary_password}\n\n` +
+                  `⚠️ IMPORTANT:\n` +
+                  `• Please share this password with ${managerName} securely\n` +
+                  `• They will be required to change it on next login\n` +
+                  `• This password cannot be recovered later`);
+            
+            loadPendingResetRequests(); // Reload requests
+            loadAdminUsers(); // Reload admin users table
+        } else {
+            showAlert(data.message || 'Error resetting password', 'error');
+        }
+    } catch (error) {
+        console.error('Error approving request:', error);
         showAlert('Connection error. Please try again.', 'error');
     }
 }
@@ -4576,6 +4775,15 @@ function showRegisterAlert(message, type) {
     }, 3000);
 }
 
+function showForgotPasswordAlert(message, type) {
+    const alert = document.getElementById('forgotPasswordAlert');
+    alert.textContent = message;
+    alert.className = `alert ${type} active`;
+    setTimeout(() => {
+        alert.classList.remove('active');
+    }, 5000);
+}
+
 // Global counters for dynamic task/guide inputs
 let taskCounter = 0;
 let guideCounter = 0;
@@ -5055,9 +5263,13 @@ async function handleTaskAndGuideSubmit(e) {
             return;
         }
         
+        // Normalize time format to HH:mm:ss (add :00 seconds if not present)
+        const normalizedStartTime = startTime.length === 5 ? startTime + ':00' : startTime;
+        const normalizedEndTime = endTime.length === 5 ? endTime + ':00' : endTime;
+        
         taskDataObject.time_config = {
-            start_time: startTime,
-            end_time: endTime,
+            start_time: normalizedStartTime,
+            end_time: normalizedEndTime,
             min_duration: parseInt(minDuration)
         };
     }

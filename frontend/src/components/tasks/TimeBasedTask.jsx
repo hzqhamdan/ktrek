@@ -15,6 +15,17 @@ const TimeBasedTask = ({ task, onComplete }) => {
   useEffect(() => {
     if (task.task_config) {
       const cfg = JSON.parse(task.task_config);
+      console.log('📝 Parsed config:', cfg);
+      
+      // Normalize time format to HH:mm:ss
+      if (cfg.start_time && cfg.start_time.length === 5) {
+        cfg.start_time = cfg.start_time + ':00';
+      }
+      if (cfg.end_time && cfg.end_time.length === 5) {
+        cfg.end_time = cfg.end_time + ':00';
+      }
+      
+      console.log('📝 Normalized config:', cfg);
       setConfig(cfg);
     }
   }, [task]);
@@ -26,6 +37,14 @@ const TimeBasedTask = ({ task, onComplete }) => {
       setCurrentTime(timeStr);
 
       if (config) {
+        console.log('⏰ Time Check:', {
+          currentTime: timeStr,
+          startTime: config.start_time,
+          endTime: config.end_time,
+          isAfterStart: timeStr >= config.start_time,
+          isBeforeEnd: timeStr <= config.end_time,
+          isWithin: timeStr >= config.start_time && timeStr <= config.end_time
+        });
         setIsWithinWindow(timeStr >= config.start_time && timeStr <= config.end_time);
       }
     };
