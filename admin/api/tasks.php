@@ -602,6 +602,12 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Consolidate task-specific configs into task_config
         $task_config = null;
+        error_log("UPDATE - Received input keys: " . implode(', ', array_keys($input)));
+        error_log("UPDATE - Has time_config: " . (isset($input['time_config']) ? 'YES' : 'NO'));
+        if (isset($input['time_config'])) {
+            error_log("UPDATE - time_config value: " . json_encode($input['time_config']));
+        }
+        
         if (isset($input['task_config'])) {
             $task_config = json_encode($input['task_config']);
         } elseif (isset($input['time_config'])) {
@@ -611,6 +617,8 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (isset($input['direction_config'])) {
             $task_config = json_encode($input['direction_config']);
         }
+        
+        error_log("UPDATE - Final task_config: " . ($task_config ?? 'NULL'));
         
         $stmt = $conn->prepare("UPDATE tasks SET attraction_id = ?, name = ?, type = ?, description = ?, qr_code = ?, media_url = ?, task_config = ? WHERE id = ?");
         $qr_code = $input['qr_code'] ?? null;
