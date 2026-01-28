@@ -3002,6 +3002,32 @@ async function loadTaskData(id) {
             // Clear media file input
             document.getElementById('taskMediaFile').value = '';
             
+            // Populate task_config fields based on task type
+            if (data.task.task_config) {
+                try {
+                    const taskConfig = JSON.parse(data.task.task_config);
+                    
+                    // For time_based tasks
+                    if (data.task.type === 'time_based' && taskConfig.start_time && taskConfig.end_time) {
+                        // Remove seconds if present (convert HH:mm:ss to HH:mm for time input)
+                        const startTime = taskConfig.start_time.substring(0, 5);
+                        const endTime = taskConfig.end_time.substring(0, 5);
+                        
+                        document.getElementById('timeStartTime').value = startTime;
+                        document.getElementById('timeEndTime').value = endTime;
+                        if (taskConfig.min_duration) {
+                            document.getElementById('timeMinDuration').value = taskConfig.min_duration;
+                        }
+                    }
+                    
+                    // Add handlers for other task types here if needed
+                    // count_confirm, direction, etc.
+                    
+                } catch (parseError) {
+                    console.error('Failed to parse task_config:', parseError);
+                }
+            }
+            
             // Trigger task type change to show relevant sections
             handleTaskTypeChange();
         }
