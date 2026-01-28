@@ -74,7 +74,30 @@ try {
     $stmt->bindParam(':answer', $answer);
     $stmt->execute();
 
-    $rewards = RewardHelper::awardTaskCompletion($db, $user['id'], $task_id, 
+    // Award XP for completing the task
+    $xp_earned = 15; // Base XP for time_based tasks
+    $xp_query = "CALL award_xp(:user_id, :xp_amount, :reason, 'task', :task_id)";
+    $xp_stmt = $db->prepare($xp_query);
+    $xp_reason = "Completed time-based task";
+    $xp_stmt->bindParam(':user_id', $user['id']);
+    $xp_stmt->bindParam(':xp_amount', $xp_earned);
+    $xp_stmt->bindParam(':reason', $xp_reason);
+    $xp_stmt->bindParam(':task_id', $task_id);
+    $xp_stmt->execute();
+    
+    // Award EP for the attraction
+    $ep_earned = 10; // Base EP for completing a task
+    $ep_query = "CALL award_ep(:user_id, :ep_amount, :reason, 'task', :task_id)";
+    $ep_stmt = $db->prepare($ep_query);
+    $ep_reason = "Completed task at attraction";
+    $ep_stmt->bindParam(':user_id', $user['id']);
+    $ep_stmt->bindParam(':ep_amount', $ep_earned);
+    $ep_stmt->bindParam(':reason', $ep_reason);
+    $ep_stmt->bindParam(':task_id', $task_id);
+    $ep_stmt->execute();
+    
+    // Check for special rewards (badges, titles)
+    $special_rewards = RewardHelper::awardTaskCompletion($db, $user['id'], $task_id, 
                $task['attraction_id'], $task['category'], 'time_based');
 
     $query = "INSERT INTO progress (user_id, attraction_id, task_id, completed_at)
@@ -94,7 +117,11 @@ try {
         'check_in_time' => $current_time,
         'time_window' => "{$start_time} - {$end_time}",
         'message' => "Perfect timing! Task completed.",
-        'rewards' => $rewards,
+        'rewards' => [
+            'xp_earned' => $xp_earned,
+            'ep_earned' => $ep_earned,
+            'special_rewards' => $special_rewards
+        ],
         'attraction_id' => $task['attraction_id']
     ], "Time-based task completed", 201);
 
