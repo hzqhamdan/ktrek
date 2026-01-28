@@ -17,7 +17,9 @@ const TimeBasedTask = ({ task, onComplete }) => {
       const cfg = JSON.parse(task.task_config);
       setConfig(cfg);
     }
+  }, [task]);
 
+  useEffect(() => {
     const updateTime = () => {
       const now = new Date();
       const timeStr = now.toTimeString().slice(0, 8);
@@ -31,7 +33,7 @@ const TimeBasedTask = ({ task, onComplete }) => {
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
-  }, [task, config]);
+  }, [config]);
 
   const handleCheckIn = async () => {
     setIsSubmitting(true);
