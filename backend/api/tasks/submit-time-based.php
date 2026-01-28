@@ -100,6 +100,7 @@ try {
     $special_rewards = RewardHelper::awardTaskCompletion($db, $user['id'], $task_id, 
                $task['attraction_id'], $task['category'], 'time_based');
 
+    // Update progress table - insert/update task completion
     $query = "INSERT INTO progress (user_id, attraction_id, task_id, completed_at)
               VALUES (:user_id, :attraction_id, :task_id, NOW())
               ON DUPLICATE KEY UPDATE completed_at = NOW()";
@@ -108,6 +109,42 @@ try {
     $stmt->bindParam(':attraction_id', $task['attraction_id']);
     $stmt->bindParam(':task_id', $task_id);
     $stmt->execute();
+    
+    // Calculate and update progress percentage for this attraction
+    $progress_query = "
+        SELECT 
+            COUNT(DISTINCT t.id) as total_tasks,
+            COUNT(DISTINCT uts.task_id) as completed_tasks
+        FROM tasks t
+        LEFT JOIN user_task_submissions uts ON t.id = uts.task_id AND uts.user_id = :user_id
+        WHERE t.attraction_id = :attraction_id
+    ";
+    $progress_stmt = $db->prepare($progress_query);
+    $progress_stmt->bindParam(':user_id', $user['id']);
+    $progress_stmt->bindParam(':attraction_id', $task['attraction_id']);
+    $progress_stmt->execute();
+    $progress_data = $progress_stmt->fetch(PDO::FETCH_ASSOC);
+    
+    $total_tasks = $progress_data['total_tasks'];
+    $completed_tasks = $progress_data['completed_tasks'];
+    $progress_percentage = $total_tasks > 0 ? ($completed_tasks / $total_tasks) * 100 : 0;
+    
+    // Update progress record with calculated values
+    $update_progress_query = "
+        UPDATE progress 
+        SET completed_tasks = :completed_tasks,
+            total_tasks = :total_tasks,
+            progress_percentage = :progress_percentage,
+            updated_at = NOW()
+        WHERE user_id = :user_id AND attraction_id = :attraction_id
+    ";
+    $update_stmt = $db->prepare($update_progress_query);
+    $update_stmt->bindParam(':completed_tasks', $completed_tasks);
+    $update_stmt->bindParam(':total_tasks', $total_tasks);
+    $update_stmt->bindParam(':progress_percentage', $progress_percentage);
+    $update_stmt->bindParam(':user_id', $user['id']);
+    $update_stmt->bindParam(':attraction_id', $task['attraction_id']);
+    $update_stmt->execute();
 
     $db->commit();
 
