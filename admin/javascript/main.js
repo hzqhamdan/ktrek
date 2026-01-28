@@ -5127,6 +5127,10 @@ async function handleTaskAndGuideSubmit(e) {
     const taskId = document.getElementById('taskAndGuideTaskId').value;
     const guideId = document.getElementById('taskAndGuideGuideId').value;
     const attraction_id = document.getElementById('taskAndGuideAttractionId').value; // Get from hidden field
+    
+    console.log('🔍 DEBUG START: taskAndGuideTaskId element =', document.getElementById('taskAndGuideTaskId'));
+    console.log('🔍 DEBUG START: taskId value =', taskId);
+    console.log('🔍 DEBUG START: guideId value =', guideId);
     const taskName = document.getElementById('taskAndGuideTaskName').value;
     // taskType already declared above on line 2297
     const taskDescription = document.getElementById('taskAndGuideTaskDescription').value;
@@ -5540,8 +5544,12 @@ async function addMoreTaskAndGuide() {
         let taskSuccess = false;
         let guideSuccess = false;
 
+        console.log('🔍 DEBUG: taskId =', taskId);
+        console.log('🔍 DEBUG: taskDataObject =', JSON.stringify(taskDataObject, null, 2));
+
         // --- Save Task ---
         if (taskId) { // If editing existing task
+            console.log('🔍 DEBUG: Entering UPDATE branch (taskId exists)');
             const updatePayload = { action: 'update', id: taskId, ...taskDataObject };
             console.log('🔍 DEBUG: Sending UPDATE request with payload:', JSON.stringify(updatePayload, null, 2));
             const taskUpdateResponse = await fetch(API_BASE + 'tasks.php', {
@@ -5558,6 +5566,9 @@ async function addMoreTaskAndGuide() {
                throw new Error(`Task update failed: ${taskResponseData.message || 'Unknown error'}`);
            }
         } else { // If creating new task
+            console.log('🔍 DEBUG: Entering CREATE branch (no taskId)');
+            const createPayload = { action: 'create', ...taskDataObject };
+            console.log('🔍 DEBUG: Sending CREATE request with payload:', JSON.stringify(createPayload, null, 2));
             const taskCreateResponse = await fetch(API_BASE + 'tasks.php', {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
