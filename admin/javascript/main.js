@@ -3182,11 +3182,15 @@ async function handleTaskSubmit(e) {
             return;
         }
         
-        formData['task_config'] = JSON.stringify({
-            start_time: startTime + ':00',
-            end_time: endTime + ':00',
-            minimum_duration_minutes: parseInt(minDuration)
-        });
+        // Send as time_config object (not task_config string) - backend will convert to task_config
+        const normalizedStartTime = startTime.length === 5 ? startTime + ':00' : startTime;
+        const normalizedEndTime = endTime.length === 5 ? endTime + ':00' : endTime;
+        
+        formData['time_config'] = {
+            start_time: normalizedStartTime,
+            end_time: normalizedEndTime,
+            min_duration: parseInt(minDuration)
+        };
     }
 
     try {
