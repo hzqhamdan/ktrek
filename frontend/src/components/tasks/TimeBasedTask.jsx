@@ -85,18 +85,21 @@ const TimeBasedTask = ({ task, onComplete }) => {
   const handleCheckIn = async () => {
     setIsSubmitting(true);
     try {
+      console.log('🔍 Submitting time-based task:', task.id);
       const response = await tasksAPI.submitTimeBased(task.id);
+      console.log('🔍 Response:', response);
       
       if (response.success) {
         setResult(response.data);
         setTimeout(() => onComplete(response.data), 2500);
       } else {
-        alert(response.message);
+        console.error('❌ Task submission failed:', response);
+        alert(response.message || 'Failed to check in');
         setIsSubmitting(false);
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('Failed to check in');
+      console.error('❌ Error during check in:', error);
+      alert('Failed to check in: ' + (error.message || 'Unknown error'));
       setIsSubmitting(false);
     }
   };
