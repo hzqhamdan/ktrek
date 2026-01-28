@@ -6,6 +6,7 @@ import Card from "../common/Card";
 import Button from "../common/Button";
 
 const TimeBasedTask = ({ task, onComplete }) => {
+  const [currentTime, setCurrentTime] = useState('');
   const [serverTime, setServerTime] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [config, setConfig] = useState(null);
@@ -53,10 +54,22 @@ const TimeBasedTask = ({ task, onComplete }) => {
     return () => clearInterval(serverTimeInterval);
   }, [task]);
 
+  // Update current time display every second (for smooth UI)
+  useEffect(() => {
+    const updateCurrentTime = () => {
+      const now = new Date();
+      setCurrentTime(now.toTimeString().slice(0, 8));
+    };
+    
+    updateCurrentTime();
+    const interval = setInterval(updateCurrentTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Check if server time is within window
   useEffect(() => {
     if (!config || !serverTime) return;
 
-    // Check if server time is within the configured window
     const isWithin = serverTime >= config.start_time && serverTime <= config.end_time;
     console.log('⏰ Time Check:', {
       serverTime: serverTime,
@@ -138,10 +151,15 @@ const TimeBasedTask = ({ task, onComplete }) => {
         <Card className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200" padding="lg">
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-2">Current Time</p>
-            {serverTime ? (
-              <p className="text-5xl font-bold text-blue-600">{serverTime}</p>
+            {currentTime ? (
+              <p className="text-5xl font-bold text-blue-600">{currentTime}</p>
             ) : (
               <p className="text-3xl text-gray-400">Loading...</p>
+            )}
+            {serverTime && (
+              <p className="text-xs text-gray-500 mt-2">
+                Server time: {serverTime} (validation reference)
+              </p>
             )}
           </div>
         </Card>
