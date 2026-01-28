@@ -7,6 +7,7 @@ import Button from "../common/Button";
 
 const TimeBasedTask = ({ task, onComplete }) => {
   const [currentTime, setCurrentTime] = useState('');
+  const [serverTime, setServerTime] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [config, setConfig] = useState(null);
   const [isWithinWindow, setIsWithinWindow] = useState(false);
@@ -28,6 +29,23 @@ const TimeBasedTask = ({ task, onComplete }) => {
       console.log('📝 Normalized config:', cfg);
       setConfig(cfg);
     }
+    
+    // Fetch server time once on mount
+    const fetchServerTime = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/debug/server-time.php`);
+        const data = await response.json();
+        if (data.success) {
+          setServerTime(data.data.server_time);
+        }
+      } catch (error) {
+        console.error('Failed to fetch server time:', error);
+      }
+    };
+    fetchServerTime();
+    const serverTimeInterval = setInterval(fetchServerTime, 5000); // Update every 5 seconds
+    
+    return () => clearInterval(serverTimeInterval);
   }, [task]);
 
   useEffect(() => {
@@ -122,8 +140,16 @@ const TimeBasedTask = ({ task, onComplete }) => {
 
         <Card className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200" padding="lg">
           <div className="text-center">
-            <p className="text-sm text-gray-600 mb-2">Current Time</p>
-            <p className="text-5xl font-bold text-blue-600">{currentTime}</p>
+            <p className="text-sm text-gray-600 mb-2">Your Device Time</p>
+            <p className="text-4xl font-bold text-blue-600">{currentTime}</p>
+            {serverTime && (
+              <>
+                <div className="my-3 border-t border-blue-200"></div>
+                <p className="text-sm text-gray-600 mb-2">Server Time (Used for Validation)</p>
+                <p className="text-4xl font-bold text-green-600">{serverTime}</p>
+                <p className="text-xs text-gray-500 mt-2">⚠️ Validation uses server time, not your device time</p>
+              </>
+            )}
           </div>
         </Card>
 
