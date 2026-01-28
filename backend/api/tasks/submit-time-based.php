@@ -39,7 +39,8 @@ try {
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
     $config = json_decode($task['task_config'], true);
 
-    // Check current time is within window
+    // Check current time is within window (Malaysia timezone)
+    date_default_timezone_set('Asia/Kuala_Lumpur');
     $current_time = date('H:i:s');
     $start_time = $config['start_time'];
     $end_time = $config['end_time'];

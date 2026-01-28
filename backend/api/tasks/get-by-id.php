@@ -40,7 +40,8 @@ try {
 
     $task = $stmt->fetch();
     
-    // Add server time for time-based tasks
+    // Add server time for time-based tasks (set to Malaysia timezone)
+    date_default_timezone_set('Asia/Kuala_Lumpur');
     $task['server_time'] = date('H:i:s');
 
     Response::success($task, "Task details retrieved");
