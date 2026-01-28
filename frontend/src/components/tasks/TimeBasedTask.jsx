@@ -6,7 +6,6 @@ import Card from "../common/Card";
 import Button from "../common/Button";
 
 const TimeBasedTask = ({ task, onComplete }) => {
-  const [currentTime, setCurrentTime] = useState('');
   const [serverTime, setServerTime] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [config, setConfig] = useState(null);
@@ -49,28 +48,20 @@ const TimeBasedTask = ({ task, onComplete }) => {
   }, [task]);
 
   useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const timeStr = now.toTimeString().slice(0, 8);
-      setCurrentTime(timeStr);
+    if (!config || !serverTime) return;
 
-      if (config) {
-        console.log('⏰ Time Check:', {
-          currentTime: timeStr,
-          startTime: config.start_time,
-          endTime: config.end_time,
-          isAfterStart: timeStr >= config.start_time,
-          isBeforeEnd: timeStr <= config.end_time,
-          isWithin: timeStr >= config.start_time && timeStr <= config.end_time
-        });
-        setIsWithinWindow(timeStr >= config.start_time && timeStr <= config.end_time);
-      }
-    };
-
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, [config]);
+    // Check if server time is within the configured window
+    const isWithin = serverTime >= config.start_time && serverTime <= config.end_time;
+    console.log('⏰ Time Check:', {
+      serverTime: serverTime,
+      startTime: config.start_time,
+      endTime: config.end_time,
+      isAfterStart: serverTime >= config.start_time,
+      isBeforeEnd: serverTime <= config.end_time,
+      isWithin: isWithin
+    });
+    setIsWithinWindow(isWithin);
+  }, [config, serverTime]);
 
   const handleCheckIn = async () => {
     setIsSubmitting(true);
@@ -140,15 +131,11 @@ const TimeBasedTask = ({ task, onComplete }) => {
 
         <Card className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200" padding="lg">
           <div className="text-center">
-            <p className="text-sm text-gray-600 mb-2">Your Device Time</p>
-            <p className="text-4xl font-bold text-blue-600">{currentTime}</p>
-            {serverTime && (
-              <>
-                <div className="my-3 border-t border-blue-200"></div>
-                <p className="text-sm text-gray-600 mb-2">Server Time (Used for Validation)</p>
-                <p className="text-4xl font-bold text-green-600">{serverTime}</p>
-                <p className="text-xs text-gray-500 mt-2">⚠️ Validation uses server time, not your device time</p>
-              </>
+            <p className="text-sm text-gray-600 mb-2">Current Time</p>
+            {serverTime ? (
+              <p className="text-5xl font-bold text-blue-600">{serverTime}</p>
+            ) : (
+              <p className="text-3xl text-gray-400">Loading...</p>
             )}
           </div>
         </Card>
