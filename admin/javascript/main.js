@@ -5106,6 +5106,7 @@ function clearFormAlerts(formElement) {
 
 async function handleTaskAndGuideSubmit(e) {
     e.preventDefault();
+    alert('🔍 Form submitted! Check console for debug info.');
     console.log("handleTaskAndGuideSubmit: Submitting task and guide...");
 
     const taskType = document.getElementById('taskAndGuideTaskType').value;
