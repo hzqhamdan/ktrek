@@ -174,11 +174,33 @@ try {
     $attraction_id = $currentTask['attraction_id'];
     $category = $currentTask['category'];
 
+    // Award base XP for completing the check-in task
+    $xp_earned = 15; // Base XP for check-in tasks
+    $xp_query = "CALL award_xp(:user_id, :xp_amount, :reason, 'task', :task_id)";
+    $xp_stmt = $db->prepare($xp_query);
+    $xp_reason = "Completed check-in task";
+    $xp_stmt->bindParam(':user_id', $user_id);
+    $xp_stmt->bindParam(':xp_amount', $xp_earned);
+    $xp_stmt->bindParam(':reason', $xp_reason);
+    $xp_stmt->bindParam(':task_id', $task_id);
+    $xp_stmt->execute();
+    
+    // Award EP for the attraction
+    $ep_earned = 10; // Base EP for completing a task
+    $ep_query = "CALL award_ep(:user_id, :ep_amount, :reason, 'task', :task_id)";
+    $ep_stmt = $db->prepare($ep_query);
+    $ep_reason = "Completed task at attraction";
+    $ep_stmt->bindParam(':user_id', $user_id);
+    $ep_stmt->bindParam(':ep_amount', $ep_earned);
+    $ep_stmt->bindParam(':reason', $ep_reason);
+    $ep_stmt->bindParam(':task_id', $task_id);
+    $ep_stmt->execute();
+
     $db->commit();
     
     // === REWARD SYSTEM INTEGRATION ===
-    // Award rewards using RewardHelper class (works with PDO)
-    $rewards = RewardHelper::awardTaskCompletion(
+    // Check for special rewards (badges, titles, etc.)
+    $special_rewards = RewardHelper::awardTaskCompletion(
         $db,
         $user_id,
         $task_id,
