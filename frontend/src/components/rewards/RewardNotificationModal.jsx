@@ -67,7 +67,19 @@ const RewardNotificationModal = ({ rewards, isOpen, onClose }) => {
 
   const hasRewards = xp_earned > 0 || ep_earned > 0 || new_rewards.length > 0;
 
-  if (!hasRewards) return null;
+  console.log('[RewardModal] hasRewards check:', {
+    xp_earned,
+    ep_earned,
+    new_rewards_length: new_rewards.length,
+    hasRewards
+  });
+
+  if (!hasRewards) {
+    console.log('[RewardModal] No rewards to show, returning null');
+    return null;
+  }
+
+  console.log('[RewardModal] Rendering modal content!');
 
   // Determine reward icon based on type
   const getRewardIcon = (type) => {
