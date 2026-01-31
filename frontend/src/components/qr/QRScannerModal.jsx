@@ -130,31 +130,48 @@ const QRScannerModal = ({
 
   const verifyQRCode = async (qrCode) => {
     setIsVerifying(true);
+    setError(null); // Clear previous errors
     try {
+      console.log('[QRScanner] Verifying QR code:', qrCode);
       const response = await qrAPI.verifyQR(qrCode);
+      console.log('[QRScanner] Verify response:', response);
+      
       if (response.success) {
         const task = response.data.task;
+        console.log('[QRScanner] Task verified:', task);
+        
         // Check if task belongs to this attraction
         if (attractionId && task.attraction_id !== parseInt(attractionId)) {
+          console.warn('[QRScanner] Wrong attraction!', { expected: attractionId, got: task.attraction_id });
           showToast("This QR code belongs to a different attraction", "error");
           setError("Wrong attraction QR code");
           return;
         }
+        
         showToast("QR Code verified!", "success");
+        console.log('[QRScanner] Calling onSuccess with:', { task, qrCode });
+        
         // Call success callback with task + scanned QR code
         if (onSuccess) {
           onSuccess({ task, qrCode });
         }
       } else {
         const msg = response.message || "Invalid QR code";
+        console.error('[QRScanner] Verification failed:', msg, response);
         showToast(msg, "error");
         setError(msg);
         onError?.(msg);
       }
     } catch (error) {
-      console.error("QR verification error:", error);
+      console.error("[QRScanner] QR verification error:", error);
+      console.error("[QRScanner] Error details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
       const errorMessage =
-        error.response?.data?.message || "Failed to verify QR code";
+        error.response?.data?.message || error.message || "Failed to verify QR code";
       showToast(errorMessage, "error");
       setError(errorMessage);
       onError?.(errorMessage);
