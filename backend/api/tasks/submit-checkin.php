@@ -277,9 +277,9 @@ try {
             'gps_accuracy_m' => $accuracy
         ],
         'rewards' => [
-            'xp_earned' => $xp_earned,
-            'ep_earned' => $ep_earned,
-            'special_rewards' => $special_rewards
+            'xp_earned' => (int)$xp_earned,
+            'ep_earned' => (int)$ep_earned,
+            'new_rewards' => $special_rewards ?: []
         ]
     ], "Check-in successful", 201);
 

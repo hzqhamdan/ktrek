@@ -193,9 +193,9 @@ try {
             ? "Correct! The direction is {$correct_direction}." 
             : "Not quite. The correct direction is {$correct_direction}.",
         'rewards' => [
-            'xp_earned' => $xp_earned,
-            'ep_earned' => $ep_earned,
-            'special_rewards' => $special_rewards
+            'xp_earned' => (int)$xp_earned,
+            'ep_earned' => (int)$ep_earned,
+            'new_rewards' => $special_rewards ?: []
         ],
         'attraction_id' => $task['attraction_id']
     ], "Task submitted successfully", 201);

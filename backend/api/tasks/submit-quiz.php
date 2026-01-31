@@ -196,9 +196,9 @@ try {
         'next_task_id' => $nextTask ? $nextTask['id'] : null,
         'attraction_id' => $attraction_id,
         'rewards' => [
-            'xp_earned' => $xp_earned,
-            'ep_earned' => $ep_earned,
-            'special_rewards' => $special_rewards
+            'xp_earned' => (int)$xp_earned,
+            'ep_earned' => (int)$ep_earned,
+            'new_rewards' => $special_rewards ?: []
         ]
     ], "Quiz submitted successfully", 201);
 

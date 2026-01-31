@@ -178,9 +178,9 @@ try {
             ? "Correct! You counted {$user_count} {$target_object}." 
             : "Not quite. The correct count is {$correct_count} {$target_object}.",
         'rewards' => [
-            'xp_earned' => $xp_earned,
-            'ep_earned' => $ep_earned,
-            'special_rewards' => $special_rewards
+            'xp_earned' => (int)$xp_earned,
+            'ep_earned' => (int)$ep_earned,
+            'new_rewards' => $special_rewards ?: []
         ],
         'attraction_id' => $task['attraction_id']
     ], "Task submitted successfully", 201);
