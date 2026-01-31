@@ -8,6 +8,7 @@ require_once '../../config/cors.php';
 require_once '../../middleware/auth-middleware.php';
 require_once '../../utils/response.php';
 require_once '../../utils/reward-helper.php';
+require_once '../../utils/checkin-helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     Response::error("Method not allowed", 405);
@@ -32,6 +33,30 @@ try {
     $db->beginTransaction();
 
     $user_id = $user['id']; // Fix: auth middleware returns 'id', not 'user_id'
+
+    // Get attraction_id for this task first (needed for check-in verification)
+    $query = "SELECT attraction_id FROM tasks WHERE id = :task_id";
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':task_id', $task_id);
+    $stmt->execute();
+    
+    if ($stmt->rowCount() === 0) {
+        $db->rollBack();
+        Response::error("Task not found", 404);
+    }
+    
+    $task_info = $stmt->fetch(PDO::FETCH_ASSOC);
+    $attraction_id = $task_info['attraction_id'];
+
+    // Check if user has checked in to this attraction first
+    if (!CheckinHelper::hasCheckedIn($db, $user_id, $attraction_id)) {
+        $db->rollBack();
+        $checkin_task_id = CheckinHelper::getCheckinTaskId($db, $attraction_id);
+        Response::error("Please check in to this attraction first before attempting other tasks", 403, [
+            'requires_checkin' => true,
+            'checkin_task_id' => $checkin_task_id
+        ]);
+    }
 
     // Check if already submitted
     $query = "SELECT id FROM user_task_submissions 

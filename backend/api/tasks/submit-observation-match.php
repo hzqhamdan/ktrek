@@ -4,6 +4,7 @@ require_once '../../config/cors.php';
 require_once '../../middleware/auth-middleware.php';
 require_once '../../utils/response.php';
 require_once '../../utils/reward-helper.php';
+require_once '../../utils/checkin-helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     Response::error("Method not allowed", 405);
@@ -46,6 +47,16 @@ try {
     }
 
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // 1.5. Check if user has checked in to this attraction first
+    if (!CheckinHelper::hasCheckedIn($db, $user['id'], $task['attraction_id'])) {
+        $db->rollBack();
+        $checkin_task_id = CheckinHelper::getCheckinTaskId($db, $task['attraction_id']);
+        Response::error("Please check in to this attraction first before attempting other tasks", 403, [
+            'requires_checkin' => true,
+            'checkin_task_id' => $checkin_task_id
+        ]);
+    }
 
     // 2. Get all options from database
     // Check both is_correct column AND option_metadata for backwards compatibility

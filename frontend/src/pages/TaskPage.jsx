@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, CheckCircle, XCircle, BookOpen } from "lucide-react";
 import { tasksAPI } from "../api/tasks";
 import { guidesAPI } from "../api/guides";
+import { progressAPI } from "../api/progress";
 import { useToast } from "../components/ui/toast-1";
 import Loading from "../components/common/Loading";
 const TaskPage = () => {
@@ -14,6 +15,8 @@ const TaskPage = () => {
   const [guides, setGuides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [hasCheckedIn, setHasCheckedIn] = useState(false);
+  const [checkinTaskId, setCheckinTaskId] = useState(null);
   useEffect(() => {
     loadTask();
   }, [taskId]);
@@ -23,6 +26,14 @@ const TaskPage = () => {
       const response = await tasksAPI.getById(taskId);
       const taskData = response.data || response;
       setTask(taskData);
+      
+      // Check if user has checked in to this attraction (skip if this IS the checkin task)
+      if (taskData.type !== 'checkin' && taskData.attraction_id) {
+        await checkIfUserHasCheckedIn(taskData.attraction_id);
+      } else if (taskData.type === 'checkin') {
+        // If this is the checkin task, user doesn't need to check in first
+        setHasCheckedIn(true);
+      }
       
       // Load guides for the specific task
       try {
@@ -39,7 +50,44 @@ const TaskPage = () => {
       setLoading(false);
     }
   };
+
+  const checkIfUserHasCheckedIn = async (attractionId) => {
+    try {
+      const progressResponse = await progressAPI.getAttractionProgress(attractionId);
+      const progressData = progressResponse.data || progressResponse;
+      
+      // Check if any completed task is a checkin type
+      const completedTasks = progressData.completed_tasks || [];
+      const checkinCompleted = completedTasks.some(task => task.type === 'checkin');
+      
+      setHasCheckedIn(checkinCompleted);
+      
+      // Find the checkin task ID for this attraction
+      const allTasks = progressData.all_tasks || progressData.tasks || [];
+      const checkinTask = allTasks.find(task => task.type === 'checkin');
+      if (checkinTask) {
+        setCheckinTaskId(checkinTask.id);
+      }
+    } catch (error) {
+      console.error("Failed to check check-in status:", error);
+      // If we can't verify, allow the user to proceed (backend will catch it)
+      setHasCheckedIn(true);
+    }
+  };
   const handleSubmit = async () => {
+    // Check if user has checked in first (only for non-checkin tasks)
+    if (task.type !== 'checkin' && !hasCheckedIn) {
+      showToast("Please check in to this attraction first before attempting other tasks", "error");
+      
+      // Navigate to the check-in task if we know its ID
+      if (checkinTaskId) {
+        setTimeout(() => {
+          navigate(`/dashboard/tasks/checkin/${checkinTaskId}`);
+        }, 1500);
+      }
+      return;
+    }
+
     setSubmitting(true);
     try {
       // Handle different task types

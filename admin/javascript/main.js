@@ -4948,13 +4948,8 @@ function showQRPreview(token) {
     // Show info about what the QR contains
     const infoDiv = document.getElementById('qrInfoText');
     if (infoDiv) {
-        if (isDeepLink) {
-            infoDiv.innerHTML = `✅ <strong>Scannable QR:</strong> ${qrData}`;
-            infoDiv.style.color = '#059669';
-        } else {
-            infoDiv.innerHTML = `⚠️ <strong>Token only (not scannable):</strong> Save task first!`;
-            infoDiv.style.color = '#dc2626';
-        }
+        infoDiv.innerHTML = `✅ <strong>QR Code Token:</strong> ${qrData.substring(0, 30)}...`;
+        infoDiv.style.color = '#059669';
     }
 }
 

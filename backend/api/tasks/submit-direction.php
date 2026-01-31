@@ -4,6 +4,7 @@ require_once '../../config/cors.php';
 require_once '../../middleware/auth-middleware.php';
 require_once '../../utils/response.php';
 require_once '../../utils/reward-helper.php';
+require_once '../../utils/checkin-helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     Response::error("Method not allowed", 405);
@@ -49,6 +50,18 @@ try {
 
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
     error_log("Step 1: Task found - " . $task['name']);
+
+    // 1.5. Check if user has checked in to this attraction first
+    if (!CheckinHelper::hasCheckedIn($db, $user['id'], $task['attraction_id'])) {
+        $db->rollBack();
+        $checkin_task_id = CheckinHelper::getCheckinTaskId($db, $task['attraction_id']);
+        error_log("Step 1.5 ERROR: User has not checked in");
+        Response::error("Please check in to this attraction first before attempting other tasks", 403, [
+            'requires_checkin' => true,
+            'checkin_task_id' => $checkin_task_id
+        ]);
+    }
+    error_log("Step 1.5: Check-in verified");
 
     // 2. Get the question and correct answer
     $query = "SELECT qq.id as question_id, qq.question_text, qo.option_text, qo.is_correct
