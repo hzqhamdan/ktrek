@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AdminSidebarIcon } from "../components/ui/admin-sidebar-icon";
-import { Award, Sparkles, Trophy, Star } from "lucide-react";
+import { Award, Sparkles, Trophy, Star, Crown } from "lucide-react";
 import { rewardsAPI } from "../api/rewards";
 import { attractionsAPI } from "../api/attractions";
 import Loading from "../components/common/Loading";
@@ -11,6 +11,7 @@ import BadgeCollection from "../components/rewards/BadgeCollection";
 import CategoryMilestone from "../components/rewards/CategoryMilestone";
 import { formatDateTime } from "../utils/helpers";
 import { useToast } from "../components/ui/toast-1";
+import useRewardStore from "../store/rewardStore";
 const RewardsPage = () => {
   const { showToast } = useToast();
   const [unlockedRewards, setUnlockedRewards] = useState([]);
@@ -142,6 +143,11 @@ const RewardsPage = () => {
         <div className="mb-12">
           <BadgeCollection />
         </div>
+        
+        {/* Titles Section */}
+        <div className="mb-12">
+          <TitleCollection />
+        </div>
         {/* Locked Rewards */}{" "}
         {lockedAttractions.length > 0 && (
           <div>
@@ -234,4 +240,90 @@ const RewardsPage = () => {
     </div>
   );
 };
+
+// Title Collection Component
+const TitleCollection = () => {
+  const { titles, fetchTitles, loading, setActiveTitle, activeTitle } = useRewardStore();
+  const [activeTitleId, setActiveTitleId] = useState(null);
+
+  useEffect(() => {
+    fetchTitles();
+  }, [fetchTitles]);
+
+  useEffect(() => {
+    if (activeTitle) {
+      setActiveTitleId(activeTitle.id);
+    }
+  }, [activeTitle]);
+
+  if (loading) {
+    return <div className="text-center p-8">Loading titles...</div>;
+  }
+
+  if (!titles || titles.length === 0) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100 text-center">
+        <div className="text-gray-400 mb-2">
+          <Crown className="w-16 h-16 mx-auto mb-4" />
+        </div>
+        <p className="text-gray-600">No titles earned yet</p>
+        <p className="text-sm text-gray-500 mt-2">Complete achievements to earn titles!</p>
+      </div>
+    );
+  }
+
+  const handleSetActive = async (titleId) => {
+    try {
+      await setActiveTitle(titleId);
+      setActiveTitleId(titleId);
+    } catch (error) {
+      console.error('Failed to set active title:', error);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+      <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+        <Crown className="w-6 h-6 text-yellow-600" />
+        Your Titles
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {titles.map((title) => (
+          <div
+            key={title.id}
+            className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
+              activeTitleId === title.id
+                ? 'border-yellow-500 bg-yellow-50'
+                : 'border-gray-200 hover:border-yellow-300'
+            }`}
+            onClick={() => handleSetActive(title.id)}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <Crown className={`w-5 h-5 ${activeTitleId === title.id ? 'text-yellow-600' : 'text-gray-400'}`} />
+                  <h4 className="font-bold text-gray-800">{title.reward_name}</h4>
+                </div>
+                {title.reward_description && (
+                  <p className="text-sm text-gray-600 mb-2">{title.reward_description}</p>
+                )}
+                <div className="text-xs text-gray-500">
+                  Earned: {new Date(title.earned_date).toLocaleDateString()}
+                </div>
+              </div>
+              {activeTitleId === title.id && (
+                <div className="ml-2">
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                    Active
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default RewardsPage;
