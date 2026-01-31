@@ -116,10 +116,34 @@ try {
 
     $submission_id = $db->lastInsertId();
 
-    // 5. Award rewards if correct
-    $rewards = null;
+    // 5. Award base XP and EP
+    $xp_earned = 0;
+    $ep_earned = 0;
+    $special_rewards = null;
+    
     if ($is_correct) {
-        $rewards = RewardHelper::awardTaskCompletion(
+        $xp_earned = 20; // Base XP for count_confirm tasks
+        $xp_query = "CALL award_xp(:user_id, :xp_amount, :reason, 'task', :task_id)";
+        $xp_stmt = $db->prepare($xp_query);
+        $xp_reason = "Completed count & confirm task";
+        $xp_stmt->bindParam(':user_id', $user['id']);
+        $xp_stmt->bindParam(':xp_amount', $xp_earned);
+        $xp_stmt->bindParam(':reason', $xp_reason);
+        $xp_stmt->bindParam(':task_id', $task_id);
+        $xp_stmt->execute();
+        
+        $ep_earned = 10; // Base EP for completing a task
+        $ep_query = "CALL award_ep(:user_id, :ep_amount, :reason, 'task', :task_id)";
+        $ep_stmt = $db->prepare($ep_query);
+        $ep_reason = "Completed task at attraction";
+        $ep_stmt->bindParam(':user_id', $user['id']);
+        $ep_stmt->bindParam(':ep_amount', $ep_earned);
+        $ep_stmt->bindParam(':reason', $ep_reason);
+        $ep_stmt->bindParam(':task_id', $task_id);
+        $ep_stmt->execute();
+        
+        // Check for special rewards
+        $special_rewards = RewardHelper::awardTaskCompletion(
             $db,
             $user['id'],
             $task_id,
@@ -153,7 +177,11 @@ try {
         'message' => $is_correct 
             ? "Correct! You counted {$user_count} {$target_object}." 
             : "Not quite. The correct count is {$correct_count} {$target_object}.",
-        'rewards' => $rewards,
+        'rewards' => [
+            'xp_earned' => $xp_earned,
+            'ep_earned' => $ep_earned,
+            'special_rewards' => $special_rewards
+        ],
         'attraction_id' => $task['attraction_id']
     ], "Task submitted successfully", 201);
 

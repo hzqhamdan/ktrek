@@ -169,14 +169,35 @@ try {
     $stmt->bindParam(':task_id', $task_id);
     $stmt->execute();
 
-    $db->commit();
-
-    // === REWARD SYSTEM INTEGRATION ===
-    $rewards = null;
-    try {
-        if ($is_correct) {
-            // Award rewards using RewardHelper class (works with PDO)
-            $rewards = RewardHelper::awardTaskCompletion(
+    // Award base XP and EP
+    $xp_earned = 0;
+    $ep_earned = 0;
+    $special_rewards = null;
+    
+    if ($is_correct) {
+        $xp_earned = 25; // Base XP for observation_match tasks
+        $xp_query = "CALL award_xp(:user_id, :xp_amount, :reason, 'task', :task_id)";
+        $xp_stmt = $db->prepare($xp_query);
+        $xp_reason = "Completed observation match task";
+        $xp_stmt->bindParam(':user_id', $user['id']);
+        $xp_stmt->bindParam(':xp_amount', $xp_earned);
+        $xp_stmt->bindParam(':reason', $xp_reason);
+        $xp_stmt->bindParam(':task_id', $task_id);
+        $xp_stmt->execute();
+        
+        $ep_earned = 10; // Base EP for completing a task
+        $ep_query = "CALL award_ep(:user_id, :ep_amount, :reason, 'task', :task_id)";
+        $ep_stmt = $db->prepare($ep_query);
+        $ep_reason = "Completed task at attraction";
+        $ep_stmt->bindParam(':user_id', $user['id']);
+        $ep_stmt->bindParam(':ep_amount', $ep_earned);
+        $ep_stmt->bindParam(':reason', $ep_reason);
+        $ep_stmt->bindParam(':task_id', $task_id);
+        $ep_stmt->execute();
+        
+        // Check for special rewards
+        try {
+            $special_rewards = RewardHelper::awardTaskCompletion(
                 $db,
                 $user['id'],
                 $task_id,
@@ -184,11 +205,13 @@ try {
                 $task['category'],
                 'observation_match'
             );
+        } catch (Exception $e) {
+            error_log("Observation match reward error: " . $e->getMessage());
+            // Don't fail the submission if rewards fail
         }
-    } catch (Exception $e) {
-        error_log("Observation match reward error: " . $e->getMessage());
-        // Don't fail the submission if rewards fail
     }
+
+    $db->commit();
     // === END REWARD INTEGRATION ===
 
     // 8. Return response
@@ -202,7 +225,11 @@ try {
         'message' => $is_correct 
             ? "Perfect! You selected all the correct answers!" 
             : "You got {$correctCount} out of {$totalCorrectAnswers} correct" . ($wrongCount > 0 ? " with {$wrongCount} wrong selection(s)." : "."),
-        'rewards' => $rewards,
+        'rewards' => [
+            'xp_earned' => $xp_earned,
+            'ep_earned' => $ep_earned,
+            'special_rewards' => $special_rewards
+        ],
         'attraction_id' => $task['attraction_id']
     ], "Observation match submitted successfully", 201);
 

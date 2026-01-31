@@ -136,9 +136,32 @@ try {
     $stmt->execute();
     $task_details = $stmt->fetch(PDO::FETCH_ASSOC);
     
+    // Award base XP for completing the quiz
+    $xp_earned = 25; // Base XP for quiz tasks
+    $xp_query = "CALL award_xp(:user_id, :xp_amount, :reason, 'task', :task_id)";
+    $xp_stmt = $db->prepare($xp_query);
+    $xp_reason = "Completed quiz task";
+    $xp_stmt->bindParam(':user_id', $user_id);
+    $xp_stmt->bindParam(':xp_amount', $xp_earned);
+    $xp_stmt->bindParam(':reason', $xp_reason);
+    $xp_stmt->bindParam(':task_id', $task_id);
+    $xp_stmt->execute();
+    
+    // Award EP for the attraction
+    $ep_earned = 10; // Base EP for completing a task
+    $ep_query = "CALL award_ep(:user_id, :ep_amount, :reason, 'task', :task_id)";
+    $ep_stmt = $db->prepare($ep_query);
+    $ep_reason = "Completed task at attraction";
+    $ep_stmt->bindParam(':user_id', $user_id);
+    $ep_stmt->bindParam(':ep_amount', $ep_earned);
+    $ep_stmt->bindParam(':reason', $ep_reason);
+    $ep_stmt->bindParam(':task_id', $task_id);
+    $ep_stmt->execute();
+
     $db->commit();
 
-    $rewards = RewardHelper::awardTaskCompletion(
+    // Check for special rewards (badges, titles)
+    $special_rewards = RewardHelper::awardTaskCompletion(
         $db,
         $user_id,
         $task_id,
@@ -172,7 +195,11 @@ try {
         'is_perfect' => $is_correct,
         'next_task_id' => $nextTask ? $nextTask['id'] : null,
         'attraction_id' => $attraction_id,
-        'rewards' => $rewards
+        'rewards' => [
+            'xp_earned' => $xp_earned,
+            'ep_earned' => $ep_earned,
+            'special_rewards' => $special_rewards
+        ]
     ], "Quiz submitted successfully", 201);
 
 } catch (PDOException $e) {

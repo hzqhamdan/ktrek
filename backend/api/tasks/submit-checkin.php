@@ -204,17 +204,15 @@ try {
     $stmt->bindParam(':progress_percentage', $progress_percentage);
     $stmt->execute();
 
-    // Get current attraction_id and category for rewards
-    $query = "SELECT t.attraction_id, a.category 
-              FROM tasks t 
-              JOIN attractions a ON t.attraction_id = a.id 
-              WHERE t.id = :task_id";
+    // Get category for rewards (attraction_id already fetched above)
+    $query = "SELECT a.category 
+              FROM attractions a 
+              WHERE a.id = :attraction_id";
     $stmt = $db->prepare($query);
-    $stmt->bindParam(':task_id', $task_id);
+    $stmt->bindParam(':attraction_id', $attraction_id);
     $stmt->execute();
-    $currentTask = $stmt->fetch(PDO::FETCH_ASSOC);
-    $attraction_id = $currentTask['attraction_id'];
-    $category = $currentTask['category'];
+    $attraction_data = $stmt->fetch(PDO::FETCH_ASSOC);
+    $category = $attraction_data['category'];
 
     // Award base XP for completing the check-in task
     $xp_earned = 15; // Base XP for check-in tasks
