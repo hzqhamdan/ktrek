@@ -17,6 +17,8 @@ const QRScannerModal = ({
   const [error, setError] = useState(null);
   const [scannedData, setScannedData] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [showManualInput, setShowManualInput] = useState(false);
+  const [manualCode, setManualCode] = useState("");
   const html5QrCodeRef = useRef(null);
   useEffect(() => {
     if (isOpen) {
@@ -162,10 +164,24 @@ const QRScannerModal = ({
   };
 
   const handleManualEntry = () => {
-    const qrCode = prompt("Enter QR code manually:");
-    if (qrCode) {
-      verifyQRCode(qrCode);
+    stopScanner();
+    setShowManualInput(true);
+  };
+
+  const handleManualSubmit = () => {
+    if (manualCode.trim()) {
+      verifyQRCode(manualCode.trim());
+      setShowManualInput(false);
+      setManualCode("");
+    } else {
+      showToast("Please enter a QR code", "error");
     }
+  };
+
+  const handleCancelManual = () => {
+    setShowManualInput(false);
+    setManualCode("");
+    startScanner();
   };
 
   const handleRetry = () => {
@@ -183,38 +199,95 @@ const QRScannerModal = ({
       {" "}
       <div className="space-y-4">
         {" "}
-        {/* Instructions */}{" "}
-        <div className="border border-gray-200 rounded-lg p-4" style={{ backgroundColor: '#F1EEE7' }}>
-          {" "}
-          <div className="flex items-start space-x-3">
-            {" "}
-            <div className="flex-shrink-0">
+        {/* Manual Input Form */}
+        {showManualInput ? (
+          <div className="space-y-4">
+            <div className="border border-gray-200 rounded-lg p-4" style={{ backgroundColor: '#F1EEE7' }}>
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  <QrCode className="text-primary-600" size={24} />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-1">
+                    Enter QR Code Manually
+                  </h4>
+                  <p className="text-sm text-gray-700">
+                    Paste or type the QR code string from the attraction
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="manual-qr-code" className="block text-sm font-medium text-gray-700 mb-2">
+                QR Code
+              </label>
+              <input
+                id="manual-qr-code"
+                type="text"
+                value={manualCode}
+                onChange={(e) => setManualCode(e.target.value)}
+                placeholder="Enter or paste QR code here..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                autoFocus
+                disabled={isVerifying}
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <GlassButton
+                onClick={handleManualSubmit}
+                disabled={isVerifying || !manualCode.trim()}
+                className="flex-1"
+                contentClassName="flex items-center justify-center gap-2"
+              >
+                {isVerifying ? "Verifying..." : "Verify Code"}
+              </GlassButton>
+              <GlassButton
+                onClick={handleCancelManual}
+                disabled={isVerifying}
+                className="flex-1"
+                contentClassName="flex items-center justify-center gap-2"
+              >
+                <Camera className="w-4 h-4" />
+                <span>Scan Instead</span>
+              </GlassButton>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Instructions */}{" "}
+            <div className="border border-gray-200 rounded-lg p-4" style={{ backgroundColor: '#F1EEE7' }}>
               {" "}
-              <QrCode className="text-primary-600" size={24} />{" "}
+              <div className="flex items-start space-x-3">
+                {" "}
+                <div className="flex-shrink-0">
+                  {" "}
+                  <QrCode className="text-primary-600" size={24} />{" "}
+                </div>{" "}
+                <div className="flex-1">
+                  {" "}
+                  <h4 className="text-sm font-semibold text-gray-900 mb-1">
+                    {" "}
+                    How to scan{" "}
+                  </h4>{" "}
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    {" "}
+                    <li>• Point your camera at the QR code</li>{" "}
+                    <li>• Make sure the QR code is well-lit</li>{" "}
+                    <li>• Hold steady until it scans automatically</li>{" "}
+                  </ul>{" "}
+                </div>{" "}
+              </div>{" "}
             </div>{" "}
-            <div className="flex-1">
+            {/* Scanner Area */}{" "}
+            <div className="relative">
               {" "}
-              <h4 className="text-sm font-semibold text-gray-900 mb-1">
-                {" "}
-                How to scan{" "}
-              </h4>{" "}
-              <ul className="text-sm text-gray-700 space-y-1">
-                {" "}
-                <li>• Point your camera at the QR code</li>{" "}
-                <li>• Make sure the QR code is well-lit</li>{" "}
-                <li>• Hold steady until it scans automatically</li>{" "}
-              </ul>{" "}
-            </div>{" "}
-          </div>{" "}
-        </div>{" "}
-        {/* Scanner Area */}{" "}
-        <div className="relative">
-          {" "}
-          <div
-            id="qr-reader"
-            className="rounded-lg overflow-hidden bg-black"
-            style={{ minHeight: "300px" }}
-          />{" "}
+              <div
+                id="qr-reader"
+                className="rounded-lg overflow-hidden bg-black"
+                style={{ minHeight: "300px" }}
+              />{" "}
           {/* Overlay when verifying */}{" "}
           {isVerifying && (
             <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center rounded-lg">
@@ -260,54 +333,56 @@ const QRScannerModal = ({
             </div>{" "}
           </div>
         )}{" "}
-        {/* Action Buttons */}{" "}
-        <div className="flex justify-between items-center">
-          {" "}
-          {error ? (
-            <>
+            {/* Action Buttons */}{" "}
+            <div className="flex justify-between items-center">
               {" "}
-              <GlassButton
-                onClick={handleRetry}
-                className="w-48"
-                contentClassName="flex items-center justify-center gap-2"
-              >
-                <Camera className="w-4 h-4" />
-                <span>Try Again</span>
-              </GlassButton>
-              <GlassButton 
-                onClick={handleManualEntry}
-                className="w-48"
-                contentClassName="flex items-center justify-center"
-              >
-                Enter Manually
-              </GlassButton>
-            </>
-          ) : (
-            <>
+              {error ? (
+                <>
+                  {" "}
+                  <GlassButton
+                    onClick={handleRetry}
+                    className="w-48"
+                    contentClassName="flex items-center justify-center gap-2"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span>Try Again</span>
+                  </GlassButton>
+                  <GlassButton 
+                    onClick={handleManualEntry}
+                    className="w-48"
+                    contentClassName="flex items-center justify-center"
+                  >
+                    Enter Manually
+                  </GlassButton>
+                </>
+              ) : (
+                <>
+                  {" "}
+                  <GlassButton 
+                    onClick={handleManualEntry}
+                    className="w-48"
+                    contentClassName="flex items-center justify-center"
+                  >
+                    Enter Code Manually
+                  </GlassButton>
+                  <GlassButton 
+                    onClick={handleClose}
+                    className="w-48"
+                    contentClassName="flex items-center justify-center"
+                  >
+                    Cancel
+                  </GlassButton>
+                </>
+              )}{" "}
+            </div>{" "}
+            {/* Camera Permission Note */}{" "}
+            <p className="text-xs text-gray-500 text-center">
               {" "}
-              <GlassButton 
-                onClick={handleManualEntry}
-                className="w-48"
-                contentClassName="flex items-center justify-center"
-              >
-                Enter Code Manually
-              </GlassButton>
-              <GlassButton 
-                onClick={handleClose}
-                className="w-48"
-                contentClassName="flex items-center justify-center"
-              >
-                Cancel
-              </GlassButton>
-            </>
-          )}{" "}
-        </div>{" "}
-        {/* Camera Permission Note */}{" "}
-        <p className="text-xs text-gray-500 text-center">
-          {" "}
-          Camera access is required to scan QR codes. Your privacy is protected
-          - no images are stored.{" "}
-        </p>{" "}
+              Camera access is required to scan QR codes. Your privacy is protected
+              - no images are stored.{" "}
+            </p>{" "}
+          </>
+        )}
       </div>{" "}
     </Modal>
   );
