@@ -155,11 +155,53 @@ try {
     $stmt->bindParam(':longitude', $longitude);
     $stmt->execute();
 
-    // Update progress
-    $query = "CALL update_user_progress(:user_id, :task_id)";
+    // Update progress table
+    // Get attraction_id first (needed before the next section)
+    $query = "SELECT attraction_id FROM tasks WHERE id = :task_id";
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':task_id', $task_id);
+    $stmt->execute();
+    $task_info = $stmt->fetch(PDO::FETCH_ASSOC);
+    $attraction_id = $task_info['attraction_id'];
+    
+    // Count completed tasks for this attraction
+    $query = "SELECT COUNT(DISTINCT uts.task_id) as completed_count
+              FROM user_task_submissions uts
+              JOIN tasks t ON uts.task_id = t.id
+              WHERE uts.user_id = :user_id 
+              AND t.attraction_id = :attraction_id";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':user_id', $user_id);
-    $stmt->bindParam(':task_id', $task_id);
+    $stmt->bindParam(':attraction_id', $attraction_id);
+    $stmt->execute();
+    $progress_result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $completed_tasks = $progress_result['completed_count'];
+    
+    // Get total tasks for this attraction
+    $query = "SELECT COUNT(*) as total_count FROM tasks WHERE attraction_id = :attraction_id";
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':attraction_id', $attraction_id);
+    $stmt->execute();
+    $total_result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $total_tasks = $total_result['total_count'];
+    
+    // Calculate progress percentage
+    $progress_percentage = $total_tasks > 0 ? ($completed_tasks / $total_tasks) * 100 : 0;
+    
+    // Insert or update progress record
+    $query = "INSERT INTO progress (user_id, attraction_id, completed_tasks, total_tasks, progress_percentage, is_unlocked)
+              VALUES (:user_id, :attraction_id, :completed_tasks, :total_tasks, :progress_percentage, 1)
+              ON DUPLICATE KEY UPDATE 
+                completed_tasks = :completed_tasks,
+                total_tasks = :total_tasks,
+                progress_percentage = :progress_percentage,
+                updated_at = CURRENT_TIMESTAMP";
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':user_id', $user_id);
+    $stmt->bindParam(':attraction_id', $attraction_id);
+    $stmt->bindParam(':completed_tasks', $completed_tasks);
+    $stmt->bindParam(':total_tasks', $total_tasks);
+    $stmt->bindParam(':progress_percentage', $progress_percentage);
     $stmt->execute();
 
     // Get current attraction_id and category for rewards
@@ -236,7 +278,11 @@ try {
             'allowed_radius_m' => $allowed_radius_m,
             'gps_accuracy_m' => $accuracy
         ],
-        'rewards' => $rewards
+        'rewards' => [
+            'xp_earned' => $xp_earned,
+            'ep_earned' => $ep_earned,
+            'special_rewards' => $special_rewards
+        ]
     ], "Check-in successful", 201);
 
 } catch (PDOException $e) {
