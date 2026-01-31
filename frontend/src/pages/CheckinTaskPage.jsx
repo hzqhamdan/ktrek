@@ -111,21 +111,33 @@ const CheckinTaskPage = () => {
   };
 
   const handleQRSuccess = async ({ qrCode }) => {
+    console.log('[CheckIn] handleQRSuccess called with qrCode:', qrCode);
     // QR scanned & verified: submit check-in immediately using qr_code
     try {
       setCheckingInViaQR(true);
       setShowScanner(false);
 
+      console.log('[CheckIn] Submitting check-in with taskId:', taskId, 'qrCode:', qrCode);
       const response = await tasksAPI.submitCheckin(taskId, { qr_code: qrCode });
+      console.log('[CheckIn] Submit response:', response);
+      
       if (response.success) {
         const v = response.data?.verification;
         const distanceText = v?.distance_m != null ? ` Distance: ${Math.round(v.distance_m)}m.` : "";
         showToast(`Check-in successful via QR!${distanceText}`, "success");
+        console.log('[CheckIn] Calling handleComplete with response');
         handleComplete(response); // Pass full response, not just response.data
       } else {
+        console.error('[CheckIn] Submit failed:', response);
         showToast(response.message || "Check-in failed", "error");
       }
     } catch (error) {
+      console.error('[CheckIn] Submit error:', error);
+      console.error('[CheckIn] Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
       const msg = error.response?.data?.message || error.message || "QR check-in failed";
       showToast(msg, "error");
     } finally {
