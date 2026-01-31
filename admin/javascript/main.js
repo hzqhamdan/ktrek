@@ -89,11 +89,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function checkSession() {
     const session = sessionStorage.getItem('adminUser');
+    const mustChange = sessionStorage.getItem('mustChangePassword');
+    
     if (session) {
         currentUser = JSON.parse(session); // The parsed object should contain attraction_id
         console.log("checkSession: Retrieved currentUser object:", currentUser); // Debug log to confirm attraction_id is present
        
-        showDashboard();
+        // If must change password, show change password screen instead of dashboard
+        if (mustChange === 'true') {
+            showChangePasswordScreen();
+        } else {
+            showDashboard();
+        }
     }
 }
 
@@ -102,11 +109,23 @@ function setupEventListeners() {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) loginForm.addEventListener('submit', handleLogin);
     
+    // Check for pending reset when email is entered
+    const loginEmail = document.getElementById('loginEmail');
+    if (loginEmail) {
+        loginEmail.addEventListener('blur', checkPendingReset);
+    }
+    
     const registerForm = document.getElementById('registerForm');
     if (registerForm) registerForm.addEventListener('submit', handleRegister);
     
     const forgotPasswordForm = document.getElementById('forgotPasswordForm');
     if (forgotPasswordForm) forgotPasswordForm.addEventListener('submit', handleForgotPassword);
+    
+    const changePasswordForm = document.getElementById('changePasswordForm');
+    if (changePasswordForm) changePasswordForm.addEventListener('submit', handleChangePassword);
+    
+    const setNewPasswordForm = document.getElementById('setNewPasswordForm');
+    if (setNewPasswordForm) setNewPasswordForm.addEventListener('submit', handleSetNewPassword);
     
     const attractionForm = document.getElementById('attractionForm');
     if (attractionForm) attractionForm.addEventListener('submit', handleAttractionSubmit);
@@ -156,6 +175,117 @@ function showForgotPasswordForm() {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('registerScreen').classList.add('hidden');
     document.getElementById('forgotPasswordScreen').classList.remove('hidden');
+}
+
+function showChangePasswordScreen() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('registerScreen').classList.add('hidden');
+    document.getElementById('forgotPasswordScreen').classList.add('hidden');
+    document.getElementById('changePasswordScreen').classList.remove('hidden');
+}
+
+// Handle forced password change
+async function handleChangePassword(e) {
+    e.preventDefault();
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    try {
+        const response = await fetch(API_BASE + 'change_password.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                current_password: currentPassword, 
+                new_password: newPassword,
+                confirm_password: confirmPassword
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showChangePasswordAlert('✅ Password changed successfully! Redirecting...', 'success');
+            sessionStorage.removeItem('mustChangePassword');
+            
+            setTimeout(() => {
+                document.getElementById('changePasswordScreen').classList.add('hidden');
+                document.getElementById('changePasswordForm').reset();
+                showDashboard();
+            }, 2000);
+        } else {
+            showChangePasswordAlert(data.message || 'Error changing password', 'error');
+        }
+    } catch (error) {
+        console.error('Change password error:', error);
+        showChangePasswordAlert('Connection error. Please try again.', 'error');
+    }
+}
+
+function showChangePasswordAlert(message, type) {
+    const alert = document.getElementById('changePasswordAlert');
+    alert.textContent = message;
+    alert.className = `alert ${type}`;
+    alert.style.display = 'block';
+}
+
+// Show set new password screen (after reset approval)
+function showSetNewPasswordScreen(email) {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('registerScreen').classList.add('hidden');
+    document.getElementById('forgotPasswordScreen').classList.add('hidden');
+    document.getElementById('changePasswordScreen').classList.add('hidden');
+    document.getElementById('setNewPasswordScreen').classList.remove('hidden');
+    
+    // Store email for password reset
+    document.getElementById('setPasswordEmail').value = email;
+}
+
+// Handle setting new password after reset approval
+async function handleSetNewPassword(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('setPasswordEmail').value;
+    const newPassword = document.getElementById('setNewPassword').value;
+    const confirmPassword = document.getElementById('setConfirmPassword').value;
+    
+    try {
+        const response = await fetch(API_BASE + 'set_new_password_after_reset.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                email: email,
+                new_password: newPassword,
+                confirm_password: confirmPassword
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showSetNewPasswordAlert('✅ ' + data.message + ' Redirecting to login...', 'success');
+            
+            setTimeout(() => {
+                document.getElementById('setNewPasswordScreen').classList.add('hidden');
+                document.getElementById('setNewPasswordForm').reset();
+                showLoginForm();
+                showLoginAlert('Password set successfully! You can now login with your new password.', 'success');
+            }, 2000);
+        } else {
+            showSetNewPasswordAlert(data.message || 'Error setting password', 'error');
+        }
+    } catch (error) {
+        console.error('Set password error:', error);
+        showSetNewPasswordAlert('Connection error. Please try again.', 'error');
+    }
+}
+
+function showSetNewPasswordAlert(message, type) {
+    const alert = document.getElementById('setNewPasswordAlert');
+    alert.innerHTML = message;
+    alert.className = `alert ${type}`;
+    alert.style.display = 'block';
 }
 
 // Handle registration
@@ -228,11 +358,28 @@ async function handleForgotPassword(e) {
         const data = await response.json();
         
         if (data.success) {
-            showForgotPasswordAlert(data.message, 'success');
+            // Show enhanced success message
+            const successMessage = `
+                <div style="text-align: left;">
+                    <div style="font-weight: 600; margin-bottom: 10px;">✅ ${data.message}</div>
+                    ${data.instructions ? `<div style="margin-bottom: 8px;">📋 ${data.instructions}</div>` : ''}
+                    ${data.urgent_contact ? `
+                        <div style="margin-top: 12px; padding: 10px; background: #fef3c7; border-left: 3px solid #f59e0b; border-radius: 4px;">
+                            <strong>Need urgent access?</strong><br>
+                            Contact Superadmin: <a href="tel:${data.urgent_contact}" style="color: #d97706; font-weight: 600;">${data.urgent_contact}</a>
+                            <br><small style="color: #92400e;">(Call/WhatsApp available)</small>
+                        </div>
+                    ` : ''}
+                    ${data.request_id ? `<div style="margin-top: 10px; font-size: 12px; color: #6b7280;">Request ID: #${data.request_id}</div>` : ''}
+                </div>
+            `;
+            showForgotPasswordAlert(successMessage, 'success');
+            
+            // Return to login after 8 seconds (longer to read the message)
             setTimeout(() => {
                 showLoginForm();
                 document.getElementById('forgotPasswordForm').reset();
-            }, 3000);
+            }, 8000);
         } else {
             showForgotPasswordAlert(data.message || 'Error submitting request', 'error');
         }
@@ -242,12 +389,64 @@ async function handleForgotPassword(e) {
     }
 }
 
+// Check for pending password reset on login page
+async function checkPendingReset() {
+    const email = document.getElementById('loginEmail').value;
+    
+    if (!email || !email.includes('@')) return;
+    
+    try {
+        const response = await fetch(API_BASE + 'check_pending_reset.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.has_pending) {
+            const timeAgo = data.minutes_ago < 60 
+                ? `${data.minutes_ago} minutes ago` 
+                : `${Math.floor(data.minutes_ago / 60)} hours ago`;
+            
+            showLoginAlert(
+                `⏳ You have a pending password reset request (submitted ${timeAgo}). ` +
+                `Please wait for admin approval or contact 019-2590381 for urgent access.`,
+                'info'
+            );
+        }
+    } catch (error) {
+        // Silently fail - don't disrupt login
+        console.log('Could not check pending reset status');
+    }
+}
+
 // Login function
 async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
 
+    // First check if user has an approved password reset
+    try {
+        const checkResponse = await fetch(API_BASE + 'check_approved_reset.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        
+        const checkData = await checkResponse.json();
+        
+        if (checkData.success && checkData.has_approved_reset) {
+            // Show set new password screen instead of attempting login
+            showSetNewPasswordScreen(email);
+            return;
+        }
+    } catch (error) {
+        console.log('Could not check approved reset status, continuing with normal login');
+    }
+
+    // Normal login flow
     try {
         const response = await fetch(API_BASE + 'login.php', {
             method: 'POST',
@@ -258,12 +457,23 @@ async function handleLogin(e) {
         const data = await response.json();
 
         if (data.success) {
+            // Check if password change is required
+            if (data.must_change_password) {
+                // Store user temporarily but show password change screen
+                currentUser = data.user;
+                sessionStorage.setItem('adminUser', JSON.stringify(currentUser));
+                sessionStorage.setItem('mustChangePassword', 'true');
+                showChangePasswordScreen();
+                return;
+            }
+            
             // --- CRITICAL: Ensure attraction_id is captured from the response ---
             currentUser = data.user; // data.user now contains id, email, full_name, role, AND attraction_id
             console.log("handleLogin: Stored currentUser object:", currentUser); // Debug log to confirm attraction_id is present
             // --- END CRITICAL ---
 
             sessionStorage.setItem('adminUser', JSON.stringify(currentUser));
+            sessionStorage.removeItem('mustChangePassword');
             showDashboard();
         } else {
             showLoginAlert(data.message || 'Invalid credentials', 'error');
@@ -446,6 +656,7 @@ function showSuperadminDashboard() {
     }
 
     loadSuperadminDashboard();
+    loadPendingResetRequests(); // Load pending password reset requests on dashboard
 }
 
 let saUsersChart = null;
@@ -3938,10 +4149,16 @@ async function loadPendingResetRequests() {
                             </div>
                         ` : ''}
                     </div>
-                    <button class="action-btn" onclick="approveResetRequest(${req.id}, ${req.admin_id}, '${req.manager_name.replace(/'/g, "\\'")}', '${req.manager_email}')" 
-                            style="background: #ef4444; color: white; white-space: nowrap; padding: 10px 20px; font-weight: 600;">
-                        🔑 Reset Password
-                    </button>
+                    <div style="display: flex; gap: 8px; flex-direction: column;">
+                        <button class="action-btn" onclick="approveResetRequest(${req.id}, ${req.admin_id}, '${req.manager_name.replace(/'/g, "\\'")}', '${req.manager_email}')" 
+                                style="background: #10b981; color: white; white-space: nowrap; padding: 10px 20px; font-weight: 600;">
+                            ✅ Approve Request
+                        </button>
+                        <button class="action-btn" onclick="rejectResetRequest(${req.id}, '${req.manager_name.replace(/'/g, "\\'")}')" 
+                                style="background: #6b7280; color: white; white-space: nowrap; padding: 10px 20px; font-weight: 600;">
+                            ❌ Reject
+                        </button>
+                    </div>
                 </div>
             </div>
         `).join('');
@@ -3953,7 +4170,8 @@ async function loadPendingResetRequests() {
 
 // Approve password reset request
 async function approveResetRequest(requestId, adminId, managerName, managerEmail) {
-    const confirmed = confirm(`Are you sure you want to reset the password for ${managerName}?\n\nThis will approve their request and generate a new temporary password.`);
+    const confirmed = confirm(`Approve password reset request for ${managerName}?\n\n` +
+                             `They will be able to set a new password on their next login attempt.`);
     if (!confirmed) return;
     
     try {
@@ -3970,22 +4188,47 @@ async function approveResetRequest(requestId, adminId, managerName, managerEmail
         const data = await response.json();
         
         if (data.success) {
-            alert(`✅ Password reset successfully!\n\n` +
-                  `Manager: ${data.manager_name}\n` +
-                  `Email: ${data.manager_email}\n\n` +
-                  `Temporary Password: ${data.temporary_password}\n\n` +
-                  `⚠️ IMPORTANT:\n` +
-                  `• Please share this password with ${managerName} securely\n` +
-                  `• They will be required to change it on next login\n` +
-                  `• This password cannot be recovered later`);
+            showAlert(`✅ Password reset approved for ${managerName}!\n\n` +
+                     `They can now set a new password on their next login attempt.`, 'success');
             
             loadPendingResetRequests(); // Reload requests
             loadAdminUsers(); // Reload admin users table
         } else {
-            showAlert(data.message || 'Error resetting password', 'error');
+            showAlert(data.message || 'Error approving request', 'error');
         }
     } catch (error) {
         console.error('Error approving request:', error);
+        showAlert('Connection error. Please try again.', 'error');
+    }
+}
+
+// Reject password reset request
+async function rejectResetRequest(requestId, managerName) {
+    const reason = prompt(`Reject password reset request for ${managerName}?\n\nOptional: Enter a reason for rejection:`);
+    
+    // If user cancels, return
+    if (reason === null) return;
+    
+    try {
+        const response = await fetch(API_BASE + 'reject_reset_request.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                request_id: requestId,
+                reason: reason || 'No reason provided'
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showAlert(`Request from ${managerName} has been rejected.`, 'success');
+            loadPendingResetRequests(); // Reload requests
+        } else {
+            showAlert(data.message || 'Error rejecting request', 'error');
+        }
+    } catch (error) {
+        console.error('Error rejecting request:', error);
         showAlert('Connection error. Please try again.', 'error');
     }
 }
@@ -4687,35 +4930,14 @@ function showQRPreview(token) {
     const qrImg = document.getElementById('currentQR');
     const taskId = document.getElementById('taskId').value;
     
-    // Create deep link URL that opens the app
-    // Format: https://yourapp.com/qr-checkin?code=TOKEN&task=ID
+    // IMPORTANT: QR code should contain ONLY the token, not a URL
+    // The app's QR scanner expects just the raw token string
     let qrData = token;
     let isDeepLink = false;
     
-    // If task is saved, create a deep link
-    if (taskId) {
-        // Get the frontend URL - adjust this for your environment
-        let appUrl = window.location.origin;
-        
-        // Development: Replace localhost with network IP for mobile access
-        if (appUrl.includes('localhost') || appUrl.includes('127.0.0.1')) {
-            // Option 1: Use your computer's IP address (works on same network)
-            // Get IP from user or use stored value
-            const savedIP = localStorage.getItem('frontend_ip');
-            if (savedIP) {
-                appUrl = `http://${savedIP}:5173`;
-            } else {
-                // Fallback: use localhost (you can manually set IP)
-                appUrl = 'http://localhost:5173';
-                
-                // Show warning to set IP
-                console.warn('For mobile access, set your IP: localStorage.setItem("frontend_ip", "192.168.X.X")');
-            }
-        }
-        
-        qrData = `${appUrl}/qr-checkin?code=${encodeURIComponent(token)}&task=${taskId}`;
-        isDeepLink = true;
-    }
+    // Always use just the token for QR codes
+    // This ensures the QR scanner can verify it against the database
+    qrData = token;
     
     // Use QR Server API (more reliable, no CORS issues for images)
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrData)}`;

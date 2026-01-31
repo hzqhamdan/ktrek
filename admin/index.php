@@ -30,11 +30,91 @@ if (session_status() === PHP_SESSION_NONE) {
                 <label>Password</label>
                 <input type="password" id="loginPassword" required>
             </div>
+            <div style="text-align: right; margin-bottom: 15px;">
+                <a href="#" onclick="showForgotPasswordForm(); return false;" style="color: #667eea; text-decoration: none; font-size: 14px;">Forgot Password?</a>
+            </div>
             <button type="submit" class="btn">Login</button>
         </form>
         <p style="text-align: center; margin-top: 20px; color: #666;">
             Don't have an account? <a href="#" onclick="showRegisterForm()" style="color: #667eea; text-decoration: none;">Register here</a>
         </p>
+    </div>
+
+    <!-- Forgot Password Screen -->
+    <div id="forgotPasswordScreen" class="login-container hidden">
+        <h2>Forgot Password</h2>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;">
+            Enter your email address to request a password reset from the administrator.
+        </p>
+        <div id="forgotPasswordAlert" class="alert"></div>
+        <form id="forgotPasswordForm">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="forgotPasswordEmail" required>
+            </div>
+            <div class="form-group">
+                <label>Message (Optional)</label>
+                <textarea id="forgotPasswordMessage" rows="3" placeholder="Why do you need a password reset?"></textarea>
+            </div>
+            <button type="submit" class="btn">Submit Request</button>
+        </form>
+        <p style="text-align: center; margin-top: 20px; color: #666;">
+            Remember your password? <a href="#" onclick="showLoginForm()" style="color: #667eea; text-decoration: none;">Login here</a>
+        </p>
+    </div>
+
+    <!-- Change Password Screen (Forced) -->
+    <div id="changePasswordScreen" class="login-container hidden">
+        <h2>⚠️ Password Change Required</h2>
+        <p style="text-align: center; color: #dc2626; margin-bottom: 20px; font-weight: 600;">
+            You must change your temporary password before continuing.
+        </p>
+        <div id="changePasswordAlert" class="alert"></div>
+        <form id="changePasswordForm">
+            <div class="form-group">
+                <label>Current Password</label>
+                <input type="password" id="currentPassword" required>
+            </div>
+            <div class="form-group">
+                <label>New Password</label>
+                <input type="password" id="newPassword" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                    Must be at least 8 characters with uppercase, lowercase, and numbers
+                </small>
+            </div>
+            <div class="form-group">
+                <label>Confirm New Password</label>
+                <input type="password" id="confirmPassword" required>
+            </div>
+            <button type="submit" class="btn">Change Password</button>
+        </form>
+    </div>
+
+    <!-- Set New Password Screen (After Reset Approval) -->
+    <div id="setNewPasswordScreen" class="login-container hidden">
+        <h2>✅ Password Reset Approved</h2>
+        <p style="text-align: center; color: #059669; margin-bottom: 20px; font-weight: 600;">
+            Your password reset request has been approved by the administrator.
+        </p>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;">
+            Please set your new password below:
+        </p>
+        <div id="setNewPasswordAlert" class="alert"></div>
+        <form id="setNewPasswordForm">
+            <input type="hidden" id="setPasswordEmail">
+            <div class="form-group">
+                <label>New Password</label>
+                <input type="password" id="setNewPassword" required>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                    Must be at least 8 characters with uppercase, lowercase, and numbers
+                </small>
+            </div>
+            <div class="form-group">
+                <label>Confirm New Password</label>
+                <input type="password" id="setConfirmPassword" required>
+            </div>
+            <button type="submit" class="btn">Set Password & Login</button>
+        </form>
     </div>
 
     <!-- Registration Screen -->
@@ -108,6 +188,24 @@ if (session_status() === PHP_SESSION_NONE) {
                             <div class="section-header">
                                 <h2>Superadmin Overview</h2>
                                 <button class="add-btn" onclick="loadSuperadminDashboard()" style="padding: 8px 15px; font-size: 14px;">Refresh</button>
+                            </div>
+
+                            <!-- Pending Password Reset Requests Notification Panel -->
+                            <div id="pendingResetRequests" style="display: none; margin-bottom: 25px; margin-top: 20px;">
+                                <div style="background: #fee2e2; border: 2px solid #ef4444; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                                        <div style="font-size: 32px;">⚠️</div>
+                                        <div style="flex: 1;">
+                                            <h3 style="color: #dc2626; margin: 0 0 4px 0; font-size: 20px; font-weight: 600;">
+                                                Pending Password Reset Requests
+                                            </h3>
+                                            <p style="margin: 0; color: #991b1b; font-size: 14px;">
+                                                <span id="pendingCount" style="font-weight: bold;">0</span> manager(s) need password reset approval
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div id="pendingRequestsList"></div>
+                                </div>
                             </div>
 
                             <!-- Analytics Charts Section - TOP -->
@@ -747,6 +845,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     <div id="adminUsers" class="content-section">
                         <h2>Admin User Management</h2>
                         <p style="margin-bottom: 20px; color: #666;">Manage system administrators and attraction managers</p>
+                        
                         <div class="data-table">
                             <table>
                                 <thead>

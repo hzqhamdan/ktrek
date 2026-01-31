@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Trek Database ERD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+        }
+        
+        .erd-canvas {
+            position: relative;
+            width: 100%;
+            min-height: 1800px;
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>K-Trek Database Entity Relationship Diagram</h1>
+        <p class="subtitle">Tourism Gamification System - Database Schema</p>
+        
+        <div class="erd-canvas">
+            <svg width="100%" height="1800" id="erdSvg" viewBox="0 0 1500 1800">
+                <defs>
+                    <!-- Arrow marker for relationships -->
+                    <marker id="arrowhead" markerWidth="10" markerHeight="10" 
+                            refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#495057" />
+                    </marker>
+                    
+                    <!-- Styles -->
+                    <style>
+                        .table-box {
+                            fill: white;
+                            stroke: #495057;
+                            stroke-width: 2;
+                            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.2));
+                        }
+                        
+                        .table-header {
+                            fill: #667eea;
+                            stroke: none;
+                        }
+                        
+                        .table-title {
+                            fill: white;
+                            font-size: 16px;
+                            font-weight: bold;
+                            text-anchor: middle;
+                        }
+                        
+                        .field-text {
+                            fill: #2c3e50;
+                            font-size: 12px;
+                            font-family: 'Consolas', 'Monaco', monospace;
+                        }
+                        
+                        .pk {
+                            fill: #e74c3c;
+                            font-weight: bold;
+                        }
+                        
+                        .fk {
+                            fill: #3498db;
+                            font-style: italic;
+                        }
+                        
+                        .relationship-line {
+                            stroke: #495057;
+                            stroke-width: 2;
+                            fill: none;
+                            marker-end: url(#arrowhead);
+                        }
+                        
+                        .relationship-label {
+                            fill: #7f8c8d;
+                            font-size: 11px;
+                            font-weight: bold;
+                            text-anchor: middle;
+                        }
+                        
+                        .cardinality {
+                            fill: #e74c3c;
+                            font-size: 13px;
+                            font-weight: bold;
+                        }
+                    </style>
+                </defs>
+                
+                <!-- USERS TABLE (Top Left) -->
+                <g id="users">
+                    <rect class="table-box" x="50" y="50" width="220" height="240" rx="5"/>
+                    <rect class="table-header" x="50" y="50" width="220" height="35" rx="5"/>
+                    <text class="table-title" x="160" y="73">users</text>
+                    <text class="field-text pk" x="60" y="100">🔑 id (PK)</text>
+                    <text class="field-text" x="60" y="120">username</text>
+                    <text class="field-text" x="60" y="140">email</text>
+                    <text class="field-text" x="60" y="160">phone_number</text>
+                    <text class="field-text" x="60" y="180">password</text>
+                    <text class="field-text" x="60" y="200">full_name</text>
+                    <text class="field-text" x="60" y="220">date_of_birth</text>
+                    <text class="field-text" x="60" y="240">profile_picture</text>
+                    <text class="field-text" x="60" y="260">auth_provider</text>
+                    <text class="field-text" x="60" y="280">created_at</text>
+                </g>
+                
+                <!-- ADMIN TABLE (Top Center) -->
+                <g id="admin">
+                    <rect class="table-box" x="350" y="50" width="220" height="220" rx="5"/>
+                    <rect class="table-header" x="350" y="50" width="220" height="35" rx="5"/>
+                    <text class="table-title" x="460" y="73">admin</text>
+                    <text class="field-text pk" x="360" y="100">🔑 id (PK)</text>
+                    <text class="field-text" x="360" y="120">email</text>
+                    <text class="field-text" x="360" y="140">password</text>
+                    <text class="field-text" x="360" y="160">full_name</text>
+                    <text class="field-text" x="360" y="180">role</text>
+                    <text class="field-text fk" x="360" y="200">🔗 attraction_id (FK)</text>
+                    <text class="field-text" x="360" y="220">is_active</text>
+                    <text class="field-text" x="360" y="240">must_change_password</text>
+                    <text class="field-text" x="360" y="260">created_at</text>
+                </g>
+                
+                <!-- ATTRACTIONS TABLE (Center) -->
+                <g id="attractions">
+                    <rect class="table-box" x="650" y="350" width="220" height="180" rx="5"/>
+                    <rect class="table-header" x="650" y="350" width="220" height="35" rx="5"/>
+                    <text class="table-title" x="760" y="373">attractions</text>
+                    <text class="field-text pk" x="660" y="400">🔑 id (PK)</text>
+                    <text class="field-text" x="660" y="420">name</text>
+                    <text class="field-text" x="660" y="440">location</text>
+                    <text class="field-text" x="660" y="460">description</text>
+                    <text class="field-text" x="660" y="480">image</text>
+                    <text class="field-text fk" x="660" y="500">🔗 created_by_admin_id (FK)</text>
+                    <text class="field-text" x="660" y="520">created_at</text>
+                </g>
+                
+                <!-- SESSIONS TABLE (Below Users) -->
+                <g id="sessions">
+                    <rect class="table-box" x="50" y="350" width="220" height="140" rx="5"/>
+                    <rect class="table-header" x="50" y="350" width="220" height="35" rx="5"/>
+                    <text class="table-title" x="160" y="373">sessions</text>
+                    <text class="field-text pk" x="60" y="400">🔑 id (PK)</text>
+                    <text class="field-text fk" x="60" y="420">🔗 user_id (FK)</text>
+                    <text class="field-text" x="60" y="440">token</text>
+                    <text class="field-text" x="60" y="460">expires_at</text>
+                    <text class="field-text" x="60" y="480">created_at</text>
+                </g>
+                
+                <!-- TASKS TABLE (Right of Attractions) -->
+                <g id="tasks">
+                    <rect class="table-box" x="950" y="350" width="220" height="200" rx="5"/>
+                    <rect class="table-header" x="950" y="350" width="220" height="35" rx="5"/>
+                    <text class="table-title" x="1060" y="373">tasks</text>
+                    <text class="field-text pk" x="960" y="400">🔑 id (PK)</text>
+                    <text class="field-text fk" x="960" y="420">🔗 attraction_id (FK)</text>
+                    <text class="field-text" x="960" y="440">name</text>
+                    <text class="field-text" x="960" y="460">type</text>
+                    <text class="field-text" x="960" y="480">task_config</text>
+                    <text class="field-text" x="960" y="500">description</text>
+                    <text class="field-text" x="960" y="520">qr_code</text>
+                    <text class="field-text" x="960" y="540">created_at</text>
+                </g>
+                
+                <!-- QUIZ_QUESTIONS TABLE (Below Tasks) -->
+                <g id="quiz_questions">
+                    <rect class="table-box" x="950" y="610" width="220" height="140" rx="5"/>
+                    <rect class="table-header" x="950" y="610" width="220" height="35" rx="5"/>
+                    <text class="table-title" x="1060" y="633">quiz_questions</text>
+                    <text class="field-text pk" x="960" y="660">🔑 id (PK)</text>
+                    <text class="field-text fk" x="960" y="680">🔗 task_id (FK)</text>
+                    <text class="field-text" x="960" y="700">question_text</text>
+                    <text class="field-text" x="960" y="720">question_order</text>
+                    <text class="field-text" x="960" y="740">created_at</text>
+                </g>
+                
+                <!-- QUIZ_OPTIONS TABLE (Below Quiz Questions) -->
+                <g id="quiz_options">
+                    <rect class="table-box" x="950" y="810" width="220" height="160" rx="5"/>
+                    <rect class="table-header" x="950" y="810" width="220" height="35" rx="5"/>
+                    <text class="table-title" x="1060" y="833">quiz_options</text>
+                    <text class="field-text pk" x="960" y="860">🔑 id (PK)</text>
+                    <text class="field-text fk" x="960" y="880">🔗 question_id (FK)</text>
+                    <text class="field-text" x="960" y="900">option_text</text>
+                    <text class="field-text" x="960" y="920">is_correct</text>
+                    <text class="field-text" x="960" y="940">option_order</text>
+                    <text class="field-text" x="960" y="960">option_metadata</text>
+                </g>
+                
+                <!-- GUIDES TABLE (Below Attractions) -->
+                <g id="guides">
+                    <rect class="table-box" x="650" y="610" width="220" height="160" rx="5"/>
+                    <rect class="table-header" x="650" y="610" width="220" height="35" rx="5"/>
+                    <text class="table-title" x="760" y="633">guides</text>
+                    <text class="field-text pk" x="660" y="660">🔑 id (PK)</text>
+                    <text class="field-text fk" x="660" y="680">🔗 attraction_id (FK)</text>
+                    <text class="field-text fk" x="660" y="700">🔗 task_id (FK)</text>
+                    <text class="field-text" x="660" y="720">title</text>
+                    <text class="field-text" x="660" y="740">content</text>
+                    <text class="field-text" x="660" y="760">created_at</text>
+                </g>
+                
+                <!-- PROGRESS TABLE (Center Bottom) -->
+                <g id="progress">
+                    <rect class="table-box" x="350" y="610" width="220" height="180" rx="5"/>
+                    <rect class="table-header" x="350" y="610" width="220" height="35" rx="5"/>
+                    <text class="table-title" x="460" y="633">progress</text>
+                    <text class="field-text pk" x="360" y="660">🔑 id (PK)</text>
+                    <text class="field-text fk" x="360" y="680">🔗 user_id (FK)</text>
+                    <text class="field-text fk" x="360" y="700">🔗 attraction_id (FK)</text>
+                    <text class="field-text" x="360" y="720">completed_tasks</text>
+                    <text class="field-text" x="360" y="740">total_tasks</text>
+                    <text class="field-text" x="360" y="760">progress_percentage</text>
+                    <text class="field-text" x="360" y="780">created_at</text>
+                </g>
+                
+                <!-- USER_TASK_SUBMISSIONS TABLE (Left Bottom) -->
+                <g id="user_task_submissions">
+                    <rect class="table-box" x="50" y="1050" width="240" height="180" rx="5"/>
+                    <rect class="table-header" x="50" y="1050" width="240" height="35" rx="5"/>
+                    <text class="table-title" x="170" y="1073">user_task_submissions</text>
+                    <text class="field-text pk" x="60" y="1100">🔑 id (PK)</text>
+                    <text class="field-text fk" x="60" y="1120">🔗 user_id (FK)</text>
+                    <text class="field-text fk" x="60" y="1140">🔗 task_id (FK)</text>
+                    <text class="field-text" x="60" y="1160">answer</text>
+                    <text class="field-text" x="60" y="1180">photo_url</text>
+                    <text class="field-text" x="60" y="1200">score</text>
+                    <text class="field-text" x="60" y="1220">submitted_at</text>
+                </g>
+                
+                <!-- USER_STATS TABLE (Center-Left Bottom) -->
+                <g id="user_stats">
+                    <rect class="table-box" x="350" y="1050" width="220" height="180" rx="5"/>
+                    <rect class="table-header" x="350" y="1050" width="220" height="35" rx="5"/>
+                    <text class="table-title" x="460" y="1073">user_stats</text>
+                    <text class="field-text pk" x="360" y="1100">🔑 id (PK)</text>
+                    <text class="field-text fk" x="360" y="1120">🔗 user_id (FK)</text>
+                    <text class="field-text" x="360" y="1140">total_xp</text>
+                    <text class="field-text" x="360" y="1160">level</text>
+                    <text class="field-text" x="360" y="1180">total_tasks_completed</text>
+                    <text class="field-text" x="360" y="1200">achievements_count</text>
+                    <text class="field-text" x="360" y="1220">updated_at</text>
+                </g>
+                
+                <!-- USER_REWARDS TABLE (Center-Right Bottom) -->
+                <g id="user_rewards">
+                    <rect class="table-box" x="650" y="1050" width="220" height="200" rx="5"/>
+                    <rect class="table-header" x="650" y="1050" width="220" height="35" rx="5"/>
+                    <text class="table-title" x="760" y="1073">user_rewards</text>
+                    <text class="field-text pk" x="660" y="1100">🔑 id (PK)</text>
+                    <text class="field-text fk" x="660" y="1120">🔗 user_id (FK)</text>
+                    <text class="field-text" x="660" y="1140">reward_type</text>
+                    <text class="field-text" x="660" y="1160">reward_id</text>
+                    <text class="field-text" x="660" y="1180">is_equipped</text>
+                    <text class="field-text" x="660" y="1200">unlocked_at</text>
+                    <text class="field-text" x="660" y="1220">rarity</text>
+                    <text class="field-text" x="660" y="1240">category</text>
+                </g>
+                
+                <!-- REPORTS TABLE (Right Bottom) -->
+                <g id="reports">
+                    <rect class="table-box" x="950" y="1050" width="220" height="160" rx="5"/>
+                    <rect class="table-header" x="950" y="1050" width="220" height="35" rx="5"/>
+                    <text class="table-title" x="1060" y="1073">reports</text>
+                    <text class="field-text pk" x="960" y="1100">🔑 id (PK)</text>
+                    <text class="field-text fk" x="960" y="1120">🔗 user_id (FK)</text>
+                    <text class="field-text fk" x="960" y="1140">🔗 attraction_id (FK)</text>
+                    <text class="field-text" x="960" y="1160">message</text>
+                    <text class="field-text" x="960" y="1180">status</text>
+                    <text class="field-text" x="960" y="1200">created_at</text>
+                </g>
+                
+                <!-- RELATIONSHIPS -->
+                
+                <!-- users -> sessions (1:N) - straight down -->
+                <path class="relationship-line" d="M 160 290 L 160 350"/>
+                <text class="cardinality" x="170" y="295">1</text>
+                <text class="cardinality" x="170" y="345">N</text>
+                <text class="relationship-label" x="200" y="325">manages</text>
+                
+                <!-- admin -> attractions (1:N via created_by) - route around right side -->
+                <path class="relationship-line" d="M 570 160 L 600 160 L 600 400 L 650 400"/>
+                <text class="cardinality" x="575" y="165">1</text>
+                <text class="cardinality" x="645" y="405">N</text>
+                <text class="relationship-label" x="615" y="280">creates</text>
+                
+                <!-- admin -> attractions (1:N via attraction_id assignment) - route to bottom -->
+                <path class="relationship-line" d="M 460 270 L 460 320 L 640 320 L 640 350"/>
+                <text class="cardinality" x="465" y="275">N</text>
+                <text class="cardinality" x="635" y="345">1</text>
+                <text class="relationship-label" x="550" y="315">manages</text>
+                
+                <!-- attractions -> tasks (1:N) - straight across -->
+                <path class="relationship-line" d="M 870 440 L 950 440"/>
+                <text class="cardinality" x="875" y="435">1</text>
+                <text class="cardinality" x="945" y="435">N</text>
+                <text class="relationship-label" x="910" y="430">has</text>
+                
+                <!-- tasks -> quiz_questions (1:N) - straight down -->
+                <path class="relationship-line" d="M 1060 550 L 1060 610"/>
+                <text class="cardinality" x="1070" y="555">1</text>
+                <text class="cardinality" x="1070" y="605">N</text>
+                <text class="relationship-label" x="1100" y="585">contains</text>
+                
+                <!-- quiz_questions -> quiz_options (1:N) - straight down -->
+                <path class="relationship-line" d="M 1060 750 L 1060 810"/>
+                <text class="cardinality" x="1070" y="755">1</text>
+                <text class="cardinality" x="1070" y="805">N</text>
+                <text class="relationship-label" x="1100" y="785">has</text>
+                
+                <!-- attractions -> guides (1:N) - straight down -->
+                <path class="relationship-line" d="M 760 530 L 760 610"/>
+                <text class="cardinality" x="770" y="535">1</text>
+                <text class="cardinality" x="770" y="605">N</text>
+                <text class="relationship-label" x="800" y="575">provides</text>
+                
+                <!-- tasks -> guides (1:N) - route around left -->
+                <path class="relationship-line" d="M 950 480 L 910 480 L 910 690 L 870 690"/>
+                <text class="cardinality" x="945" y="485">1</text>
+                <text class="cardinality" x="875" y="695">N</text>
+                <text class="relationship-label" x="920" y="590">guides</text>
+                
+                <!-- users -> progress (1:N) - route along left side -->
+                <path class="relationship-line" d="M 270 170 L 310 170 L 310 680 L 350 680"/>
+                <text class="cardinality" x="275" y="175">1</text>
+                <text class="cardinality" x="345" y="685">N</text>
+                <text class="relationship-label" x="320" y="425">tracks</text>
+                
+                <!-- attractions -> progress (1:N) - straight down and left -->
+                <path class="relationship-line" d="M 650 480 L 620 480 L 620 680 L 570 680"/>
+                <text class="cardinality" x="645" y="485">1</text>
+                <text class="cardinality" x="575" y="685">N</text>
+                <text class="relationship-label" x="630" y="580">tracked_in</text>
+                
+                <!-- users -> user_task_submissions (1:N) - straight down left side -->
+                <path class="relationship-line" d="M 50 170 L 30 170 L 30 1140 L 50 1140"/>
+                <text class="cardinality" x="35" y="175">1</text>
+                <text class="cardinality" x="35" y="1135">N</text>
+                <text class="relationship-label" x="15" y="655" transform="rotate(-90, 15, 655)">submits</text>
+                
+                <!-- tasks -> user_task_submissions (1:N) - route wide around bottom -->
+                <path class="relationship-line" d="M 1060 550 L 1220 550 L 1220 1000 L 310 1000 L 310 1050"/>
+                <text class="cardinality" x="1065" y="555">1</text>
+                <text class="cardinality" x="315" y="1045">N</text>
+                <text class="relationship-label" x="765" y="995">receives</text>
+                
+                <!-- users -> user_stats (1:1) - route along left -->
+                <path class="relationship-line" d="M 270 220 L 330 220 L 330 1070 L 350 1070"/>
+                <text class="cardinality" x="275" y="225">1</text>
+                <text class="cardinality" x="345" y="1075">1</text>
+                <text class="relationship-label" x="340" y="645">has</text>
+                
+                <!-- users -> user_rewards (1:N) - route through middle -->
+                <path class="relationship-line" d="M 270 240 L 290 240 L 290 850 L 650 850 L 650 1050"/>
+                <text class="cardinality" x="275" y="245">1</text>
+                <text class="cardinality" x="655" y="1045">N</text>
+                <text class="relationship-label" x="470" y="845">earns</text>
+                
+                <!-- users -> reports (1:N) - route wide right -->
+                <path class="relationship-line" d="M 270 260 L 290 260 L 290 880 L 920 880 L 920 1050"/>
+                <text class="cardinality" x="275" y="265">1</text>
+                <text class="cardinality" x="915" y="1045">N</text>
+                <text class="relationship-label" x="605" y="875">files</text>
+                
+                <!-- attractions -> reports (1:N) - route right and down -->
+                <path class="relationship-line" d="M 870 500 L 900 500 L 900 900 L 980 900 L 980 1050"/>
+                <text class="cardinality" x="875" y="505">1</text>
+                <text class="cardinality" x="975" y="1045">N</text>
+                <text class="relationship-label" x="940" y="775">reported_in</text>
+                
+                <!-- Legend -->
+                <g id="legend">
+                    <rect x="50" y="1400" width="300" height="150" fill="white" stroke="#495057" stroke-width="2" rx="5"/>
+                    <text x="200" y="1425" class="relationship-label" style="font-size: 16px; text-anchor: middle;">Legend</text>
+                    
+                    <text x="60" y="1450" class="pk">🔑 PK = Primary Key</text>
+                    <text x="60" y="1475" class="fk">🔗 FK = Foreign Key</text>
+                    <text x="60" y="1500" class="cardinality">1 = One</text>
+                    <text x="60" y="1525" class="cardinality">N = Many</text>
+                </g>
+                
+                <!-- Database Info -->
+                <g id="info">
+                    <rect x="1200" y="50" width="250" height="180" fill="#f8f9fa" stroke="#495057" stroke-width="2" rx="5"/>
+                    <text x="1325" y="75" class="relationship-label" style="font-size: 16px; text-anchor: middle;">Database Information</text>
+                    
+                    <text x="1210" y="105" class="field-text">Database: ktrek_db</text>
+                    <text x="1210" y="130" class="field-text">Total Tables: 14</text>
+                    <text x="1210" y="155" class="field-text">Core Tables: 14</text>
+                    <text x="1210" y="180" class="field-text">Relationships: 18</text>
+                    <text x="1210" y="205" class="field-text">Purpose: Tourism Gamification</text>
+                </g>
+            </svg>
+        </div>
+    </div>
+    
+    <script>
+        // Dynamic ERD with draggable tables and following lines
+        const svg = document.getElementById('erdSvg');
+        const tables = document.querySelectorAll('g[id]:not(#legend):not(#info)');
+        let selectedTable = null;
+        let offset = { x: 0, y: 0 };
+        
+        // Define table positions and relationships
+        const tableData = {
+            'users': { x: 50, y: 50, width: 220, height: 240 },
+            'admin': { x: 350, y: 50, width: 220, height: 220 },
+            'sessions': { x: 50, y: 350, width: 220, height: 140 },
+            'attractions': { x: 650, y: 350, width: 220, height: 180 },
+            'tasks': { x: 950, y: 350, width: 220, height: 200 },
+            'quiz_questions': { x: 950, y: 610, width: 220, height: 140 },
+            'quiz_options': { x: 950, y: 810, width: 220, height: 160 },
+            'guides': { x: 650, y: 610, width: 220, height: 160 },
+            'progress': { x: 350, y: 610, width: 220, height: 180 },
+            'user_task_submissions': { x: 50, y: 1050, width: 240, height: 180 },
+            'user_stats': { x: 350, y: 1050, width: 220, height: 180 },
+            'user_rewards': { x: 650, y: 1050, width: 220, height: 200 },
+            'reports': { x: 950, y: 1050, width: 220, height: 160 }
+        };
+        
+        // Define relationships: from -> to with labels
+        const relationships = [
+            { from: 'users', to: 'sessions', label: 'manages' },
+            { from: 'admin', to: 'attractions', label: 'creates' },
+            { from: 'admin', to: 'attractions', label: 'manages' },
+            { from: 'attractions', to: 'tasks', label: 'has' },
+            { from: 'tasks', to: 'quiz_questions', label: 'contains' },
+            { from: 'quiz_questions', to: 'quiz_options', label: 'has' },
+            { from: 'attractions', to: 'guides', label: 'provides' },
+            { from: 'tasks', to: 'guides', label: 'guides' },
+            { from: 'users', to: 'progress', label: 'tracks' },
+            { from: 'attractions', to: 'progress', label: 'tracked_in' },
+            { from: 'users', to: 'user_task_submissions', label: 'submits' },
+            { from: 'tasks', to: 'user_task_submissions', label: 'receives' },
+            { from: 'users', to: 'user_stats', label: 'has' },
+            { from: 'users', to: 'user_rewards', label: 'earns' },
+            { from: 'users', to: 'reports', label: 'files' },
+            { from: 'attractions', to: 'reports', label: 'reported_in' }
+        ];
+        
+        // Get table center position
+        function getTableCenter(tableId) {
+            const table = document.getElementById(tableId);
+            const data = tableData[tableId];
+            if (!table || !data) return { x: 0, y: 0 };
+            
+            const transform = table.getAttribute('transform');
+            let offsetX = 0, offsetY = 0;
+            if (transform) {
+                const match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+                if (match) {
+                    offsetX = parseFloat(match[1]);
+                    offsetY = parseFloat(match[2]);
+                }
+            }
+            
+            return {
+                x: data.x + data.width / 2 + offsetX,
+                y: data.y + data.height / 2 + offsetY
+            };
+        }
+        
+        // Clear and redraw all relationship lines
+        function redrawLines() {
+            // Remove old dynamic lines
+            document.querySelectorAll('[data-dynamic-line]').forEach(el => el.remove());
+            
+            relationships.forEach(rel => {
+                const from = getTableCenter(rel.from);
+                const to = getTableCenter(rel.to);
+                
+                // Create line
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', from.x);
+                line.setAttribute('y1', from.y);
+                line.setAttribute('x2', to.x);
+                line.setAttribute('y2', to.y);
+                line.setAttribute('stroke', '#495057');
+                line.setAttribute('stroke-width', '2');
+                line.setAttribute('marker-end', 'url(#arrowhead)');
+                line.setAttribute('data-dynamic-line', 'true');
+                
+                // Insert before legend
+                const legend = document.getElementById('legend');
+                svg.insertBefore(line, legend);
+                
+                // Add label
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', (from.x + to.x) / 2);
+                label.setAttribute('y', (from.y + to.y) / 2 - 5);
+                label.setAttribute('class', 'relationship-label');
+                label.setAttribute('data-dynamic-line', 'true');
+                label.textContent = rel.label;
+                svg.insertBefore(label, legend);
+            });
+        }
+        
+        // Make tables draggable
+        tables.forEach(table => {
+            table.style.cursor = 'move';
+            table.addEventListener('mousedown', startDrag);
+        });
+        
+        function startDrag(evt) {
+            selectedTable = evt.currentTarget;
+            const transform = selectedTable.getAttribute('transform');
+            let currentX = 0, currentY = 0;
+            
+            if (transform) {
+                const match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+                if (match) {
+                    currentX = parseFloat(match[1]);
+                    currentY = parseFloat(match[2]);
+                }
+            }
+            
+            const pt = svg.createSVGPoint();
+            pt.x = evt.clientX;
+            pt.y = evt.clientY;
+            const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+            
+            offset.x = svgP.x - currentX;
+            offset.y = svgP.y - currentY;
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', endDrag);
+        }
+        
+        function drag(evt) {
+            if (selectedTable) {
+                evt.preventDefault();
+                const pt = svg.createSVGPoint();
+                pt.x = evt.clientX;
+                pt.y = evt.clientY;
+                const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+                
+                const newX = svgP.x - offset.x;
+                const newY = svgP.y - offset.y;
+                
+                selectedTable.setAttribute('transform', `translate(${newX}, ${newY})`);
+                redrawLines(); // Update lines as table moves
+            }
+        }
+        
+        function endDrag() {
+            selectedTable = null;
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', endDrag);
+        }
+        
+        // Export positions
+        document.addEventListener('keydown', function(evt) {
+            if (evt.key === 'e' || evt.key === 'E') {
+                console.log('=== Table Positions ===');
+                tables.forEach(table => {
+                    const transform = table.getAttribute('transform');
+                    console.log(`${table.id}: ${transform || 'translate(0, 0)'}`);
+                });
+                alert('Positions saved to console! Press F12.');
+            }
+        });
+        
+        // Initial draw
+        redrawLines();
+    </script>
+</body>
+</html>

@@ -112,9 +112,7 @@ try {
     $task_details = $stmt->fetch(PDO::FETCH_ASSOC);
     
     $db->commit();
-    
-    // === REWARD SYSTEM INTEGRATION ===
-    // Award rewards using RewardHelper class (works with PDO)
+
     $rewards = RewardHelper::awardTaskCompletion(
         $db,
         $user_id,

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Trek System Flowcharts - Mermaid</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'linear'
+            }
+        });
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+        }
+        
+        .flowchart-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            border: 2px solid #dee2e6;
+            margin-bottom: 40px;
+        }
+        
+        .flowchart-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.8em;
+        }
+        
+        .mermaid {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .print-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .print-button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(118, 75, 162, 0.5);
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+            
+            .print-button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>K-Trek System Flowcharts</h1>
+        <p class="subtitle">Tourism Gamification System - Process Flows</p>
+        
+        <!-- Admin Flowchart -->
+        <div class="flowchart-section">
+            <h2>🔧 Admin Flowchart</h2>
+            <div class="mermaid">
+flowchart TD
+    Start([Start]) --> Login[Login]
+    Login --> ManageAttr[Manage Attractions]
+    ManageAttr --> ManageTask[Manage Task's Guide]
+    ManageTask --> ManageRewards[Manage Rewards]
+    ManageRewards --> CheckReports{Any reports<br/>submitted?}
+    CheckReports -->|Yes| ViewReports[View reports]
+    CheckReports -->|No| End([End])
+    ViewReports --> ReplyReports[Reply reports]
+    ReplyReports --> End
+            </div>
+        </div>
+        
+        <!-- User Flowchart -->
+        <div class="flowchart-section">
+            <h2>👤 User Flowchart</h2>
+            <div class="mermaid">
+flowchart TD
+    Start([Start]) --> HasAccount{Have an<br/>account?}
+    HasAccount -->|No| SignUp[Sign Up]
+    HasAccount -->|Yes| Login[Login]
+    SignUp --> ViewList[View Attraction List]
+    Login --> ViewList
+    ViewList --> ChooseAttr[Choose Attraction]
+    ChooseAttr --> ScanQR[Scan QR Code to<br/>Access Tasks]
+    ScanQR --> ViewTasks[View Tasks]
+    ViewTasks --> ViewGuide[View Task's Guide]
+    ViewGuide --> StartTask[Start Task]
+    StartTask --> ViewProgress[View Progress]
+    ViewProgress --> CompleteTask[Complete Task]
+    CompleteTask --> UnlockRewards[Unlock Rewards]
+    UnlockRewards --> AnyComplains{Any complains?}
+    AnyComplains -->|Yes| SubmitReport[Submit a<br/>report]
+    AnyComplains -->|No| End([End])
+    SubmitReport --> End
+            </div>
+        </div>
+    </div>
+    
+    <button class="print-button" onclick="window.print()">🖨️ Print / Save as PDF</button>
+</body>
+</html>

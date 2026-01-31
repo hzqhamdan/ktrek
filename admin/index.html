@@ -22,10 +22,36 @@
                 <label>Password</label>
                 <input type="password" id="loginPassword" required>
             </div>
+            <div style="text-align: right; margin-bottom: 15px;">
+                <a href="#" onclick="showForgotPasswordForm(); return false;" style="color: #667eea; text-decoration: none; font-size: 14px;">Forgot Password?</a>
+            </div>
             <button type="submit" class="btn">Login</button>
         </form>
         <p style="text-align: center; margin-top: 20px; color: #666;">
             Don't have an account? <a href="#" onclick="showRegisterForm()" style="color: #667eea; text-decoration: none;">Register here</a>
+        </p>
+    </div>
+
+    <!-- Forgot Password Screen -->
+    <div id="forgotPasswordScreen" class="login-container hidden">
+        <h2>Forgot Password</h2>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;">
+            Enter your email address to request a password reset from the administrator.
+        </p>
+        <div id="forgotPasswordAlert" class="alert"></div>
+        <form id="forgotPasswordForm">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="forgotPasswordEmail" required>
+            </div>
+            <div class="form-group">
+                <label>Message (Optional)</label>
+                <textarea id="forgotPasswordMessage" rows="3" placeholder="Why do you need a password reset?"></textarea>
+            </div>
+            <button type="submit" class="btn">Submit Request</button>
+        </form>
+        <p style="text-align: center; margin-top: 20px; color: #666;">
+            Remember your password? <a href="#" onclick="showLoginForm()" style="color: #667eea; text-decoration: none;">Login here</a>
         </p>
     </div>
 

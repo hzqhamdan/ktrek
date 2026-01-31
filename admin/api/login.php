@@ -30,13 +30,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $conn = getDBConnection();
 
-    // Backward-compatible select: status/last_login may not exist if DB updates haven't been run yet.
+    // Backward-compatible select: status/last_login/must_change_password may not exist if DB updates haven't been run yet.
     $has_status = ktrek_column_exists($conn, 'admin', 'status');
     $has_last_login = ktrek_column_exists($conn, 'admin', 'last_login');
+    $has_must_change = ktrek_column_exists($conn, 'admin', 'must_change_password');
 
     $select = "SELECT id, email, password, full_name, role, is_active";
     if ($has_status) $select .= ", status";
     if ($has_last_login) $select .= ", last_login";
+    if ($has_must_change) $select .= ", must_change_password";
     $select .= " FROM admin WHERE email = ?";
 
     $stmt = $conn->prepare($select);
@@ -97,6 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode([
                     'success' => true,
                     'message' => 'Login successful',
+                    'must_change_password' => isset($admin['must_change_password']) && $admin['must_change_password'] ? true : false,
                     'user' => [
                         'id' => $admin['id'],
                         'email' => $admin['email'],

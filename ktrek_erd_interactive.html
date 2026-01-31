@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Trek ERD Interactive</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            background: white;
+            font-family: Arial, sans-serif;
+        }
+        svg {
+            display: block;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+        }
+        .controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 15px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin-bottom: 30px;">K-Trek Database ERD - Interactive</h1>
+    
+    <div class="controls">
+        <h3 style="margin: 0 0 10px 0;">Controls</h3>
+        <p><strong>Drag Tables:</strong> Click and drag</p>
+        <p><strong>Edit Lines:</strong> Click to select, drag waypoints</p>
+        <p><strong>Add Waypoint:</strong> Double-click line</p>
+        <p><strong>Delete Waypoint:</strong> Right-click waypoint</p>
+        <p><strong>Export:</strong> Press 'E'</p>
+        <div id="lineInfo" style="margin-top: 10px; padding: 10px; background: #f0f0f0; display: none;">
+            <strong>Selected:</strong> <span id="selectedLine">None</span>
+        </div>
+    </div>

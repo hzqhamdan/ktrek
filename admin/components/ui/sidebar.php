@@ -75,6 +75,8 @@ if ($isSuperadmin) {
 }
 
 $adminName = $_SESSION['admin_full_name'] ?? ($_SESSION['admin_email'] ?? 'User');
+// Display the actual role from session (capitalize first letter for display)
+$adminRoleDisplay = ucfirst(strtolower($adminRole)) ?: 'User';
 
 // Known public avatar (can be replaced with local uploads later)
 $adminAvatarUrl = $_SESSION['admin_avatar_url'] ?? 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=96&h=96&q=80';
@@ -142,7 +144,10 @@ function kt_sidebar_icon(string $name): string
                 <div class="kt-sidebar-footer">
                     <a href="#" class="kt-sidebar-user" id="ktSidebarUserLink" onclick="if (typeof editProfile === 'function') { editProfile(); } return false;">
                         <img src="<?= htmlspecialchars($adminAvatarUrl) ?>" alt="User avatar" class="kt-sidebar-avatar">
-                        <span class="kt-sidebar-username"><?= htmlspecialchars($adminName) ?></span>
+                        <div class="kt-sidebar-user-info">
+                            <span class="kt-sidebar-username"><?= htmlspecialchars($adminName) ?></span>
+                            <span class="kt-sidebar-role"><?= htmlspecialchars($adminRoleDisplay) ?></span>
+                        </div>
                     </a>
                 </div>
             </div>
@@ -172,7 +177,10 @@ function kt_sidebar_icon(string $name): string
         <div class="kt-sidebar-footer">
             <a href="#" class="kt-sidebar-user" id="ktSidebarUserLinkDesktop" onclick="if (typeof editProfile === 'function') { editProfile(); } return false;">
                 <img src="<?= htmlspecialchars($adminAvatarUrl) ?>" alt="User avatar" class="kt-sidebar-avatar">
-                <span class="kt-sidebar-username"><?= htmlspecialchars($adminName) ?></span>
+                <div class="kt-sidebar-user-info">
+                    <span class="kt-sidebar-username"><?= htmlspecialchars($adminName) ?></span>
+                    <span class="kt-sidebar-role"><?= htmlspecialchars($adminRoleDisplay) ?></span>
+                </div>
             </a>
         </div>
     </div>

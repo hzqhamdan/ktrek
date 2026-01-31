@@ -1,0 +1,103 @@
+Admin Flowchart:
+
+                    ┌─────────┐
+                    │  START  │
+                    └────┬────┘
+                         │
+                  ┌──────▼────────┐
+                  │  ADMIN LOGIN  │
+                  │ (Role-based)  │
+                  └──────┬────────┘
+                         │
+              ┌──────────▼────────────┐
+              │ Check Admin Role:     │
+              │ • Superadmin (Full)   │
+              │ • Manager (Limited)   │
+              └──┬────────────────┬───┘
+         Superadmin│              │Manager
+                  │              │
+     ┌────────────▼─┐      ┌─────▼──────────┐
+     │ SUPERADMIN   │      │ MANAGER        │
+     │ DASHBOARD    │      │ DASHBOARD      │
+     │ (Full Access)│      │ (Restricted)   │
+     └────────────┬─┘      └─────┬──────────┘
+                  │              │
+                  └──────┬───────┘
+                         │
+        ┌────────────────┼────────────────┐
+        │                │                │
+   ┌────▼──────────┐ ┌───▼─────────┐ ┌──▼──────────────┐
+   │ MANAGE        │ │ MANAGE      │ │ MANAGE          │
+   │ ATTRACTIONS   │ │ TASKS       │ │ GUIDES          │
+   │               │ │             │ │                 │
+   │ • Add/Edit    │ │ • Add/Edit  │ │ • Add/Edit      │
+   │ • Delete      │ │ • Delete    │ │ • Update Content│
+   │ • Upload Img  │ │ • Set Type  │ │ • Upload Media  │
+   │ • Set GPS     │ │ • Generate  │ │ • Order Sequence│
+   │ • Set Category│ │   QR Code   │ └──┬──────────────┘
+   └────┬──────────┘ │ • Set XP/EP │    │
+        │            │ • Upload    │    │
+        │            │   Media     │    │
+        │            └───┬─────────┘    │
+        │                │              │
+        └────────────────┼──────────────┘
+                         │
+        ┌────────────────┼────────────────┐
+        │                │                │
+   ┌────▼──────────┐ ┌───▼─────────┐ ┌──▼──────────────┐
+   │ MANAGE        │ │ VIEW USER   │ │ MANAGE ADMIN    │
+   │ REWARDS       │ │ PROGRESS    │ │ USERS           │
+   │               │ │             │ │ (Superadmin     │
+   │ • Add/Edit    │ │ • View Stats│ │  Only)          │
+   │ • Delete      │ │ • Track     │ │                 │
+   │ • Set Unlock  │ │   Completion│ │ • Add Manager   │
+   │   Criteria    │ │ • View      │ │ • Edit Roles    │
+   │ • Upload Badge│ │   Analytics │ │ • Deactivate    │
+   │ • Set Rarity  │ └───┬─────────┘ └──┬──────────────┘
+   └────┬──────────┘     │              │
+        │                │              │
+        └────────────────┼──────────────┘
+                         │
+                  ┌──────▼───────┐
+                  │ CHECK FOR    │
+                  │ NEW REPORTS? │
+                  └──┬────────┬──┘
+                 Yes │        │ No
+          ┌──────────▼──┐     │
+          │ VIEW        │     │
+          │ REPORTS     │     │
+          │             │     │
+          │ • Read      │     │
+          │   Details   │     │
+          │ • View User │     │
+          │   Info      │     │
+          │ • Check     │     │
+          │   Attraction│     │
+          └──────────┬──┘     │
+                     │        │
+          ┌──────────▼──┐     │
+          │ REPLY TO    │     │
+          │ REPORT      │     │
+          │             │     │
+          │ • Write     │     │
+          │   Response  │     │
+          │ • Update    │     │
+          │   Status    │     │
+          └──────────┬──┘     │
+                     │        │
+          ┌──────────▼────────▼───┐
+          │ PERFORM ANOTHER       │
+          │ ADMIN TASK?           │
+          └──┬────────────────┬───┘
+         Yes │                │ No
+             │         ┌──────▼──────┐
+             │         │   LOGOUT    │
+             │         └──────┬──────┘
+             │                │
+             │         ┌──────▼──────┐
+             │         │     END     │
+             │         └─────────────┘
+             │
+             └────────────────┘
+            (Loop back to
+            Admin Dashboard)

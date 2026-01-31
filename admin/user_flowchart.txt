@@ -1,0 +1,138 @@
+User Flowchart:                    
+
+                    ┌─────────┐
+                    │  START  │
+                    └────┬────┘
+                         │
+                    ┌────▼────────────┐
+                    │ Has Account?    │
+                    └─┬─────────────┬─┘
+                  No  │             │ Yes
+              ┌───────▼──┐      ┌───▼──────┐
+              │ REGISTER │      │  LOGIN   │
+              └─────┬────┘      └────┬─────┘
+                    │                │
+                    └────────┬───────┘
+                             │
+                    ┌────────▼─────────────┐
+                    │ First Time User?     │
+                    └─┬─────────────────┬──┘
+                  Yes │                 │ No
+              ┌───────▼──────┐          │
+              │ SELECT AVATAR│          │
+              └───────┬──────┘          │
+                      │                 │
+                      └────────┬────────┘
+                               │
+                    ┌──────────▼───────────┐
+                    │ VIEW DASHBOARD/      │
+                    │ ATTRACTIONS LIST     │
+                    └──────────┬───────────┘
+                               │
+                    ┌──────────▼───────────┐
+                    │ SELECT AN ATTRACTION │
+                    └──────────┬───────────┘
+                               │
+                    ┌──────────▼────────────┐
+                    │ VIEW ATTRACTION       │
+                    │ DETAILS & TASK LIST   │
+                    └──────────┬────────────┘
+                               │
+                    ┌──────────▼────────────┐
+                    │ SELECT A TASK         │
+                    └──────────┬────────────┘
+                               │
+                    ┌──────────▼────────────┐
+                    │ CHOOSE CHECK-IN       │
+                    │ METHOD:               │
+                    │ • Scan QR Code        │
+                    │ • Use GPS Location    │
+                    └──┬───────────────┬────┘
+                  QR   │               │ GPS
+         ┌─────────────▼──┐      ┌────▼──────────────┐
+         │ SCAN QR CODE   │      │ VERIFY GPS        │
+         │ AT ATTRACTION  │      │ LOCATION (130m)   │
+         └─────────────┬──┘      └────┬──────────────┘
+                       │              │
+                       └──────┬───────┘
+                              │
+                   ┌──────────▼──────────┐
+                   │ VIEW TASK GUIDE     │
+                   │ (Instructions)      │
+                   └──────────┬──────────┘
+                              │
+                   ┌──────────▼──────────┐
+                   │ START TASK          │
+                   │                     │
+                   │ Task Type:          │
+                   │ • Check-In          │
+                   │ • Quiz              │
+                   │ • Observation Match │
+                   │ • Count & Confirm   │
+                   │ • Direction/Orient. │
+                   │ • Time-Based        │
+                   └──────────┬──────────┘
+                              │
+                   ┌──────────▼──────────┐
+                   │ COMPLETE TASK       │
+                   │ (Submit Answer)     │
+                   └──────────┬──────────┘
+                              │
+                   ┌──────────▼──────────┐
+                   │ RECEIVE FEEDBACK    │
+                   │ • XP/EP Earned      │
+                   │ • Correct/Incorrect │
+                   └──────────┬──────────┘
+                              │
+                   ┌──────────▼──────────────┐
+                   │ UPDATE PROGRESS         │
+                   │ • Task Completion       │
+                   │ • Category Progress     │
+                   │ • Tier Advancement      │
+                   └──────────┬──────────────┘
+                              │
+                   ┌──────────▼──────────────┐
+                   │ ALL TASKS IN ATTRACTION │
+                   │ COMPLETED?              │
+                   └─┬─────────────────────┬─┘
+                 Yes │                     │ No
+          ┌──────────▼─────┐         ┌────▼──────────────┐
+          │ UNLOCK REWARD  │         │ RETURN TO TASK    │
+          │ • Badge        │         │ LIST OR SELECT    │
+          │ • Title        │         │ ANOTHER ATTRACTION│
+          │ • Tier Level   │         └────┬──────────────┘
+          └──────────┬─────┘              │
+                     │                    │
+                     └────────┬───────────┘
+                              │
+                   ┌──────────▼──────────────┐
+                   │ WANT TO EXPLORE MORE?   │
+                   └─┬────────────────────┬──┘
+                 Yes │                    │ No
+          ┌──────────▼────────┐      ┌────▼─────────────┐
+          │ Go to Dashboard/  │      │ Optional:        │
+          │ Select New        │      │ • View Progress  │
+          │ Attraction        │      │ • View Rewards   │
+          └─────────┬─────────┘      │ • Submit Report  │
+                    │                │ • View Profile   │
+                    │                └────┬─────────────┘
+                    │                     │
+                    │              ┌──────▼──────────┐
+                    │              │ Have Complaint/ │
+                    │              │ Feedback?       │
+                    │              └─┬─────────────┬─┘
+                    │            Yes │             │ No
+                    │        ┌───────▼──┐          │
+                    │        │ SUBMIT   │          │
+                    │        │ REPORT   │          │
+                    │        └───────┬──┘          │
+                    │                │             │
+                    └────────────────┴─────────────┘
+                                     │
+                              ┌──────▼──────┐
+                              │   LOGOUT    │
+                              └──────┬──────┘
+                                     │
+                              ┌──────▼──────┐
+                              │     END     │
+                              └─────────────┘

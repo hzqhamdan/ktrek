@@ -16,17 +16,14 @@ class AuthMiddleware {
         if (!$authHeader) {
             $this->unauthorized('Authorization header missing');
         }
-        
         if (strpos($authHeader, 'Bearer ') !== 0) {
             $this->unauthorized('Invalid authorization format');
         }
-        
         $token = substr($authHeader, 7);
         
         if (empty($token)) {
             $this->unauthorized('Token missing');
         }
-        
         try {
             $query = "SELECT u.id, u.username, u.email, u.phone_number, u.full_name, 
                              u.date_of_birth, u.profile_picture, u.avatar_style, u.avatar_seed, u.auth_provider, 

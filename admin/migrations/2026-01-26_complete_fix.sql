@@ -119,10 +119,6 @@ BEGIN
             WHERE user_id = p_user_id AND category = p_category;
         END IF;
     END IF;
-    
-    -- NOTE: This procedure now ONLY updates tier flags in user_category_progress
-    -- It does NOT create badge entries in user_rewards
-    -- Category milestones are displayed via the CategoryMilestone component
 END$$
 
 DELIMITER ;
