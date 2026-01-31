@@ -31,6 +31,8 @@ try {
 }
 
 try {
+    error_log("[VerifyQR] Verifying QR code: $qr_code for user_id: " . ($user_id ?? 'null'));
+    
     // Find task by QR code
     // Check completion status only if user is logged in
     if ($user_id) {
@@ -39,7 +41,8 @@ try {
                     a.name as attraction_name,
                     a.latitude,
                     a.longitude,
-                    CASE WHEN uts.id IS NOT NULL THEN 1 ELSE 0 END as is_completed
+                    CASE WHEN uts.id IS NOT NULL THEN 1 ELSE 0 END as is_completed,
+                    uts.id as submission_id
                   FROM tasks t
                   JOIN attractions a ON t.attraction_id = a.id
                   LEFT JOIN user_task_submissions uts 
@@ -57,7 +60,8 @@ try {
                     a.name as attraction_name,
                     a.latitude,
                     a.longitude,
-                    0 as is_completed
+                    0 as is_completed,
+                    NULL as submission_id
                   FROM tasks t
                   JOIN attractions a ON t.attraction_id = a.id
                   WHERE t.qr_code = :qr_code";
@@ -68,14 +72,19 @@ try {
     }
 
     if ($stmt->rowCount() == 0) {
+        error_log("[VerifyQR] No task found with QR code: $qr_code");
         Response::error("Invalid QR code", 404);
     }
 
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
+    error_log("[VerifyQR] Task found: ID={$task['id']}, Name={$task['name']}, is_completed={$task['is_completed']}, submission_id=" . ($task['submission_id'] ?? 'null'));
 
     if ($user_id && $task['is_completed']) {
+        error_log("[VerifyQR] Task already completed! user_id=$user_id, task_id={$task['id']}, submission_id={$task['submission_id']}");
         Response::error("You have already completed this task", 400);
     }
+    
+    error_log("[VerifyQR] QR code verified successfully for user_id=" . ($user_id ?? 'null'));
 
     Response::success([
         'task' => $task,
