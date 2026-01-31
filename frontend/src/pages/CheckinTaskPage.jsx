@@ -98,12 +98,17 @@ const CheckinTaskPage = () => {
       console.log('[CheckIn] Calling checkForTierUnlock with responseData:', responseData);
       checkForTierUnlock(responseData);
       
-      // Show reward modal with all reward data
-      console.log('[CheckIn] Setting rewardData:', rewards);
+      // Show reward modal with all reward data - DO THIS SYNCHRONOUSLY
+      console.log('[CheckIn] Setting rewardData and showing modal');
       console.log('[CheckIn] currentTierUnlock:', currentTierUnlock);
-      setRewardData(rewards);
-      setShowRewardModal(true);
-      console.log('[CheckIn] showRewardModal set to true');
+      
+      // Use React 18 batch updates - set both at once
+      React.startTransition(() => {
+        setRewardData(rewards);
+        setShowRewardModal(true);
+      });
+      
+      console.log('[CheckIn] Modal state updated');
     } else {
       console.log('[CheckIn] No rewards in response');
       // If no rewards data, navigate immediately
