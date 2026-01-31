@@ -99,8 +99,11 @@ const CheckinTaskPage = () => {
       checkForTierUnlock(responseData);
       
       // Show reward modal with all reward data
+      console.log('[CheckIn] Setting rewardData:', rewards);
+      console.log('[CheckIn] currentTierUnlock:', currentTierUnlock);
       setRewardData(rewards);
       setShowRewardModal(true);
+      console.log('[CheckIn] showRewardModal set to true');
     } else {
       console.log('[CheckIn] No rewards in response');
       // If no rewards data, navigate immediately
@@ -309,10 +312,17 @@ const CheckinTaskPage = () => {
       )}
       
       {/* Reward Notification Modal */}
+      {console.log('[CheckIn] Rendering RewardNotificationModal with:', {
+        rewardData,
+        showRewardModal,
+        currentTierUnlock,
+        isOpen: showRewardModal && !currentTierUnlock
+      })}
       <RewardNotificationModal 
         rewards={rewardData} 
         isOpen={showRewardModal && !currentTierUnlock}
         onClose={() => {
+          console.log('[CheckIn] Reward modal onClose called');
           setShowRewardModal(false);
           setRewardData(null);
           navigate("/dashboard/progress");
