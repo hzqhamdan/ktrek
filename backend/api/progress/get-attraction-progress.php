@@ -14,7 +14,7 @@ $db = $database->getConnection();
 $auth = new AuthMiddleware($db);
 $user = $auth->verifySession();
 
-$attraction_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$attraction_id = isset($_GET['attraction_id']) ? intval($_GET['attraction_id']) : (isset($_GET['id']) ? intval($_GET['id']) : 0);
 
 try {
     $query = "SELECT 
