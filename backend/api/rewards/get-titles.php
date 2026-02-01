@@ -5,19 +5,12 @@
  */
 
 require_once '../../config/database.php';
+require_once '../../config/cors.php';
 require_once '../../middleware/auth-middleware.php';
 require_once '../../utils/response.php';
 
-header('Content-Type: application/json');
-
 // Verify authentication
-$user = authenticateUser();
-
-if (!$user) {
-    sendErrorResponse('Unauthorized', 401);
-    exit;
-}
-
+$user = AuthMiddleware::authenticate();
 $user_id = $user['id'];
 
 try {
@@ -58,7 +51,7 @@ try {
         $titles[] = $row;
     }
     
-    sendSuccessResponse([
+    Response::success([
         'titles' => $titles,
         'active_title' => $active_title
     ], 'Titles retrieved successfully');
@@ -67,5 +60,5 @@ try {
     $conn->close();
     
 } catch (Exception $e) {
-    sendErrorResponse('Failed to retrieve titles: ' . $e->getMessage(), 500);
+    Response::error('Failed to retrieve titles: ' . $e->getMessage(), 500);
 }
