@@ -26,12 +26,11 @@ if (empty($message)) {
 
 try {
     $query = "INSERT INTO reports 
-              (user_id, firebase_user_email, attraction_id, message, status) 
-              VALUES (:user_id, :email, :attraction_id, :message, 'Pending')";
+              (user_id, attraction_id, message, status) 
+              VALUES (:user_id, :attraction_id, :message, 'Pending')";
     
     $stmt = $db->prepare($query);
     $stmt->bindParam(':user_id', $user['id']);
-    $stmt->bindParam(':email', $user['email']);
     $stmt->bindParam(':attraction_id', $attraction_id);
     $stmt->bindParam(':message', $message);
     $stmt->execute();
@@ -40,6 +39,6 @@ try {
 
 } catch (PDOException $e) {
     error_log("Submit report error: " . $e->getMessage());
-    Response::serverError("Failed to submit report");
+    Response::error("Failed to submit report: " . $e->getMessage(), 500);
 }
 ?>
