@@ -53,13 +53,20 @@ const TaskPage = () => {
 
   const checkIfUserHasCheckedIn = async (attractionId) => {
     try {
-      const progressResponse = await progressAPI.getAttractionProgress(attractionId);
+      // Add cache-busting parameter to force fresh data
+      const progressResponse = await progressAPI.getAttractionProgress(attractionId, { 
+        _t: Date.now() // Cache buster
+      });
       const progressData = progressResponse.data || progressResponse;
+      
+      console.log('[TaskPage] Progress data:', progressData);
+      console.log('[TaskPage] Completed tasks:', progressData.completed_tasks);
       
       // Check if any completed task is a checkin type
       const completedTasks = progressData.completed_tasks || [];
       const checkinCompleted = completedTasks.some(task => task.type === 'checkin');
       
+      console.log('[TaskPage] Check-in completed?', checkinCompleted);
       setHasCheckedIn(checkinCompleted);
       
       // Find the checkin task ID for this attraction
