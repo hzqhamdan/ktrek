@@ -246,20 +246,28 @@ const TitleCollection = () => {
   const { titles, fetchTitles, loading, setActiveTitle, activeTitle } = useRewardStore();
   const [activeTitleId, setActiveTitleId] = useState(null);
 
+  console.log('TitleCollection - titles:', titles);
+  console.log('TitleCollection - loading:', loading);
+  console.log('TitleCollection - titles length:', titles?.length);
+
   useEffect(() => {
+    console.log('TitleCollection - fetchTitles called');
     fetchTitles();
   }, [fetchTitles]);
 
   useEffect(() => {
+    console.log('TitleCollection - activeTitle:', activeTitle);
     if (activeTitle) {
       setActiveTitleId(activeTitle.id);
     }
   }, [activeTitle]);
 
   if (loading) {
+    console.log('TitleCollection - showing loading state');
     return <div className="text-center p-8">Loading titles...</div>;
   }
 
+  console.log('TitleCollection - checking if titles array is empty');
   if (!titles || titles.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100 text-center">
