@@ -492,26 +492,27 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     elseif ($action === 'update') {
         $id = intval($input['id']);
 
+        // Fetch the existing task first (needed for all roles for change tracking)
+        $existing_task_fetch_stmt = $conn->prepare("SELECT attraction_id FROM tasks WHERE id = ?");
+        $existing_task_fetch_stmt->bind_param("i", $id);
+        $existing_task_fetch_stmt->execute();
+        $existing_task_fetch_result = $existing_task_fetch_stmt->get_result();
+
+        if (!$existing_task_fetch_result || $existing_task_fetch_result->num_rows !== 1) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Task not found.'
+            ]);
+            $existing_task_fetch_stmt->close();
+            $conn->close();
+            exit();
+        }
+
+        $existing_task = $existing_task_fetch_result->fetch_assoc();
+        $existing_task_fetch_stmt->close();
+
         // Check if manager is trying to update a task for an attraction they don't manage
         if ($admin_role === 'manager') {
-            // First, fetch the *existing* task to get its attraction_id
-            $existing_task_fetch_stmt = $conn->prepare("SELECT attraction_id FROM tasks WHERE id = ?");
-            $existing_task_fetch_stmt->bind_param("i", $id);
-            $existing_task_fetch_stmt->execute();
-            $existing_task_fetch_result = $existing_task_fetch_stmt->get_result();
-
-            if (!$existing_task_fetch_result || $existing_task_fetch_result->num_rows !== 1) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Task not found.'
-                ]);
-                $existing_task_fetch_stmt->close();
-                $conn->close();
-                exit();
-            }
-
-            $existing_task = $existing_task_fetch_result->fetch_assoc();
-            $existing_task_fetch_stmt->close();
 
             if ($has_created_by_column) {
                 // Then, fetch the attraction to check creator
