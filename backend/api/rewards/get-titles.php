@@ -23,19 +23,20 @@ $user_id = $user['id'];
 try {
     $conn = getDBConnection();
     
-    // Get all titles
+    // Get all titles from user_rewards table
     $stmt = $conn->prepare("
         SELECT 
             id,
-            title_identifier,
-            title_text,
-            title_color,
+            reward_identifier as title_identifier,
+            reward_name as title_text,
+            'default' as title_color,
             category,
-            is_active,
-            unlocked_date
-        FROM user_titles
-        WHERE user_id = ?
-        ORDER BY unlocked_date DESC
+            0 as is_active,
+            earned_date as unlocked_date,
+            reward_description
+        FROM user_rewards
+        WHERE user_id = ? AND reward_type = 'title'
+        ORDER BY earned_date DESC
     ");
     
     $stmt->bind_param("i", $user_id);
@@ -45,9 +46,14 @@ try {
     $titles = [];
     $active_title = null;
     
+    // Get active title from user settings (if you have a column for it)
+    // For now, we'll mark the most recent as active
+    $first = true;
     while ($row = $result->fetch_assoc()) {
-        if ($row['is_active']) {
+        if ($first) {
+            $row['is_active'] = 1;
             $active_title = $row;
+            $first = false;
         }
         $titles[] = $row;
     }
