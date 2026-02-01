@@ -102,8 +102,10 @@ const RegisterPage = () => {
                 </p>
               </div>
               {/* Google Sign Up */}
-              <div className="mb-6">
-                <GoogleAuthButton text="Sign up with Google" isLogin={false} />
+              <div className="mb-6 flex justify-center">
+                <div className="w-full max-w-sm">
+                  <GoogleAuthButton isLogin={false} />
+                </div>
               </div>
               {/* Divider */}
               <div className="flex items-center gap-4 my-6">
