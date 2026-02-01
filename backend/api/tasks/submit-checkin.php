@@ -240,6 +240,7 @@ try {
     
     // === REWARD SYSTEM INTEGRATION ===
     // Check for special rewards (badges, titles, etc.)
+    error_log("[CheckIn] Calling RewardHelper::awardTaskCompletion for user_id=$user_id, task_id=$task_id");
     $special_rewards = RewardHelper::awardTaskCompletion(
         $db,
         $user_id,
@@ -248,6 +249,8 @@ try {
         $category,
         'checkin'
     );
+    error_log("[CheckIn] RewardHelper returned: " . json_encode($special_rewards));
+    error_log("[CheckIn] Number of special_rewards: " . (is_array($special_rewards) ? count($special_rewards) : 'not array'));
     // === END REWARD INTEGRATION ===
 
     // Get next task in the same attraction (BEFORE closing mysqli)
