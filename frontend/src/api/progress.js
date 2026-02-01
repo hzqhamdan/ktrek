@@ -8,9 +8,10 @@ export const progressAPI = {
   },
 
   // Get progress for specific attraction
-  getAttractionProgress: async (attractionId) => {
+  getAttractionProgress: async (attractionId, params = {}) => {
+    const cacheBuster = params._t || Date.now();
     const response = await api.get(
-      `/progress/get-attraction-progress.php?attraction_id=${attractionId}`
+      `/progress/get-attraction-progress.php?attraction_id=${attractionId}&_t=${cacheBuster}`
     );
     return response.data;
   },
