@@ -164,39 +164,49 @@ const ToastComponent: React.FC<Toast> = ({ message, type }) => {
   const typeConfig = {
     success: {
       icon: CircleCheck,
-      bgColor: 'bg-green-50',
-      textColor: 'text-green-800',
-      borderColor: 'border-green-200',
+      headerBg: 'bg-green-500',
+      iconBg: 'bg-white',
+      iconColor: 'text-green-500',
+      title: 'Success!',
     },
     error: {
       icon: AlertCircle,
-      bgColor: 'bg-red-50',
-      textColor: 'text-red-800',
-      borderColor: 'border-red-200',
+      headerBg: 'bg-red-500',
+      iconBg: 'bg-white',
+      iconColor: 'text-red-500',
+      title: 'Error!',
     },
     warning: {
       icon: AlertTriangle,
-      bgColor: 'bg-yellow-50',
-      textColor: 'text-yellow-800',
-      borderColor: 'border-yellow-200',
+      headerBg: 'bg-yellow-500',
+      iconBg: 'bg-white',
+      iconColor: 'text-yellow-600',
+      title: 'Warning!',
     },
     info: {
       icon: Info,
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-800',
-      borderColor: 'border-blue-200',
+      headerBg: 'bg-blue-500',
+      iconBg: 'bg-white',
+      iconColor: 'text-blue-500',
+      title: 'Info',
     },
   } as const;
 
-  const { icon: Icon, bgColor, textColor, borderColor } = typeConfig[type];
+  const { icon: Icon, headerBg, iconBg, iconColor, title } = typeConfig[type];
 
   return (
-    <div
-      className={`${bgColor} ${borderColor} border rounded-lg shadow-lg p-4 flex items-center justify-between max-w-full`}
-    >
-      <div className="flex items-center gap-3">
-        <Icon className={`${textColor} w-5 h-5`} />
-        <p className={`${textColor} font-medium`}>{message}</p>
+    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-sm w-full">
+      {/* Colored Header Section */}
+      <div className={`${headerBg} pt-8 pb-6 flex flex-col items-center`}>
+        <div className={`${iconBg} rounded-full p-4 shadow-lg`}>
+          <Icon className={`${iconColor} w-8 h-8`} strokeWidth={2.5} />
+        </div>
+      </div>
+      
+      {/* White Content Section */}
+      <div className="px-6 py-6 text-center">
+        <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
+        <p className="text-sm text-gray-600 leading-relaxed">{message}</p>
       </div>
     </div>
   );
