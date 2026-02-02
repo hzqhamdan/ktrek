@@ -316,8 +316,8 @@ const TitleCollection = () => {
             />
             {activeTitleId === title.id && (
               <div className="absolute top-2 right-2">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500 text-white shadow-lg">
-                  ✓ Active
+                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full text-lg font-semibold bg-yellow-500 text-white shadow-lg">
+                  ✓
                 </span>
               </div>
             )}
