@@ -5,7 +5,7 @@ import Card from "../common/Card";
 import ProxyImage from "../common/ProxyImage";
 import { getImageUrl } from "../../utils/constants";
 
-const AttractionCard = ({ attraction, featured = false, isAuthenticated = false }) => {
+const AttractionCard = ({ attraction, featured = false, isAuthenticated = false, hideImage = false }) => {
   const {
     id,
     name,
@@ -44,42 +44,44 @@ const AttractionCard = ({ attraction, featured = false, isAuthenticated = false 
       >
         {" "}
         {/* Image */}{" "}
-        <div className="relative h-48 overflow-hidden bg-gray-200">
-          {" "}
-          {image && !imageError ? (
-            <ProxyImage
-              src={getImageUrl(image)}
-              alt={name}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-400 to-primary-600">
-              {" "}
-              <MapPin className="text-white" size={64} />{" "}
-            </div>
-          )}{" "}
-          {/* Status Badge */}{" "}
-          {isCompleted && (
-            <div className="absolute top-3 right-3 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 shadow-lg">
-              {" "}
-              <CheckCircle size={16} /> <span>Completed</span>{" "}
-            </div>
-          )}{" "}
-          {isInProgress && (
-            <div className="absolute top-3 right-3 bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 shadow-lg">
-              {" "}
-              <Clock size={16} /> <span>In Progress</span>{" "}
-            </div>
-          )}{" "}
-          {/* Featured Badge */}{" "}
-          {featured && (
-            <div className="absolute top-3 left-3 bg-primary-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
-              {" "}
-              Featured{" "}
-            </div>
-          )}{" "}
-        </div>{" "}
+        {!hideImage && (
+          <div className="relative h-48 overflow-hidden bg-gray-200">
+            {" "}
+            {image && !imageError ? (
+              <ProxyImage
+                src={getImageUrl(image)}
+                alt={name}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-400 to-primary-600">
+                {" "}
+                <MapPin className="text-white" size={64} />{" "}
+              </div>
+            )}{" "}
+            {/* Status Badge */}{" "}
+            {isCompleted && (
+              <div className="absolute top-3 right-3 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 shadow-lg">
+                {" "}
+                <CheckCircle size={16} /> <span>Completed</span>{" "}
+              </div>
+            )}{" "}
+            {isInProgress && (
+              <div className="absolute top-3 right-3 bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 shadow-lg">
+                {" "}
+                <Clock size={16} /> <span>In Progress</span>{" "}
+              </div>
+            )}{" "}
+            {/* Featured Badge */}{" "}
+            {featured && (
+              <div className="absolute top-3 left-3 bg-primary-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+                {" "}
+                Featured{" "}
+              </div>
+            )}{" "}
+          </div>
+        )}{" "}
         {/* Content */}{" "}
         <div className="p-4 sm:p-5 flex flex-col flex-1">
           {" "}
