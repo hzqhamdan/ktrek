@@ -228,9 +228,9 @@ const DashboardHomePage = () => {
       </div>
 
       {/* Attractions Section */}{" "}
-      <div className="container-custom pb-12">
+      <div className="pb-12">
         {" "}
-        <div className="mb-8">
+        <div className="container-custom mb-8">
           {" "}
           <h2 className="text-3xl font-bold bg-clip-text text-transparent mb-2">
             Attractions Available
@@ -240,10 +240,12 @@ const DashboardHomePage = () => {
             Click on any attraction to continue your missions{" "}
           </p>{" "}
         </div>{" "}
-        <AttractionFeatureSection
-          attractions={attractions}
-          isAuthenticated={true}
-        />{" "}
+        <div className="container-custom">
+          <AttractionFeatureSection
+            attractions={attractions}
+            isAuthenticated={true}
+          />{" "}
+        </div>
       </div>{" "}
       {/* Quick Actions */}{" "}
       <div className="container-custom pb-12">
