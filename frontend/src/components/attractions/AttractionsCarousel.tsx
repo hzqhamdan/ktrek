@@ -104,7 +104,7 @@ const AttractionsCarousel: React.FC<AttractionsCarouselProps> = ({ attractions }
                   {/* Action Button - Centered */}
                   <div className="mt-2">
                     <Link to={`/attractions/${selectedAttraction.id}`}>
-                      <GlassButton size="lg" contentClassName="flex items-center gap-2">
+                      <GlassButton contentClassName="flex items-center gap-2 px-6 py-2.5">
                         <span>View Details</span>
                         <span>→</span>
                       </GlassButton>
