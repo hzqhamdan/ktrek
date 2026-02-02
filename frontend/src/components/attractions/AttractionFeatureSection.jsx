@@ -90,7 +90,7 @@ const AttractionFeature = ({ attraction, index, isAuthenticated, onClick }) => {
         </span>
       </div>
       {/* Description */}
-      <p className="text-xs text-gray-600 leading-tight max-w-xs relative z-10 px-3 mb-2 line-clamp-3 flex-1">
+      <p className="text-xs text-gray-600 leading-tight max-w-xs relative z-10 px-3 mb-2 line-clamp-2">
         {attraction.description}
       </p>
       {/* Stats for authenticated users */}
