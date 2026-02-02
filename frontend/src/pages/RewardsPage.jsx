@@ -311,7 +311,6 @@ const TitleCollection = () => {
               variant="badge"
               title={title.reward_name}
               subtitle={title.reward_description || "Achievement Unlocked"}
-              date={new Date(title.earned_date).toLocaleDateString()}
               className="w-full"
             />
             {activeTitleId === title.id && (
