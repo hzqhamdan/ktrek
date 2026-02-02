@@ -274,14 +274,14 @@ export const AwardBadge = ({ type, category, onClick }: AwardBadgeProps) => {
             <rect width="260" height="54" rx="10" fill="url(#chromeShine)" style={{ mixBlendMode: 'overlay' }} />
           )}
           <rect x="4" y="4" width="252" height="46" rx="8" fill="transparent" stroke="#333" strokeWidth="1" strokeOpacity="0.3" />
-          <text fontFamily="Helvetica-Bold, Helvetica" fontSize="9" fontWeight="bold" fill={textColor[type]} x="53" y="20">
+          <text fontFamily="Helvetica-Bold, Helvetica" fontSize="9" fontWeight="bold" fill={textColor[type]} x="130" y="20" textAnchor="middle">
             K-TREK ACHIEVEMENT
           </text>
-          <text fontFamily="Helvetica-Bold, Helvetica" fontSize="16" fontWeight="bold" fill={textColor[type]} x="52" y="40">
+          <text fontFamily="Helvetica-Bold, Helvetica" fontSize="16" fontWeight="bold" fill={textColor[type]} x="130" y="40" textAnchor="middle">
             {title[type]}
           </text>
           {category && (
-            <text fontFamily="Helvetica, Arial" fontSize="8" fill={textColor[type]} x="52" y="48" opacity="0.8">
+            <text fontFamily="Helvetica, Arial" fontSize="8" fill={textColor[type]} x="130" y="48" opacity="0.8" textAnchor="middle">
               {formatCategoryName(category)}
             </text>
           )}
