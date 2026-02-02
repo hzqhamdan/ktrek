@@ -62,7 +62,7 @@ const AttractionFeature = ({ attraction, index, isAuthenticated, onClick }) => {
       {/* Hover glow */}
       <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-br from-primary-50/60 to-transparent pointer-events-none" />
       {/* Image with overlay */}
-      <div className="mb-4 relative z-10 px-5 pt-5">
+      <div className="mb-3 relative z-10 px-4 pt-4">
         <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden shadow-md group-hover/feature:shadow-xl transition-shadow duration-200">
           <ProxyImage
             src={getImageUrl(attraction.image)}
@@ -72,44 +72,44 @@ const AttractionFeature = ({ attraction, index, isAuthenticated, onClick }) => {
           />
           {/* Progress badge for authenticated users */}
           {isAuthenticated && progress > 0 && (
-            <div className="absolute top-2 right-2 bg-primary-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+            <div className="absolute top-2 right-2 bg-primary-600 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-lg">
               {progress}%
             </div>
           )}
           {/* Location badge */}
-          <div className="absolute bottom-2 left-2 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-700 flex items-center gap-1 shadow-md" style={{ backgroundColor: 'rgba(241, 238, 231, 0.9)' }}>
+          <div className="absolute bottom-2 left-2 backdrop-blur-sm px-2 py-0.5 rounded-full text-xs font-medium text-gray-700 flex items-center gap-1 shadow-md" style={{ backgroundColor: 'rgba(241, 238, 231, 0.9)' }}>
             <MapPin className="w-3 h-3" /> {attraction.location}
           </div>
         </div>
       </div>
       {/* Title with animated bar */}
-      <div className="text-lg font-bold mb-2 relative z-10 px-5 min-h-[3rem]">
+      <div className="text-lg font-bold mb-2 relative z-10 px-4 min-h-[2.5rem]">
         <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-gray-300 dark:bg-neutral-700 group-hover/feature:bg-primary-500 transition-all duration-200 origin-center" />
         <span className="group-hover/feature:translate-x-2 transition duration-200 inline-block text-gray-900 line-clamp-2">
           {attraction.name}
         </span>
       </div>
       {/* Description */}
-      <p className="text-base text-gray-800 font-medium leading-relaxed max-w-xs relative z-10 px-5 mb-4 line-clamp-3 flex-1">
+      <p className="text-sm text-gray-700 leading-snug max-w-xs relative z-10 px-4 mb-3 line-clamp-4 flex-1">
         {attraction.description}
       </p>
       {/* Stats for authenticated users */}
       {isAuthenticated && (
-        <div className="flex gap-4 px-5 relative z-10 mt-auto pb-5">
+        <div className="flex gap-3 px-4 relative z-10 mt-auto pb-3">
           <div className="flex items-center gap-1 text-xs text-gray-700">
-            <Clock className="w-4 h-4 text-primary-500" />
+            <Clock className="w-3.5 h-3.5 text-primary-500" />
             <span>{totalTasks} tasks</span>
           </div>
           {completedTasks > 0 && (
             <div className="flex items-center gap-1 text-xs text-green-600">
-              <Award className="w-4 h-4" />
+              <Award className="w-3.5 h-3.5" />
               <span>{completedTasks} done</span>
             </div>
           )}
         </div>
       )}
       {/* View details button on hover */}
-      <div className="opacity-0 group-hover/feature:opacity-100 transition-opacity duration-200 mt-4 px-5 relative z-10 pb-5 flex justify-center">
+      <div className="opacity-0 group-hover/feature:opacity-100 transition-opacity duration-200 mt-2 px-4 relative z-10 pb-4 flex justify-center">
         <div className="flex items-center justify-center">
           <div className="inline-block">
             <GlassButton size="sm" contentClassName="flex items-center gap-1">
