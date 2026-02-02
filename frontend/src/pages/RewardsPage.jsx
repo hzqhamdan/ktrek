@@ -15,6 +15,7 @@ import useRewardStore from "../store/rewardStore";
 import { Awards } from "../components/ui/award";
 const RewardsPage = () => {
   const { showToast } = useToast();
+  const { badges, titles, fetchBadges, fetchTitles } = useRewardStore();
   const [unlockedRewards, setUnlockedRewards] = useState([]);
   const [allAttractions, setAllAttractions] = useState([]);
   const [categoryProgress, setCategoryProgress] = useState([]);
@@ -29,6 +30,8 @@ const RewardsPage = () => {
         rewardsAPI.getUserRewards(),
         attractionsAPI.getAll(),
         rewardsAPI.getUserStats(),
+        fetchBadges(),
+        fetchTitles(),
       ]);
       if (rewardsRes.success) {
         setUnlockedRewards(rewardsRes.data);
@@ -53,6 +56,11 @@ const RewardsPage = () => {
   const lockedAttractions = (allAttractions || []).filter(
     (a) => !completedAttractionIds.includes(a.id) && a.progress_percentage < 100
   );
+
+  // Calculate total rewards (badges + titles) and locked count
+  const totalPossibleRewards = 17; // Total rewards available in system
+  const unlockedRewardCount = (badges?.length || 0) + (titles?.length || 0);
+  const lockedRewardCount = Math.max(0, totalPossibleRewards - unlockedRewardCount);
   return (
     <div className="min-h-screen bg-gradient-to-br from-background-light relative overflow-hidden">
       {" "}
@@ -94,7 +102,7 @@ const RewardsPage = () => {
                 <AdminSidebarIcon name="rewards" className="w-6 h-6 text-[#120c07]" />{" "}
               </div>{" "}
               <span className="text-3xl font-bold text-gray-700">
-                {unlockedRewards.length}
+                {unlockedRewardCount}
               </span>{" "}
             </div>{" "}
             <h3 className="text-gray-600 font-medium flex items-center gap-2">
@@ -113,7 +121,7 @@ const RewardsPage = () => {
                 </svg>{" "}
               </div>{" "}
               <span className="text-3xl font-bold text-gray-700">
-                {lockedAttractions.length}
+                {lockedRewardCount}
               </span>{" "}
             </div>{" "}
             <h3 className="text-gray-600 font-medium">Still Locked</h3>
