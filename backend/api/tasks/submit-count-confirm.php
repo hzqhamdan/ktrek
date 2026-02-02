@@ -47,11 +47,21 @@ try {
     }
 
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
-    $task_config = json_decode($task['task_config'], true);
+    
+    // Handle double-encoded JSON (if task_config is a string of JSON)
+    $task_config = $task['task_config'];
+    if (is_string($task_config)) {
+        $task_config = json_decode($task_config, true);
+    }
+    // If still a string after first decode, decode again (double-encoded case)
+    if (is_string($task_config)) {
+        $task_config = json_decode($task_config, true);
+    }
 
     // Debug: Log the task config
     error_log("Task ID: {$task_id}, task_config raw: " . $task['task_config']);
     error_log("Task config decoded: " . print_r($task_config, true));
+    error_log("Task config type: " . gettype($task_config));
 
     // Check if user has checked in to this attraction first
     if (!CheckinHelper::hasCheckedIn($db, $user['id'], $task['attraction_id'])) {
