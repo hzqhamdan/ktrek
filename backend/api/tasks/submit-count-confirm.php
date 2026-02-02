@@ -49,6 +49,10 @@ try {
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
     $task_config = json_decode($task['task_config'], true);
 
+    // Debug: Log the task config
+    error_log("Task ID: {$task_id}, task_config raw: " . $task['task_config']);
+    error_log("Task config decoded: " . print_r($task_config, true));
+
     // Check if user has checked in to this attraction first
     if (!CheckinHelper::hasCheckedIn($db, $user['id'], $task['attraction_id'])) {
         $db->rollBack();
@@ -61,7 +65,8 @@ try {
 
     if (!$task_config || !isset($task_config['correct_count'])) {
         $db->rollBack();
-        Response::error("Task configuration is invalid", 500);
+        error_log("Invalid task config - task_config: " . json_encode($task_config));
+        Response::error("Task configuration is invalid. Missing 'correct_count' in task_config. Please configure this task in the admin panel.", 500);
     }
 
     $correct_count = intval($task_config['correct_count']);
