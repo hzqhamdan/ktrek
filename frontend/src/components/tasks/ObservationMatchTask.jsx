@@ -7,11 +7,9 @@ import Button from "../common/Button";
 import Loading from "../common/Loading";
 
 const ObservationMatchTask = ({ task, onComplete }) => {
-  const [matchData, setMatchData] = useState(null);
-  const [options, setOptions] = useState([]); // All answer options
-  const [correctAnswerIds, setCorrectAnswerIds] = useState([]); // IDs of correct answers
-  const [selectedAnswers, setSelectedAnswers] = useState([]); // User's selected answer IDs
-  const [minSelections, setMinSelections] = useState(1); // Minimum required selections
+  const [allQuestions, setAllQuestions] = useState([]); // All observation questions
+  const [currentQuestion, setCurrentQuestion] = useState(0); // Current question index
+  const [selectedAnswers, setSelectedAnswers] = useState({}); // User's selected answers per question
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,40 +24,8 @@ const ObservationMatchTask = ({ task, onComplete }) => {
       const response = await tasksAPI.getQuiz(task.id);
 
       if (response.success && response.data.questions?.length) {
-        const question = response.data.questions[0];
-        const optionsList = question.options || [];
-
-        if (!optionsList.length) {
-          console.warn('No options found for this task. Please check task configuration.');
-          return;
-        }
-
-        // Parse options and identify correct answers
-        const parsedOptions = [];
-        const correctIds = [];
-
-        optionsList.forEach(opt => {
-          const metadata = opt.option_metadata ? (typeof opt.option_metadata === 'string' ? JSON.parse(opt.option_metadata) : opt.option_metadata) : {};
-          const isCorrect = metadata.is_correct ?? opt.is_correct ?? false;
-
-          parsedOptions.push({
-            id: opt.option_id,
-            text: opt.option_text,
-            is_correct: isCorrect
-          });
-
-          if (isCorrect) {
-            correctIds.push(opt.option_id);
-          }
-        });
-
-        // Shuffle options array for randomness
-        const shuffledOptions = [...parsedOptions].sort(() => Math.random() - 0.5);
-
-        setOptions(shuffledOptions);
-        setCorrectAnswerIds(correctIds);
-        setMinSelections(correctIds.length); // User must select same number as correct answers
-        setMatchData(question);
+        // Store all questions - each question is an observable item
+        setAllQuestions(response.data.questions);
       } else {
         console.warn('Failed to load observation match task - no valid data returned');
       }
@@ -70,29 +36,42 @@ const ObservationMatchTask = ({ task, onComplete }) => {
     }
   };
 
-  const handleOptionClick = (optionId) => {
-    setSelectedAnswers(prev => {
-      if (prev.includes(optionId)) {
-        // Deselect if already selected
-        return prev.filter(id => id !== optionId);
-      } else {
-        // Add to selection
-        return [...prev, optionId];
-      }
+  const handleSelectAnswer = (questionId, optionId) => {
+    setSelectedAnswers({
+      ...selectedAnswers,
+      [questionId]: optionId,
     });
   };
 
+  const handleNext = () => {
+    if (currentQuestion < allQuestions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1);
+    }
+  };
+
   const handleSubmit = async () => {
-    // Check if user has selected enough answers
-    if (selectedAnswers.length < minSelections) {
-      alert(`Please select at least ${minSelections} answer${minSelections > 1 ? 's' : ''}`);
+    // Check if all questions are answered
+    const unansweredQuestions = allQuestions.filter(
+      (q) => !selectedAnswers[q.question_id]
+    );
+
+    if (unansweredQuestions.length > 0) {
+      alert(`Please answer all items (${unansweredQuestions.length} remaining)`);
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const response = await tasksAPI.submitObservationMatch(task.id, selectedAnswers);
+      // Convert selectedAnswers object to array format for API
+      const answersArray = Object.values(selectedAnswers);
+      const response = await tasksAPI.submitObservationMatch(task.id, answersArray);
 
       if (response.success) {
         setResult(response.data);
@@ -114,6 +93,14 @@ const ObservationMatchTask = ({ task, onComplete }) => {
 
   if (loading) {
     return <Loading />;
+  }
+
+  if (!allQuestions || allQuestions.length === 0) {
+    return (
+      <Card className="text-center" padding="lg">
+        <p className="text-gray-600">No observation items available for this task.</p>
+      </Card>
+    );
   }
 
   if (result) {
@@ -187,8 +174,30 @@ const ObservationMatchTask = ({ task, onComplete }) => {
     );
   }
 
+  // Get current question data
+  const question = allQuestions[currentQuestion];
+  const progress = ((currentQuestion + 1) / allQuestions.length) * 100;
+
   return (
     <div className="max-w-2xl mx-auto">
+      {/* Progress Header */}
+      <Card className="mb-6" padding="md">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <Eye className="text-primary-600" size={24} />
+            <span className="font-semibold text-gray-900">
+              Item {currentQuestion + 1} of {allQuestions.length}
+            </span>
+          </div>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div
+            className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </Card>
+
       <Card padding="xl" gradient>
         {/* Header */}
         <div className="text-center mb-6">
@@ -236,42 +245,35 @@ const ObservationMatchTask = ({ task, onComplete }) => {
           </Card>
         )}
 
-        {/* Instructions */}
-        <Card className="mb-6 bg-purple-50 border-purple-200" padding="md">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">✅</span>
-            <p className="text-purple-900 font-medium">
-              Select all correct answers (choose {minSelections} option{minSelections > 1 ? 's' : ''})
-            </p>
-          </div>
-        </Card>
-
         {/* Question Text */}
-        {matchData && matchData.question_text && (
+        {question && question.question_text && (
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-800 text-center">
-              {matchData.question_text}
+            <h3 className="text-xl font-bold text-gray-800 text-center">
+              {question.question_text}
             </h3>
           </div>
         )}
 
         {/* Multiple Choice Options */}
         <div className="space-y-3 mb-8">
-          {options.map((option) => {
-            const isSelected = selectedAnswers.includes(option.id);
+          {question.options.map((option, index) => {
+            const isSelected = selectedAnswers[question.question_id] === option.option_id;
 
             return (
               <motion.div
-                key={option.id}
+                key={option.option_id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
                 whileTap={{ scale: 0.98 }}
                 className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all
                   ${isSelected
                     ? 'bg-primary-50 border-primary-500 shadow-md'
                     : 'bg-white border-gray-200 hover:border-primary-300 hover:bg-gray-50'}`}
-                onClick={() => handleOptionClick(option.id)}
+                onClick={() => handleSelectAnswer(question.question_id, option.option_id)}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`flex-shrink-0 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all
+                  <div className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all
                     ${isSelected
                       ? 'bg-primary-500 border-primary-500'
                       : 'border-gray-300 bg-white'}`}
@@ -279,7 +281,7 @@ const ObservationMatchTask = ({ task, onComplete }) => {
                     {isSelected && <Check className="w-4 h-4 text-white" />}
                   </div>
                   <p className={`font-medium flex-1 ${isSelected ? 'text-primary-900' : 'text-gray-700'}`}>
-                    {option.text}
+                    {option.option_text}
                   </p>
                 </div>
               </motion.div>
@@ -290,28 +292,39 @@ const ObservationMatchTask = ({ task, onComplete }) => {
         {/* Progress */}
         <div className="mb-6 text-center">
           <p className="text-gray-600">
-            Selected: <span className={`font-bold ${selectedAnswers.length >= minSelections ? 'text-green-600' : 'text-primary-600'}`}>
-              {selectedAnswers.length}
-            </span> / {minSelections} required
+            {Object.keys(selectedAnswers).length} / {allQuestions.length} items answered
           </p>
         </div>
 
-        {/* Submit Button */}
-        <div className="text-center">
+        {/* Navigation */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:justify-center">
           <Button
             variant="glass"
-            onClick={handleSubmit}
-            disabled={selectedAnswers.length < minSelections || isSubmitting}
-            isLoading={isSubmitting}
-            className="w-full sm:w-auto px-12 py-4 text-lg"
+            onClick={handlePrevious}
+            disabled={currentQuestion === 0}
+            className="w-full sm:w-auto"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Answers'}
+            Previous
           </Button>
 
-          {selectedAnswers.length < minSelections && (
-            <p className="mt-3 text-sm text-gray-500">
-              Select {minSelections - selectedAnswers.length} more answer{minSelections - selectedAnswers.length > 1 ? 's' : ''} to submit
-            </p>
+          {currentQuestion === allQuestions.length - 1 ? (
+            <Button
+              variant="glass"
+              onClick={handleSubmit}
+              isLoading={isSubmitting}
+              disabled={isSubmitting}
+              className="w-full sm:w-auto"
+            >
+              Submit All
+            </Button>
+          ) : (
+            <Button
+              variant="glass"
+              onClick={handleNext}
+              className="w-full sm:w-auto"
+            >
+              Next
+            </Button>
           )}
         </div>
       </Card>
