@@ -343,7 +343,7 @@ const ResetPasswordPage = () => {
                 name="newPassword"
                 value={formData.newPassword}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-10 px-4 py-3 border-2 ${
+                className={`w-full pl-12 pr-12 py-3 border-2 ${
                   errors.newPassword ? "border-red-300" : "border-gray-200"
                 } rounded-xl focus:border-primary-500 focus:outline-none transition-colors`}
                 placeholder="Enter new password"
@@ -387,7 +387,7 @@ const ResetPasswordPage = () => {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-10 px-4 py-3 border-2 ${
+                className={`w-full pl-12 pr-12 py-3 border-2 ${
                   errors.confirmPassword ? "border-red-300" : "border-gray-200"
                 } rounded-xl focus:border-primary-500 focus:outline-none transition-colors`}
                 placeholder="Confirm new password"
