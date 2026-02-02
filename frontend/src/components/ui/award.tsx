@@ -59,13 +59,15 @@ export function Awards({
           <Badge />
           <div className={cn("border-l px-3")}>
             <h1
-              className={cn("text-primary-600 text-4xl font-bold tracking-tight")}
+              className={cn("text-primary-600 text-2xl font-bold tracking-tight")}
             >
               {title}
             </h1>
-            <h2 className={cn("text-gray-600 text-md font-light")}>
-              {subtitle}
-            </h2>
+            {subtitle && (
+              <p className={cn("text-gray-600 text-sm font-normal mt-1")}>
+                {subtitle}
+              </p>
+            )}
 
             <div className="mt-1 flex items-center gap-4 text-xs text-gray-500">
               {recipient && <p className={cn("italic")}>by {recipient}</p>}
