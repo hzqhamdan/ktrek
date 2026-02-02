@@ -43,6 +43,16 @@ const ObservationMatchTask = ({ task, onComplete }) => {
     });
   };
 
+  const playSound = (isCorrect) => {
+    try {
+      const sound = new Audio(isCorrect ? '/sounds/correct.mp3' : '/sounds/wrong.mp3');
+      sound.volume = 0.5;
+      sound.play().catch(err => console.log('Sound play failed:', err));
+    } catch (error) {
+      console.log('Sound not available:', error);
+    }
+  };
+
   const handleNext = () => {
     if (currentQuestion < allQuestions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
@@ -75,6 +85,9 @@ const ObservationMatchTask = ({ task, onComplete }) => {
 
       if (response.success) {
         setResult(response.data);
+        
+        // Play sound based on result
+        playSound(response.data.is_correct);
 
         // Wait 2.5 seconds then call onComplete
         setTimeout(() => {
