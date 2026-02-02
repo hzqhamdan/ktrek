@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { AdminSidebarIcon } from "../components/ui/admin-sidebar-icon";
-import { MapPin, Clock, Users, Award, ArrowLeft, Navigation } from "lucide-react";
+import { MapPin, Clock, Users, Award, ArrowLeft, Navigation, User } from "lucide-react";
 import { attractionsAPI } from "../api/attractions";
 import { useAuthStore } from "../store/authStore";
 import ProxyImage from "../components/common/ProxyImage";
@@ -166,11 +166,18 @@ const AttractionDetailPage = () => {
                 {" "}
                 {attraction.name}{" "}
               </h1>{" "}
-              <div className="flex items-center gap-2 text-gray-600 mb-6">
+              <div className="flex items-center gap-2 text-gray-600 mb-3">
                 {" "}
                 <MapPin className="w-5 h-5 text-gray-700" />{" "}
                 <span className="text-lg">{attraction.location}</span>{" "}
               </div>{" "}
+              {attraction.manager_name && (
+                <div className="flex items-center gap-2 text-gray-600 mb-6">
+                  {" "}
+                  <User className="w-5 h-5 text-gray-700" />{" "}
+                  <span className="text-base">Managed by {attraction.manager_name}</span>{" "}
+                </div>
+              )}{" "}
               <p className="text-gray-700 text-lg leading-relaxed mb-8">
                 {" "}
                 {attraction.description}{" "}
