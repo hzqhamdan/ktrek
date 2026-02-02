@@ -41,11 +41,11 @@ const QuizTask = ({ task, onComplete }) => {
       if (response.success) {
         setQuizData(response.data);
       } else {
-        showToast("Failed to load quiz", "error");
+        showToast("Failed to load quiz.", "error");
       }
     } catch (error) {
       console.error("Error fetching quiz:", error);
-      showToast("Failed to load quiz questions", "error");
+      showToast("Failed to load quiz questions.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -113,12 +113,12 @@ const QuizTask = ({ task, onComplete }) => {
           }
         }, 3000); // 3 seconds for feedback animation
       } else {
-        showToast("Failed to check answer", "error");
+        showToast("Failed to check answer.", "error");
         setShowingFeedback(false);
       }
     } catch (error) {
       console.error("Error checking answer:", error);
-      showToast("Failed to check answer", "error");
+      showToast("Failed to check answer.", "error");
       setShowingFeedback(false);
     }
   };
@@ -137,7 +137,7 @@ const QuizTask = ({ task, onComplete }) => {
 
     if (unansweredQuestions.length > 0) {
       showToast(
-        `Please answer all questions (${unansweredQuestions.length} remaining)`,
+        `Please answer all questions (${unansweredQuestions.length} remaining).`,
         "error"
       );
       return;
@@ -197,27 +197,26 @@ const QuizTask = ({ task, onComplete }) => {
               // Store both the results data and the full response for rewards
               setResults({ ...response.data, rewards: response.data.rewards });
               setShowResults(true);
-              showToast("Quiz submitted successfully!", "success");
             } else {
               console.error("Quiz submission failed:", response);
-              showToast(response.message || "Failed to submit quiz", "error");
+              showToast(response.message || "Failed to submit quiz.", "error");
             }
           } catch (error) {
             console.error("Error submitting quiz:", error);
             console.error("Error details:", error.response?.data);
             console.error("Error status:", error.response?.status);
-            showToast(error.response?.data?.message || "Failed to submit quiz", "error");
+            showToast(error.response?.data?.message || "Failed to submit quiz.", "error");
           } finally {
             setIsSubmitting(false);
           }
         }, 3000); // Wait 3 seconds for feedback animation
       } else {
-        showToast("Failed to check answer", "error");
+        showToast("Failed to check answer.", "error");
         setShowingFeedback(false);
       }
     } catch (error) {
       console.error("Error checking answer:", error);
-      showToast("Failed to check answer", "error");
+      showToast("Failed to check answer.", "error");
       setShowingFeedback(false);
     }
   };
@@ -279,24 +278,31 @@ const QuizTask = ({ task, onComplete }) => {
                 ? "Good Job!"
                 : "Keep Trying!"}
           </h2>
-          <div className="text-5xl font-bold text-[#120c07] mb-20">
+          <div className="text-5xl font-bold text-[#120c07] mb-8">
             {percentage}%
           </div>
-          <div className="flex flex-col gap-4 mb-12">
-            <div className="bg-gray-50 rounded-lg p-6 flex items-center justify-between">
-              <p className="text-base text-gray-600">Correct</p>
-              <p className="text-3xl font-bold text-green-600">
-                {results.correct_answers}
-              </p>
+          
+          {/* Stats Grid - 2 columns on mobile, 3 on tablet, then Time Taken below */}
+          <div className="w-full mb-8 space-y-4">
+            {/* First row: Correct and Total Questions */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-50 rounded-lg p-6 flex flex-col items-center justify-center gap-2">
+                <p className="text-sm text-gray-600 text-center">Correct</p>
+                <p className="text-3xl font-bold text-green-600">
+                  {results.correct_answers}
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-6 flex flex-col items-center justify-center gap-2">
+                <p className="text-sm text-gray-600 text-center">Total Questions</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {results.total_questions}
+                </p>
+              </div>
             </div>
-            <div className="bg-gray-50 rounded-lg p-6 flex items-center justify-between">
-              <p className="text-base text-gray-600">Total Questions</p>
-              <p className="text-3xl font-bold text-gray-900">
-                {results.total_questions}
-              </p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-6 flex items-center justify-between">
-              <p className="text-base text-gray-600">Time Taken</p>
+            
+            {/* Second row: Time Taken (full width) */}
+            <div className="bg-gray-50 rounded-lg p-6 flex flex-col items-center justify-center gap-2">
+              <p className="text-sm text-gray-600 text-center">Time Taken</p>
               <p className="text-3xl font-bold text-primary-600">
                 {formatTime(timeElapsed)}
               </p>
