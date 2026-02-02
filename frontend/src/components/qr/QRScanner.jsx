@@ -14,6 +14,33 @@ const QRScanner = ({ onScanSuccess, onScanError }) => {
     try {
       setError(null);
       setIsScanning(true);
+      
+      // Check camera permission status first
+      if (navigator.permissions && navigator.permissions.query) {
+        try {
+          const permissionStatus = await navigator.permissions.query({ name: 'camera' });
+          console.log("Camera permission status:", permissionStatus.state);
+          
+          if (permissionStatus.state === 'denied') {
+            setError(
+              <div className="space-y-3 text-left bg-yellow-50 p-4 rounded-lg">
+                <p className="font-semibold text-red-600">🚫 Camera Permission Denied</p>
+                <p className="text-sm">You previously blocked camera access. To enable QR scanning:</p>
+                <ol className="list-decimal list-inside space-y-1 text-sm">
+                  <li>Tap the <strong>🔒 lock icon</strong> in your browser's address bar</li>
+                  <li>Find <strong>"Camera"</strong> and change it to <strong>"Allow"</strong></li>
+                  <li>Tap <strong>"Reload"</strong> or refresh this page</li>
+                </ol>
+              </div>
+            );
+            setIsScanning(false);
+            return;
+          }
+        } catch (permError) {
+          console.log("Permission API not supported:", permError);
+        }
+      }
+      
       const html5QrCode = new Html5Qrcode("qr-scanner-container");
       html5QrCodeRef.current = html5QrCode;
       await html5QrCode.start(

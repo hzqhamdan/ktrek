@@ -32,6 +32,42 @@ const QRScannerModal = ({
     try {
       setError(null);
       
+      // Check camera permission status first
+      if (navigator.permissions && navigator.permissions.query) {
+        try {
+          const permissionStatus = await navigator.permissions.query({ name: 'camera' });
+          console.log("Camera permission status:", permissionStatus.state);
+          
+          if (permissionStatus.state === 'denied') {
+            setError(
+              <div className="space-y-3 text-left">
+                <p className="font-semibold text-red-600">🚫 Camera Permission Denied</p>
+                <p className="text-sm">You previously blocked camera access. To enable QR scanning:</p>
+                <div className="bg-yellow-50 p-3 rounded-lg text-sm space-y-2">
+                  <p className="font-semibold">📱 How to fix:</p>
+                  <ol className="list-decimal list-inside space-y-1">
+                    <li>Tap the <strong>🔒 lock icon</strong> in your browser's address bar</li>
+                    <li>Find <strong>"Camera"</strong> and change it to <strong>"Allow"</strong></li>
+                    <li>Tap <strong>"Reload"</strong> or refresh this page</li>
+                  </ol>
+                </div>
+                <details className="text-xs text-gray-600">
+                  <summary className="cursor-pointer font-semibold">Browser-specific instructions</summary>
+                  <div className="mt-2 space-y-1">
+                    <p><strong>Chrome/Edge:</strong> Settings → Privacy → Site Settings → Camera</p>
+                    <p><strong>Safari:</strong> Settings → Safari → Camera → Allow</p>
+                    <p><strong>Firefox:</strong> Settings → Privacy → Permissions → Camera</p>
+                  </div>
+                </details>
+              </div>
+            );
+            return;
+          }
+        } catch (permError) {
+          console.log("Permission API not supported:", permError);
+        }
+      }
+      
       const html5QrCode = new Html5Qrcode("qr-reader");
       html5QrCodeRef.current = html5QrCode;
       
