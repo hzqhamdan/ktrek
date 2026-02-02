@@ -171,10 +171,10 @@ const ToastComponent: React.FC<Toast> = ({ message, type }) => {
   const { icon: Icon, bgColor, textColor, borderColor } = typeConfig[type];
 
   return (
-    <div className={`${bgColor} ${borderColor} border rounded-lg shadow-lg p-4 flex items-center justify-between max-w-full`}>
-      <div className="flex items-center space-x-3">
-        <Icon className={`${textColor} w-5 h-5`} />
-        <p className={`${textColor} font-medium`}>{message}</p>
+    <div className={`${bgColor} ${borderColor} border rounded-lg shadow-lg p-4 flex items-start max-w-full`}>
+      <div className="flex items-start space-x-4">
+        <Icon className={`${textColor} w-5 h-5 mt-0.5 flex-shrink-0`} />
+        <p className={`${textColor} font-medium leading-relaxed`}>{message}</p>
       </div>
     </div>
   );
