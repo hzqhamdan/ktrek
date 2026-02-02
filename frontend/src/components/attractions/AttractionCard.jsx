@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MapPin, CheckCircle, Clock, Award, ArrowRight } from "lucide-react";
+import { MapPin, CheckCircle, Clock, ArrowRight } from "lucide-react";
 import Card from "../common/Card";
 import ProxyImage from "../common/ProxyImage";
 import { getImageUrl } from "../../utils/constants";
@@ -15,7 +15,6 @@ const AttractionCard = ({ attraction, featured = false, isAuthenticated = false,
     total_tasks,
     completed_tasks,
     progress_percentage,
-    reward_unlocked,
   } = attraction;
   const [imageError, setImageError] = useState(false);
   const navigate = useNavigate();
@@ -128,16 +127,9 @@ const AttractionCard = ({ attraction, featured = false, isAuthenticated = false,
           {/* Footer */}{" "}
           <div className="flex items-center justify-between mt-auto">
             {" "}
-            {reward_unlocked ? (
-              <div className="flex items-center space-x-1 text-yellow-600 text-sm font-medium">
-                {" "}
-                <Award size={16} /> <span>Reward Unlocked!</span>{" "}
-              </div>
-            ) : (
-              <div className="text-sm text-gray-600">
-                {total_tasks} {Number(total_tasks || 0) === 1 ? "mission" : "missions"} available
-              </div>
-            )}{" "}
+            <div className="text-sm text-gray-600">
+              {total_tasks} {Number(total_tasks || 0) === 1 ? "mission" : "missions"} available
+            </div>
             <div className="flex items-center space-x-1 text-[#120c07] font-medium text-sm group-hover:space-x-2 transition-all">
               {" "}
               <span> Explore </span>{" "}
