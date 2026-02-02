@@ -179,7 +179,7 @@ const QRScannerModal = ({
         // Check if task belongs to this attraction
         if (attractionId && task.attraction_id !== parseInt(attractionId)) {
           console.warn('[QRScanner] Wrong attraction!', { expected: attractionId, got: task.attraction_id });
-          showToast("This QR code belongs to a different attraction", "error");
+          showToast("This QR code belongs to a different attraction.", "error");
           setError("Wrong attraction QR code");
           return;
         }
@@ -227,7 +227,7 @@ const QRScannerModal = ({
       setShowManualInput(false);
       setManualCode("");
     } else {
-      showToast("Please enter a QR code", "error");
+      showToast("Please enter a QR code.", "error");
     }
   };
 

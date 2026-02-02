@@ -113,12 +113,12 @@ const PhoneLoginForm = () => {
     e.preventDefault();
     
     if (!forgotPasswordEmail.trim()) {
-      showToast("Please enter your email address", "error");
+      showToast("Please enter your email address.", "error");
       return;
     }
     
     if (!/\S+@\S+\.\S+/.test(forgotPasswordEmail)) {
-      showToast("Please enter a valid email address", "error");
+      showToast("Please enter a valid email address.", "error");
       return;
     }
     

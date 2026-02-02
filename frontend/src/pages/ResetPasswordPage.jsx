@@ -138,7 +138,7 @@ const ResetPasswordPage = () => {
     // Only validate token if we are in token-reset mode.
     if (token === null) return;
     if (!token) {
-      showToast("Invalid reset link", "error");
+      showToast("Invalid reset link.", "error");
       navigate("/login");
     }
   }, [token, navigate]);
@@ -212,7 +212,7 @@ const ResetPasswordPage = () => {
       const emailToUse = (requestEmail || "").trim();
 
       if (!/\S+@\S+\.\S+/.test(emailToUse)) {
-        showToast("Please enter a valid email address", "error");
+        showToast("Please enter a valid email address.", "error");
         return;
       }
 

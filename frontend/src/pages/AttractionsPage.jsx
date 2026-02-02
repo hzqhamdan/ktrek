@@ -39,11 +39,11 @@ const AttractionsPage = () => {
         
         setAttractions(uniqueAttractions);
       } else {
-        showToast("Failed to load attractions", "error");
+        showToast("Failed to load attractions.", "error");
       }
     } catch (error) {
       console.error("Error fetching attractions:", error);
-      showToast("Failed to load attractions", "error");
+      showToast("Failed to load attractions.", "error");
     } finally {
       setLoading(false);
     }

@@ -49,7 +49,7 @@ const GoogleAuthButton = ({ text = "Sign in with Google", isLogin = true }) => {
 
   const handleError = () => {
     console.error("Google Sign-In failed");
-    showToast("Google sign-in was cancelled or failed", "error");
+    showToast("Google sign-in was cancelled or failed.", "error");
   };
 
   return (

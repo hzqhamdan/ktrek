@@ -22,7 +22,7 @@ const Header = () => {
     try {
       await authAPI.logout();
       logout();
-      showToast("Logged out successfully", "success");
+      showToast("Logged out successfully.", "success");
       navigate("/login");
     } catch (error) {
       console.error("Logout error:", error);

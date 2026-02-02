@@ -34,7 +34,7 @@ const RegisterPage = () => {
     e.preventDefault();
     // Validate passwords match
     if (formData.password !== formData.confirm_password) {
-      showToast("Passwords do not match", "error");
+      showToast("Passwords do not match.", "error");
       return;
     }
     setIsLoading(true);
@@ -55,7 +55,7 @@ const RegisterPage = () => {
       }
     } catch (error) {
       console.error(error);
-      showToast("Error registering", "error");
+      showToast("Error registering.", "error");
     } finally {
       setIsLoading(false);
     }

@@ -73,7 +73,7 @@ const CheckinTaskPage = () => {
       setTask(taskData);
     } catch (error) {
       console.error("Failed to load task:", error);
-      showToast("Failed to load task details", "error");
+      showToast("Failed to load task details.", "error");
       navigate(-1);
     } finally {
       setLoading(false);
@@ -178,7 +178,7 @@ const CheckinTaskPage = () => {
       setCheckingInViaLocation(true);
 
       if (!navigator.geolocation) {
-        showToast("Geolocation is not supported by your browser", "error");
+        showToast("Geolocation is not supported by your browser.", "error");
         return;
       }
 

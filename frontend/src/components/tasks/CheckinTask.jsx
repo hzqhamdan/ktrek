@@ -17,7 +17,7 @@ const CheckinTask = ({ task, onComplete }) => {
     try {
       // Get user's current location
       if (!navigator.geolocation) {
-        showToast("Geolocation is not supported by your browser", "error");
+        showToast("Geolocation is not supported by your browser.", "error");
         setIsSubmitting(false);
         return;
       }

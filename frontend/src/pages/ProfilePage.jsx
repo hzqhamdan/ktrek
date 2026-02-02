@@ -83,7 +83,7 @@ const ProfilePage = () => {
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     if (!editData.full_name?.trim()) {
-      showToast("Full name is required", "error");
+      showToast("Full name is required.", "error");
       return;
     }
 
@@ -97,7 +97,7 @@ const ProfilePage = () => {
 
       if (res?.success) {
         updateUser(res.data.user);
-        showToast("Profile updated", "success");
+        showToast("Profile updated.", "success");
         setShowEditModal(false);
       } else {
         showToast(res?.message || "Failed to update profile", "error");
@@ -129,7 +129,7 @@ const ProfilePage = () => {
     try {
       await authAPI.logout();
       logout();
-      showToast("Logged out successfully", "success");
+      showToast("Logged out successfully.", "success");
       navigate("/login");
     } catch (error) {
       console.error("Logout error:", error);
@@ -143,17 +143,17 @@ const ProfilePage = () => {
     
     // Validation
     if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-      showToast("Please fill in all fields", "error");
+      showToast("Please fill in all fields.", "error");
       return;
     }
     
     if (passwordData.newPassword.length < 6) {
-      showToast("New password must be at least 6 characters", "error");
+      showToast("New password must be at least 6 characters.", "error");
       return;
     }
     
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      showToast("New passwords do not match", "error");
+      showToast("New passwords do not match.", "error");
       return;
     }
     

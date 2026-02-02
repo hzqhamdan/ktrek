@@ -41,7 +41,7 @@ const ModernRegisterPage = () => {
       }
     },
     onError: () => {
-      showToast("Google sign-in was cancelled or failed", "error");
+      showToast("Google sign-in was cancelled or failed.", "error");
     },
   });
 

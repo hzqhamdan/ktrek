@@ -40,7 +40,7 @@ const RewardsPage = () => {
       }
     } catch (error) {
       console.error("Error fetching rewards:", error);
-      showToast("Failed to load rewards", "error");
+      showToast("Failed to load rewards.", "error");
     } finally {
       setIsLoading(false);
     }

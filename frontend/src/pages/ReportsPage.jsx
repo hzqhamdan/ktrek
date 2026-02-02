@@ -37,7 +37,7 @@ const ReportsPage = () => {
       }
     } catch (error) {
       console.error("Error fetching data:", error);
-      showToast("Failed to load data", "error");
+      showToast("Failed to load data.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -45,7 +45,7 @@ const ReportsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.message.trim()) {
-      showToast("Please enter your message", "error");
+      showToast("Please enter your message.", "error");
       return;
     }
     setIsSubmitting(true);
@@ -62,11 +62,11 @@ const ReportsPage = () => {
         });
         fetchData(); // Refresh reports list
       } else {
-        showToast("Failed to submit report", "error");
+        showToast("Failed to submit report.", "error");
       }
     } catch (error) {
       console.error("Error submitting report:", error);
-      showToast("Failed to submit report", "error");
+      showToast("Failed to submit report.", "error");
     } finally {
       setIsSubmitting(false);
     }

@@ -51,7 +51,7 @@ const QuizTaskPage = () => {
       setTask(taskData);
     } catch (error) {
       console.error("Failed to load task:", error);
-      showToast("Failed to load task details", "error");
+      showToast("Failed to load task details.", "error");
       navigate(-1);
     } finally {
       setLoading(false);

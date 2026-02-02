@@ -60,7 +60,7 @@ const QRCheckInSuccessPage = () => {
       
       if (!token) {
         // Not logged in - redirect to login with return path
-        showToast("Please login to complete check-in", "error");
+        showToast("Please login to complete check-in.", "error");
         navigate('/login', { 
           state: { 
             returnTo: `/dashboard/tasks/checkin/${task.id}`,

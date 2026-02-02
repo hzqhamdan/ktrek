@@ -55,11 +55,11 @@ const ProgressPage = () => {
         setProgress(response.data.progress || []);
         setStatistics(response.data.statistics || {});
       } else {
-        showToast("Failed to load progress", "error");
+        showToast("Failed to load progress.", "error");
       }
     } catch (error) {
       console.error("Error fetching progress:", error);
-      showToast("Failed to load progress data", "error");
+      showToast("Failed to load progress data.", "error");
     } finally {
       setLoading(false);
     }
@@ -83,7 +83,7 @@ const ProgressPage = () => {
         }));
       } catch (error) {
         console.error("Error fetching tasks:", error);
-        showToast("Failed to load tasks", "error");
+        showToast("Failed to load tasks.", "error");
       } finally {
         setLoadingTasks((prev) => ({ ...prev, [attractionId]: false }));
       }

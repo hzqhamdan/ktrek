@@ -70,7 +70,7 @@ const DashboardHomePage = () => {
       });
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
-      showToast("Failed to load dashboard", "error");
+      showToast("Failed to load dashboard.", "error");
     } finally {
       setLoading(false);
     }

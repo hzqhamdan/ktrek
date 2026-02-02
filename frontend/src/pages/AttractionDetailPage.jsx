@@ -81,7 +81,7 @@ const AttractionDetailPage = () => {
       } catch (err) {
         console.error("Failed to load attraction:", err);
         setError("Failed to load attraction details");
-        showToast("Could not load attraction details", "error");
+        showToast("Could not load attraction details.", "error");
       } finally {
         setLoading(false);
       }
@@ -217,7 +217,7 @@ const AttractionDetailPage = () => {
                     <button
                       onClick={() => {
                         if (!isAuthenticated) {
-                          showToast("Please login to start tasks", "error");
+                          showToast("Please login to start tasks.", "error");
                           navigate("/login", {
                             state: {
                               from: `/attractions/${id}`,
@@ -304,7 +304,7 @@ const AttractionDetailPage = () => {
                   }`}
                   onClick={() => {
                     if (!isAuthenticated) {
-                      showToast("Please login to start tasks", "error");
+                      showToast("Please login to start tasks.", "error");
                       navigate("/login");
                     } else if (!task.is_completed) {
                       navigate(`/dashboard/tasks/${task.id}`);

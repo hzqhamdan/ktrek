@@ -45,7 +45,7 @@ const TaskPage = () => {
       }
     } catch (error) {
       console.error("Failed to load task:", error);
-      showToast("Failed to load task", "error");
+      showToast("Failed to load task.", "error");
     } finally {
       setLoading(false);
     }
@@ -84,7 +84,7 @@ const TaskPage = () => {
   const handleSubmit = async () => {
     // Check if user has checked in first (only for non-checkin tasks)
     if (task.type !== 'checkin' && !hasCheckedIn) {
-      showToast("Please check in to this attraction first before attempting other tasks", "error");
+      showToast("Please check in to this attraction first before attempting other tasks.", "error");
       
       // Navigate to the check-in task if we know its ID
       if (checkinTaskId) {
@@ -130,7 +130,7 @@ const TaskPage = () => {
       }
     } catch (error) {
       console.error("Task submission error:", error);
-      showToast("Failed to submit task", "error");
+      showToast("Failed to submit task.", "error");
     } finally {
       setSubmitting(false);
     }

@@ -27,7 +27,7 @@ export const ModernLoginComponent = () => {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      showToast('Please enter both email and password', 'error');
+      showToast('Please enter both email and password.', 'error');
       return;
     }
 

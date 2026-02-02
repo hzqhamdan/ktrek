@@ -73,7 +73,7 @@ const GoogleLoginButton = ({ isRegister = false }) => {
       // Decode JWT token from Google
       const userObject = parseJwt(credential);
       if (!userObject) {
-        showToast("Failed to parse Google response", "error");
+        showToast("Failed to parse Google response.", "error");
         return;
       }
 
