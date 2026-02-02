@@ -135,7 +135,7 @@ const RewardsPage = () => {
                 <AdminSidebarIcon name="userProgress" className="w-6 h-6 text-[#120c07]" />{" "}
               </div>{" "}
               <span className="text-3xl font-bold text-gray-700">
-                {Math.round((unlockedRewards.length / allAttractions.length) * 100)}%
+                {totalPossibleRewards > 0 ? Math.round((unlockedRewardCount / totalPossibleRewards) * 100) : 0}%
               </span>{" "}
             </div>{" "}
             <h3 className="text-gray-600 font-medium flex items-center gap-2">
@@ -158,23 +158,23 @@ const RewardsPage = () => {
           <TitleCollection />
         </div>
         {/* Locked Rewards */}{" "}
-        {lockedAttractions.length > 0 && (
+        {lockedRewardCount > 0 && (
           <div>
             {" "}
             <div className="flex items-center space-x-2 mb-6">
               {" "}
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#000000" viewBox="0 0 256 256" className="w-8 h-8 text-[#120c07]">
-                <path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96Zm88,136H72a8,8,0,0,1,0-16H184a8,8,0,0,1,0,16Zm0-32H72a8,8,0,0,1,0-16H184a8,8,0,0,1,0,16Zm0-32H72a8,8,0,0,1,0-16H184a8,8,0,0,1,0,16Z"></path>
+                <path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96Zm88,136H72a8,8,0,0,1,0-16H184a8,8,0,0,1,0,16Zm0-32H72a8,8,0,0,1,0-16H184a8,8,0,0,1,0,16Zm0-32H72a8,23,0,0,1,0-16H184a8,8,0,0,1,0,16Z"></path>
               </svg>{" "}
               <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-600 to-gray-700 bg-clip-text text-transparent">
-                Locked Badges
+                Locked Rewards ({lockedRewardCount})
               </h2>
             </div>{" "}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {" "}
-              {lockedAttractions.map((attraction) => (
+              {Array.from({ length: lockedRewardCount }, (_, index) => (
                 <Card
-                  key={attraction.id}
+                  key={`locked-reward-${index}`}
                   className="relative overflow-hidden"
                   padding="lg"
                   gradient
@@ -198,28 +198,12 @@ const RewardsPage = () => {
                       </div>{" "}
                       <h3 className="font-bold text-gray-900 mb-2">
                         {" "}
-                        {attraction.name}{" "}
+                        Locked Reward{" "}
                       </h3>{" "}
                       <p className="text-sm text-gray-600">
                         {" "}
-                        Complete all missions to unlock{" "}
+                        Complete more achievements to unlock{" "}
                       </p>{" "}
-                      <div className="mt-4">
-                        {" "}
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                          {" "}
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${attraction.progress_percentage}%`,
-                            }}
-                          ></div>{" "}
-                        </div>{" "}
-                        <p className="text-xs text-gray-500 mt-1">
-                          {" "}
-                          {attraction.progress_percentage} % Complete{" "}
-                        </p>{" "}
-                      </div>{" "}
                     </div>{" "}
                   </div>{" "}
                 </Card>
