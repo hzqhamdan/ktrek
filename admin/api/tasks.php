@@ -669,15 +669,21 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $question_id = $conn->insert_id;
                         $q_stmt->close();
                         
+                        // Insert options (for quiz, use question['options']; for direction, use input['options'])
+                        $options_to_insert = [];
                         if (isset($question['options']) && is_array($question['options'])) {
-                            foreach ($question['options'] as $opt_index => $option) {
-                                if (!empty($option['option_text'])) {
-                                    $is_correct = isset($option['is_correct']) ? (int)$option['is_correct'] : 0;
-                                    $opt_stmt = $conn->prepare("INSERT INTO quiz_options (question_id, option_text, is_correct, option_order) VALUES (?, ?, ?, ?)");
-                                    $opt_stmt->bind_param("isii", $question_id, $option['option_text'], $is_correct, $opt_index);
-                                    $opt_stmt->execute();
-                                    $opt_stmt->close();
-                                }
+                            $options_to_insert = $question['options'];
+                        } elseif ($input['type'] === 'direction' && isset($input['options']) && is_array($input['options'])) {
+                            $options_to_insert = $input['options'];
+                        }
+                        
+                        foreach ($options_to_insert as $opt_index => $option) {
+                            if (!empty($option['option_text'])) {
+                                $is_correct = isset($option['is_correct']) ? (int)$option['is_correct'] : 0;
+                                $opt_stmt = $conn->prepare("INSERT INTO quiz_options (question_id, option_text, is_correct, option_order) VALUES (?, ?, ?, ?)");
+                                $opt_stmt->bind_param("isii", $question_id, $option['option_text'], $is_correct, $opt_index);
+                                $opt_stmt->execute();
+                                $opt_stmt->close();
                             }
                         }
                         $questions_updated = true;
