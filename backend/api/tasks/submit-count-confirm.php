@@ -186,8 +186,18 @@ try {
     ], "Task submitted successfully", 201);
 
 } catch (PDOException $e) {
-    $db->rollBack();
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
     error_log("Count & Confirm submission error: " . $e->getMessage());
-    Response::serverError("Failed to submit task");
+    error_log("Stack trace: " . $e->getTraceAsString());
+    Response::serverError("Failed to submit task: " . $e->getMessage());
+} catch (Exception $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    error_log("Count & Confirm general error: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
+    Response::serverError("Failed to submit task: " . $e->getMessage());
 }
 ?>
