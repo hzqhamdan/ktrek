@@ -22,8 +22,13 @@ const GoogleAuthButton = ({ text = "Sign in with Google", isLogin = true }) => {
       const data = await authAPI.googleAuth(credentialResponse.credential);
       console.log("Backend response:", data); // DEBUG LOG
       if (data.success) {
+        // Add is_first_login to user object
+        const userWithLoginStatus = { 
+          ...data.data.user, 
+          is_first_login: data.data.is_first_login 
+        };
         // Store auth data
-        setAuth(data.data.user, data.data.token);
+        setAuth(userWithLoginStatus, data.data.token);
         showToast(
           `Welcome ${data.data.user.full_name || data.data.user.username}!`,
           "success"

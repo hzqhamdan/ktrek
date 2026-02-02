@@ -66,9 +66,11 @@ const LoginForm = () => {
       });
       console.log("Login response:", response); // DEBUG LOG
       if (response.success) {
-        const { token, user } = response.data;
+        const { token, user, is_first_login } = response.data;
+        // Add is_first_login to user object
+        const userWithLoginStatus = { ...user, is_first_login };
         // Store in Zustand store
-        setAuth(user, token);
+        setAuth(userWithLoginStatus, token);
         showToast("Login successful!", "success");
         // Add a small delay to ensure state is updated
         setTimeout(() => {

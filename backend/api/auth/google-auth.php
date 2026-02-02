@@ -95,10 +95,15 @@ try {
     $stmt->bindParam(':email', $email);
     $stmt->execute();
 
+    $isFirstLogin = false;
+    
     if ($stmt->rowCount() > 0) {
         // User exists - LOGIN
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         error_log("User found: " . $user['username']);
+        
+        // Check if this is first login (last_login is NULL)
+        $isFirstLogin = ($user['last_login'] === null);
         
         // Update Google ID if not set
         if (empty($user['google_id'])) {
@@ -116,7 +121,8 @@ try {
         $updateLoginStmt->execute();
         
     } else {
-        // User doesn't exist - REGISTER
+        // User doesn't exist - REGISTER (this is always a first login)
+        $isFirstLogin = true;
         error_log("Creating new user for: " . $email);
         
         // Generate unique username from email
@@ -189,7 +195,8 @@ try {
 
 		Response::success([
 			'user' => $user,
-			'token' => $token
+			'token' => $token,
+			'is_first_login' => $isFirstLogin
 		], "Google authentication successful", 200);
 
 	} catch (PDOException $e) {

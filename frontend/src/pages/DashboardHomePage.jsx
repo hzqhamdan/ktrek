@@ -100,10 +100,16 @@ const DashboardHomePage = () => {
         <div className="container-custom">
           {" "}
           <h1 className="text-4xl font-bold mb-2">
-            Welcome back, {user?.full_name || user?.username}!
+            {user?.is_first_login ? (
+              <>Welcome, {user?.full_name || user?.username}! 🎉</>
+            ) : (
+              <>Welcome back, {user?.full_name || user?.username}!</>
+            )}
           </h1>
           <p className="text-xl text-gray-700">
-            Continue your K-Trek adventure across Kelantan
+            {user?.is_first_login
+              ? "Begin your K-Trek adventure across Kelantan"
+              : "Continue your K-Trek adventure across Kelantan"}
           </p>
         </div>{" "}
       </div>{" "}

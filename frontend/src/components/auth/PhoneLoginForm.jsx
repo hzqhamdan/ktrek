@@ -84,7 +84,9 @@ const PhoneLoginForm = () => {
       if (response.success) {
         const { token, user } = response.data;
         console.log("Phone login response data:", response.data);
-        setAuth(user, token);
+        // Add is_first_login to user object
+        const userWithLoginStatus = { ...user, is_first_login: response.data.is_first_login };
+        setAuth(userWithLoginStatus, token);
         showToast("Login successful!", "success");
         // Add a small delay to ensure state is updated
         setTimeout(() => {

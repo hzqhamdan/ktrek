@@ -41,12 +41,12 @@ try {
     // Determine if identifier is phone or email
     $isPhone = strpos($identifier, '+6') === 0;
 
-    // Build query based on identifier type
+    // Build query based on identifier type (include last_login to detect first-time users)
     if ($isPhone) {
-        $query = "SELECT id, username, email, phone_number, password, full_name, profile_picture, avatar_style, avatar_seed, is_active, auth_provider 
+        $query = "SELECT id, username, email, phone_number, password, full_name, profile_picture, avatar_style, avatar_seed, is_active, auth_provider, last_login 
                   FROM users WHERE phone_number = :identifier";
     } else {
-        $query = "SELECT id, username, email, phone_number, password, full_name, profile_picture, avatar_style, avatar_seed, is_active, auth_provider 
+        $query = "SELECT id, username, email, phone_number, password, full_name, profile_picture, avatar_style, avatar_seed, is_active, auth_provider, last_login 
                   FROM users WHERE email = :identifier";
     }
     
@@ -89,6 +89,9 @@ try {
         error_log("Session creation warning: " . $sessionError->getMessage());
     }
 
+    // Check if this is first login (last_login is NULL)
+    $isFirstLogin = ($user['last_login'] === null);
+    
     // Update last login
     $query = "UPDATE users SET last_login = NOW() WHERE id = :user_id";
     $stmt = $db->prepare($query);
@@ -99,6 +102,7 @@ try {
     Response::success([
         'token' => $session_token,
         'expires_at' => $expires_at,
+        'is_first_login' => $isFirstLogin,
         'user' => [
             'id' => $user['id'],
             'username' => $user['username'],
