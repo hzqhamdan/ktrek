@@ -62,7 +62,7 @@ const AttractionFeature = ({ attraction, index, isAuthenticated, onClick }) => {
       {/* Hover glow */}
       <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-br from-primary-50/60 to-transparent pointer-events-none" />
       {/* Image with overlay */}
-      <div className="mb-3 relative z-10 px-4 pt-4">
+      <div className="mb-2 relative z-10 px-3 pt-3">
         <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden shadow-md group-hover/feature:shadow-xl transition-shadow duration-200">
           <ProxyImage
             src={getImageUrl(attraction.image)}
@@ -83,33 +83,33 @@ const AttractionFeature = ({ attraction, index, isAuthenticated, onClick }) => {
         </div>
       </div>
       {/* Title with animated bar */}
-      <div className="text-lg font-bold mb-2 relative z-10 px-4 min-h-[2.5rem]">
-        <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-gray-300 dark:bg-neutral-700 group-hover/feature:bg-primary-500 transition-all duration-200 origin-center" />
+      <div className="text-base font-bold mb-1.5 relative z-10 px-3 min-h-[2rem]">
+        <div className="absolute left-0 inset-y-0 h-5 group-hover/feature:h-7 w-1 rounded-tr-full rounded-br-full bg-gray-300 dark:bg-neutral-700 group-hover/feature:bg-primary-500 transition-all duration-200 origin-center" />
         <span className="group-hover/feature:translate-x-2 transition duration-200 inline-block text-gray-900 line-clamp-2">
           {attraction.name}
         </span>
       </div>
       {/* Description */}
-      <p className="text-sm text-gray-700 leading-snug max-w-xs relative z-10 px-4 mb-3 line-clamp-4 flex-1">
+      <p className="text-xs text-gray-600 leading-tight max-w-xs relative z-10 px-3 mb-2 line-clamp-3 flex-1">
         {attraction.description}
       </p>
       {/* Stats for authenticated users */}
       {isAuthenticated && (
-        <div className="flex gap-3 px-4 relative z-10 mt-auto pb-3">
-          <div className="flex items-center gap-1 text-xs text-gray-700">
-            <Clock className="w-3.5 h-3.5 text-primary-500" />
+        <div className="flex gap-2 px-3 relative z-10 mt-auto pb-2">
+          <div className="flex items-center gap-0.5 text-xs text-gray-700">
+            <Clock className="w-3 h-3 text-primary-500" />
             <span>{totalTasks} tasks</span>
           </div>
           {completedTasks > 0 && (
-            <div className="flex items-center gap-1 text-xs text-green-600">
-              <Award className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-0.5 text-xs text-green-600">
+              <Award className="w-3 h-3" />
               <span>{completedTasks} done</span>
             </div>
           )}
         </div>
       )}
       {/* View details button on hover */}
-      <div className="opacity-0 group-hover/feature:opacity-100 transition-opacity duration-200 mt-2 px-4 relative z-10 pb-4 flex justify-center">
+      <div className="opacity-0 group-hover/feature:opacity-100 transition-opacity duration-200 mt-1 px-3 relative z-10 pb-3 flex justify-center">
         <div className="flex items-center justify-center">
           <div className="inline-block">
             <GlassButton size="sm" contentClassName="flex items-center gap-1">
