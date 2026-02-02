@@ -44,17 +44,24 @@ try {
     $totalAttractions = count($progress);
     $completedAttractions = 0;
     $totalTasksCompleted = 0;
-    $totalRewardsUnlocked = 0;
 
     foreach ($progress as $item) {
         if ($item['progress_percentage'] >= 100) {
             $completedAttractions++;
         }
         $totalTasksCompleted += $item['completed_tasks'];
-        if ($item['reward_unlocked']) {
-            $totalRewardsUnlocked++;
-        }
     }
+    
+    // Count total rewards (badges + titles) from user_rewards table
+    $rewardCountQuery = "SELECT COUNT(*) as total_rewards 
+                         FROM user_rewards 
+                         WHERE user_id = :user_id 
+                         AND reward_type IN ('badge', 'title')";
+    $rewardStmt = $db->prepare($rewardCountQuery);
+    $rewardStmt->bindParam(':user_id', $user_id);
+    $rewardStmt->execute();
+    $rewardResult = $rewardStmt->fetch(PDO::FETCH_ASSOC);
+    $totalRewardsUnlocked = (int)$rewardResult['total_rewards'];
 
     $stats = [
         'total_attractions_started' => $totalAttractions,
