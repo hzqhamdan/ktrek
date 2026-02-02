@@ -189,15 +189,23 @@ try {
     if ($db->inTransaction()) {
         $db->rollBack();
     }
-    error_log("Count & Confirm submission error: " . $e->getMessage());
+    $errorMsg = $e->getMessage();
+    $errorFile = $e->getFile();
+    $errorLine = $e->getLine();
+    error_log("Count & Confirm PDO error: $errorMsg in $errorFile:$errorLine");
     error_log("Stack trace: " . $e->getTraceAsString());
-    Response::serverError("Failed to submit task: " . $e->getMessage());
+    
+    Response::error("Database error: $errorMsg (in $errorFile line $errorLine)", 500);
 } catch (Exception $e) {
     if ($db->inTransaction()) {
         $db->rollBack();
     }
-    error_log("Count & Confirm general error: " . $e->getMessage());
+    $errorMsg = $e->getMessage();
+    $errorFile = $e->getFile();
+    $errorLine = $e->getLine();
+    error_log("Count & Confirm general error: $errorMsg in $errorFile:$errorLine");
     error_log("Stack trace: " . $e->getTraceAsString());
-    Response::serverError("Failed to submit task: " . $e->getMessage());
+    
+    Response::error("Error: $errorMsg (in $errorFile line $errorLine)", 500);
 }
 ?>
