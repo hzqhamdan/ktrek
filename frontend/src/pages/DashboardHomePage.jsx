@@ -6,7 +6,7 @@ import { AdminSidebarIcon } from "../components/ui/admin-sidebar-icon";
 import { SegmentedProgress } from "../components/ui/progress-bar";
 import { attractionsAPI } from "../api/attractions";
 import { useAuthStore } from "../store/authStore";
-import AttractionGrid from "../components/attractions/AttractionGrid";
+import AttractionFeatureSection from "../components/attractions/AttractionFeatureSection";
 import AttractionMap from "../components/map/AttractionMap";
 import { useToast } from "../components/ui/toast-1";
 import Loading from "../components/common/Loading";
@@ -241,10 +241,9 @@ const DashboardHomePage = () => {
           </p>{" "}
         </div>{" "}
         <div className="container-custom">
-          <AttractionGrid
+          <AttractionFeatureSection
             attractions={attractions}
             isAuthenticated={true}
-            hideImages={true}
           />{" "}
         </div>
       </div>{" "}
