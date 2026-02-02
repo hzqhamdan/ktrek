@@ -21,7 +21,7 @@ if ($id <= 0) {
 
 try {
     if ($user) {
-        // Authenticated user - include progress
+        // Authenticated user - include progress and manager info
         $query = "SELECT 
                     a.id,
                     a.name,
@@ -35,9 +35,11 @@ try {
                     a.updated_at,
                     COALESCE(p.completed_tasks, 0) as completed_tasks,
                     COALESCE(p.total_tasks, 0) as total_tasks,
-                    COALESCE(p.progress_percentage, 0) as progress_percentage
+                    COALESCE(p.progress_percentage, 0) as progress_percentage,
+                    adm.full_name as manager_name
                   FROM attractions a
                   LEFT JOIN progress p ON a.id = p.attraction_id AND p.user_id = :user_id
+                  LEFT JOIN admin adm ON a.created_by_admin_id = adm.id
                   WHERE a.id = :id
                   LIMIT 1";
         
@@ -46,8 +48,23 @@ try {
         $stmt->bindParam(':user_id', $user['id']);
         $stmt->execute();
     } else {
-        // Guest user - just basic info
-        $query = "SELECT id, name, location, description, image, latitude, longitude, navigation_link, created_at, updated_at FROM attractions WHERE id = :id LIMIT 1";
+        // Guest user - basic info with manager name
+        $query = "SELECT 
+                    a.id, 
+                    a.name, 
+                    a.location, 
+                    a.description, 
+                    a.image, 
+                    a.latitude, 
+                    a.longitude, 
+                    a.navigation_link, 
+                    a.created_at, 
+                    a.updated_at,
+                    adm.full_name as manager_name
+                  FROM attractions a
+                  LEFT JOIN admin adm ON a.created_by_admin_id = adm.id
+                  WHERE a.id = :id 
+                  LIMIT 1";
         $stmt = $db->prepare($query);
         $stmt->bindParam(':id', $id);
         $stmt->execute();
