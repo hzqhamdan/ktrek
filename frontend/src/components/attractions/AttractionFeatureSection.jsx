@@ -32,7 +32,7 @@ export function AttractionFeatureSection({
   };
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10 py-10 w-full">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 relative z-10 py-6 md:py-10 w-full px-4 md:px-0">
       {attractions.map((attraction, index) => (
         <AttractionFeature
           key={attraction.id}
@@ -55,7 +55,7 @@ const AttractionFeature = ({ attraction, index, isAuthenticated, onClick }) => {
     <div
       onClick={onClick}
       className={cn(
-        "flex flex-col relative group/feature cursor-pointer transition-all duration-300 rounded-2xl shadow-lg border border-gray-300 hover:shadow-2xl hover:-translate-y-1 overflow-hidden h-full"
+        "flex flex-col relative group/feature cursor-pointer transition-all duration-300 rounded-2xl shadow-lg border border-gray-300 hover:shadow-2xl hover:-translate-y-1 overflow-hidden h-full max-w-md mx-auto md:mx-0 w-full"
       )}
       style={{ backgroundColor: '#F1EEE7' }}
     >
