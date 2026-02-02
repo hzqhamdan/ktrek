@@ -310,6 +310,7 @@ const TitleCollection = () => {
             <Awards
               variant="badge"
               title={title.title_text || title.reward_name || "Untitled"}
+              subtitle={title.reward_description}
               className="w-full"
             />
             {activeTitleId === title.id && (
