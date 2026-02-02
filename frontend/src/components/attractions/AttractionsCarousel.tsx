@@ -78,36 +78,33 @@ const AttractionsCarousel: React.FC<AttractionsCarouselProps> = ({ attractions }
             <div className="max-w-4xl w-full">
               {/* Attraction Info Container - Blended Background */}
               <div 
-                className="rounded-2xl p-12 shadow-lg border border-gray-200 backdrop-blur-sm"
+                className="rounded-2xl p-6 sm:p-8 shadow-lg border border-gray-200 backdrop-blur-sm"
                 style={{ backgroundColor: 'rgba(241, 238, 231, 0.95)' }}
               >
                 {/* Content */}
-                <div className="flex flex-col items-center text-center gap-8">
+                <div className="flex flex-col items-center text-center gap-4">
                   {/* Attraction Name */}
-                  <h2 className="text-3xl font-bold text-gray-900">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
                     {selectedAttraction.name}
                   </h2>
 
                   {/* Location */}
-                  {selectedAttraction.location ? (
+                  {selectedAttraction.location && (
                     <div className="flex items-center justify-center text-gray-600 gap-2">
-                      <MapPin className="w-5 h-5 text-primary-500" />
+                      <MapPin className="w-4 h-4 text-primary-500" />
                       <span className="text-sm">{selectedAttraction.location}</span>
                     </div>
-                  ) : (
-                    // Keep spacing consistent even when location is missing
-                    <div className="h-6" />
                   )}
 
-                  {/* Description */}
-                  <p className="text-gray-700 leading-relaxed text-lg max-w-3xl">
+                  {/* Description - Limit to 3 lines on mobile */}
+                  <p className="text-gray-700 leading-snug text-sm sm:text-base max-w-2xl line-clamp-3 sm:line-clamp-none">
                     {selectedAttraction.description}
                   </p>
 
                   {/* Action Button - Centered */}
-                  <div>
+                  <div className="mt-2">
                     <Link to={`/attractions/${selectedAttraction.id}`}>
-                      <GlassButton size="lg" contentClassName="flex items-center gap-2">
+                      <GlassButton size="md" contentClassName="flex items-center gap-2">
                         <span>View Details</span>
                         <span>→</span>
                       </GlassButton>
