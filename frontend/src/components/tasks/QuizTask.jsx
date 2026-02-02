@@ -283,20 +283,20 @@ const QuizTask = ({ task, onComplete }) => {
             {percentage}%
           </div>
           <div className="grid grid-cols-3 gap-4 mb-12">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-2 whitespace-nowrap">Correct</p>
+            <div className="bg-gray-50 rounded-lg p-4 text-center">
+              <p className="text-sm text-gray-600 mb-2 leading-tight">Correct</p>
               <p className="text-2xl font-bold text-green-600">
                 {results.correct_answers}
               </p>
             </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-2 whitespace-nowrap">Total<br/>Questions</p>
+            <div className="bg-gray-50 rounded-lg p-4 text-center">
+              <p className="text-sm text-gray-600 mb-2 leading-tight">Total<br/>Questions</p>
               <p className="text-2xl font-bold text-gray-900">
                 {results.total_questions}
               </p>
             </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-2 whitespace-nowrap">Time<br/>Taken</p>
+            <div className="bg-gray-50 rounded-lg p-4 text-center">
+              <p className="text-sm text-gray-600 mb-2 leading-tight">Time<br/>Taken</p>
               <p className="text-2xl font-bold text-primary-600">
                 {formatTime(timeElapsed)}
               </p>
@@ -533,38 +533,43 @@ const QuizTask = ({ task, onComplete }) => {
       )}
 
       {/* Navigation */}
-      <div className="cta-row">
-        <Button
-          variant="glass"
-          onClick={handlePrevious}
-          disabled={currentQuestion === 0 || showingFeedback}
-        >
-          Previous
-        </Button>
-
-        <div className="text-sm text-gray-600">
+      <div className="flex flex-col items-center gap-4 mt-8">
+        <div className="text-sm text-gray-600 text-center">
           {Object.keys(selectedAnswers).length} / {quizData.questions.length}{" "}
           answered
         </div>
+        
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:justify-center">
+          <Button
+            variant="glass"
+            onClick={handlePrevious}
+            disabled={currentQuestion === 0 || showingFeedback}
+            className="w-full sm:w-auto"
+          >
+            Previous
+          </Button>
 
-        {currentQuestion === quizData.questions.length - 1 ? (
-          <Button
-            variant="glass"
-            onClick={handleSubmit}
-            isLoading={isSubmitting || showingFeedback}
-            disabled={isSubmitting || showingFeedback}
-          >
-            {showingFeedback ? "Checking..." : "Submit Quiz"}
-          </Button>
-        ) : (
-          <Button
-            variant="glass"
-            onClick={handleNext}
-            disabled={!selectedAnswers[question.question_id] || showingFeedback}
-          >
-            Next
-          </Button>
-        )}
+          {currentQuestion === quizData.questions.length - 1 ? (
+            <Button
+              variant="glass"
+              onClick={handleSubmit}
+              isLoading={isSubmitting || showingFeedback}
+              disabled={isSubmitting || showingFeedback}
+              className="w-full sm:w-auto"
+            >
+              {showingFeedback ? "Checking..." : "Submit Quiz"}
+            </Button>
+          ) : (
+            <Button
+              variant="glass"
+              onClick={handleNext}
+              disabled={!selectedAnswers[question.question_id] || showingFeedback}
+              className="w-full sm:w-auto"
+            >
+              Next
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
