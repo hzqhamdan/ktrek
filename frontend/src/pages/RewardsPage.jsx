@@ -12,6 +12,7 @@ import CategoryMilestone from "../components/rewards/CategoryMilestone";
 import { formatDateTime } from "../utils/helpers";
 import { useToast } from "../components/ui/toast-1";
 import useRewardStore from "../store/rewardStore";
+import { Awards } from "../components/ui/award";
 const RewardsPage = () => {
   const { showToast } = useToast();
   const [unlockedRewards, setUnlockedRewards] = useState([]);
@@ -295,38 +296,31 @@ const TitleCollection = () => {
         <Crown className="w-6 h-6 text-yellow-600" />
         Your Titles
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {titles.map((title) => (
           <div
             key={title.id}
-            className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
+            className={`relative transition-all cursor-pointer ${
               activeTitleId === title.id
-                ? 'border-yellow-500 bg-yellow-50'
-                : 'border-gray-200 hover:border-yellow-300'
+                ? 'ring-4 ring-yellow-500 rounded-lg'
+                : 'hover:ring-2 hover:ring-yellow-300 rounded-lg'
             }`}
             onClick={() => handleSetActive(title.id)}
           >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <Crown className={`w-5 h-5 ${activeTitleId === title.id ? 'text-yellow-600' : 'text-gray-400'}`} />
-                  <h4 className="font-bold text-gray-800">{title.reward_name}</h4>
-                </div>
-                {title.reward_description && (
-                  <p className="text-sm text-gray-600 mb-2">{title.reward_description}</p>
-                )}
-                <div className="text-xs text-gray-500">
-                  Earned: {new Date(title.earned_date).toLocaleDateString()}
-                </div>
+            <Awards
+              variant="badge"
+              title={title.reward_name}
+              subtitle={title.reward_description || "Achievement Unlocked"}
+              date={new Date(title.earned_date).toLocaleDateString()}
+              className="w-full"
+            />
+            {activeTitleId === title.id && (
+              <div className="absolute top-2 right-2">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500 text-white shadow-lg">
+                  ✓ Active
+                </span>
               </div>
-              {activeTitleId === title.id && (
-                <div className="ml-2">
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                    Active
-                  </span>
-                </div>
-              )}
-            </div>
+            )}
           </div>
         ))}
       </div>
