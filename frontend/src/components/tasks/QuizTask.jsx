@@ -282,22 +282,22 @@ const QuizTask = ({ task, onComplete }) => {
           <div className="text-5xl font-bold text-[#120c07] mb-20">
             {percentage}%
           </div>
-          <div className="grid grid-cols-3 gap-8 mb-12">
-            <div className="bg-gray-50 rounded-lg p-8">
-              <p className="text-base text-gray-600 mb-10 leading-relaxed">Correct</p>
-              <p className="text-3xl font-bold text-green-600 leading-relaxed">
+          <div className="grid grid-cols-3 gap-4 mb-12">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-sm text-gray-600 mb-2 whitespace-nowrap">Correct</p>
+              <p className="text-2xl font-bold text-green-600">
                 {results.correct_answers}
               </p>
             </div>
-            <div className="bg-gray-50 rounded-lg p-8">
-              <p className="text-base text-gray-600 mb-10 leading-relaxed">Total Questions</p>
-              <p className="text-3xl font-bold text-gray-900 leading-relaxed">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-sm text-gray-600 mb-2 whitespace-nowrap">Total<br/>Questions</p>
+              <p className="text-2xl font-bold text-gray-900">
                 {results.total_questions}
               </p>
             </div>
-            <div className="bg-gray-50 rounded-lg p-8">
-              <p className="text-base text-gray-600 mb-10 leading-relaxed">Time Taken</p>
-              <p className="text-3xl font-bold text-primary-600 leading-relaxed">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-sm text-gray-600 mb-2 whitespace-nowrap">Time<br/>Taken</p>
+              <p className="text-2xl font-bold text-primary-600">
                 {formatTime(timeElapsed)}
               </p>
             </div>
