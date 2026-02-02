@@ -71,8 +71,8 @@ const FloatingNav = () => {
                 ) : null}
 
                 <div className="relative z-10">{item.icon}</div>
-                {/* hide labels on small screens */}
-                <span className="relative z-10 text-xs mt-1 hidden sm:block">
+                {/* show labels on all screen sizes */}
+                <span className="relative z-10 text-xs mt-1">
                   {item.label}
                 </span>
               </>

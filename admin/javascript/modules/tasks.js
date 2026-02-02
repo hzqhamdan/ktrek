@@ -124,13 +124,15 @@ export async function openTaskModal(id = null) {
 
     if (!modal || !form) return;
 
-    form.reset();
     clearFormAlerts(form);
 
     if (id) {
+        // Don't reset form when editing - loadTaskData will populate fields
         title.textContent = 'Edit Task';
         await loadTaskData(id);
     } else {
+        // Reset form only when adding new task
+        form.reset();
         title.textContent = 'Add New Task';
         // Hide all task-specific sections
         hideAllTaskTypeSections();

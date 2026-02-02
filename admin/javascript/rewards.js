@@ -123,103 +123,97 @@ function getTriggerText(triggerType) {
 }
 
 // Open reward modal for create/edit
-function openRewardModal(id = null) {
+async function openRewardModal(id = null) {
     const modal = document.getElementById('rewardModal');
     const modalTitle = document.getElementById('rewardModalTitle');
     const form = document.getElementById('rewardForm');
-    
-    // Reset form
-    form.reset();
-    document.getElementById('rewardId').value = '';
-    document.getElementById('rewardImage').value = ''; // Hidden field still exists
-    document.getElementById('rewardIsActive').checked = true;
     
     // Load attractions and tasks for dropdowns
     loadAttractionsForDropdown();
     loadTasksForDropdown();
     
     if (id) {
-        // Edit mode
+        // Edit mode - load data FIRST, then show modal
         modalTitle.textContent = 'Edit Reward';
-        loadRewardData(id);
+        await loadRewardData(id);
     } else {
-        // Create mode
+        // Create mode - Reset form only when adding new reward
+        form.reset();
+        document.getElementById('rewardId').value = '';
+        document.getElementById('rewardImage').value = ''; // Hidden field still exists
+        document.getElementById('rewardIsActive').checked = true;
         modalTitle.textContent = 'Add Reward';
     }
     
+    // Show modal AFTER data is loaded
     modal.style.display = 'flex';
     modal.style.alignItems = 'center';
     modal.style.justifyContent = 'center';
 }
 
 // Load reward data for editing
-function loadRewardData(id) {
-    fetch(`api/rewards.php?action=get&id=${id}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const reward = data.reward;
+async function loadRewardData(id) {
+    try {
+        const response = await fetch(`api/rewards.php?action=get&id=${id}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const reward = data.reward;
+            
+            // Populate form fields
+            document.getElementById('rewardId').value = reward.id;
+            document.getElementById('rewardType').value = reward.reward_type || '';
+            document.getElementById('rewardTitle').value = reward.title || '';
+            // Identifier is auto-generated, so we store it but don't show it
+            document.getElementById('rewardIdentifier').value = reward.reward_identifier || '';
+            document.getElementById('rewardDescription').value = reward.description || '';
+            document.getElementById('rewardCategory').value = reward.category || '';
+            document.getElementById('rewardRarity').value = reward.rarity || 'common';
+            // XP/EP are now auto-calculated, so we don't populate them
+            document.getElementById('rewardIsActive').checked = reward.is_active == 1;
+            
+            // Image field removed - will be added later as separate component
+            
+            // Handle trigger configuration
+            document.getElementById('rewardTriggerType').value = reward.trigger_type || '';
+            handleTriggerTypeChange();
+            
+            // Set trigger conditions based on type - use await instead of setTimeout
+            if (reward.trigger_type && reward.trigger_condition) {
+                const condition = reward.trigger_condition;
                 
-                // Populate form fields
-                document.getElementById('rewardId').value = reward.id;
-                document.getElementById('rewardType').value = reward.reward_type || '';
-                document.getElementById('rewardTitle').value = reward.title || '';
-                // Identifier is auto-generated, so we store it but don't show it
-                document.getElementById('rewardIdentifier').value = reward.reward_identifier || '';
-                document.getElementById('rewardDescription').value = reward.description || '';
-                document.getElementById('rewardCategory').value = reward.category || '';
-                document.getElementById('rewardRarity').value = reward.rarity || 'common';
-                // XP/EP are now auto-calculated, so we don't populate them
-                document.getElementById('rewardIsActive').checked = reward.is_active == 1;
+                // Wait a tick for DOM to update after handleTriggerTypeChange
+                await new Promise(resolve => setTimeout(resolve, 100));
                 
-                // Image field removed - will be added later as separate component
-                
-                // Handle trigger configuration
-                document.getElementById('rewardTriggerType').value = reward.trigger_type || '';
-                handleTriggerTypeChange();
-                
-                // Set trigger conditions based on type
-                if (reward.trigger_type && reward.trigger_condition) {
-                    const condition = reward.trigger_condition;
-                    
-                    if (reward.trigger_type === 'task_completion' && condition.task_id) {
-                        setTimeout(() => {
-                            document.getElementById('triggerTaskId').value = condition.task_id;
-                        }, 500);
-                    } else if (reward.trigger_type === 'task_set_completion' && condition.task_ids) {
-                        setTimeout(() => {
-                            // Check the checkboxes for the selected task IDs
-                            const taskIds = condition.task_ids;
-                            document.querySelectorAll('.task-set-checkbox').forEach(checkbox => {
-                                if (taskIds.includes(parseInt(checkbox.value))) {
-                                    checkbox.checked = true;
-                                }
-                            });
-                            updateTaskSetCount();
-                        }, 500);
-                    } else if (reward.trigger_type === 'task_type_completion' && condition.task_type) {
-                        setTimeout(() => {
-                            document.getElementById('triggerTaskType').value = condition.task_type;
-                            if (condition.required_count) {
-                                document.getElementById('triggerTaskTypeCount').value = condition.required_count;
-                                updateTaskTypeCountPreview();
-                            }
-                        }, 500);
-                    } else if (reward.trigger_type === 'attraction_completion' && condition.attraction_id) {
-                        setTimeout(() => {
-                            document.getElementById('triggerAttractionId').value = condition.attraction_id;
-                        }, 500);
+                if (reward.trigger_type === 'task_completion' && condition.task_id) {
+                    document.getElementById('triggerTaskId').value = condition.task_id;
+                } else if (reward.trigger_type === 'task_set_completion' && condition.task_ids) {
+                    // Check the checkboxes for the selected task IDs
+                    const taskIds = condition.task_ids;
+                    document.querySelectorAll('.task-set-checkbox').forEach(checkbox => {
+                        if (taskIds.includes(parseInt(checkbox.value))) {
+                            checkbox.checked = true;
+                        }
+                    });
+                    updateTaskSetCount();
+                } else if (reward.trigger_type === 'task_type_completion' && condition.task_type) {
+                    document.getElementById('triggerTaskType').value = condition.task_type;
+                    if (condition.required_count) {
+                        document.getElementById('triggerTaskTypeCount').value = condition.required_count;
+                        updateTaskTypeCountPreview();
                     }
-                    // category_milestone removed - now automatic
+                } else if (reward.trigger_type === 'attraction_completion' && condition.attraction_id) {
+                    document.getElementById('triggerAttractionId').value = condition.attraction_id;
                 }
-            } else {
-                showAlert(data.message || 'Failed to load reward data', 'error');
+                // category_milestone removed - now automatic
             }
-        })
-        .catch(error => {
-            console.error('Error loading reward:', error);
-            showAlert('Error loading reward data', 'error');
-        });
+        } else {
+            showAlert(data.message || 'Failed to load reward data', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading reward:', error);
+        showAlert('Error loading reward data', 'error');
+    }
 }
 
 // Close reward modal

@@ -2139,13 +2139,13 @@ function applyAttractionSort() {
     displayAttractions(allAttractions);
 }
 
-function openAttractionModal(id = null) {
-    document.getElementById('attractionModal').classList.add('active');
-    document.getElementById('attractionForm').reset();
-
+async function openAttractionModal(id = null) {
     if (id) {
-        loadAttractionData(id);
+        // Don't reset form when editing - load data FIRST, then show modal
+        await loadAttractionData(id);
     } else {
+        // Reset form only when adding new attraction
+        document.getElementById('attractionForm').reset();
         document.getElementById('attractionModalTitle').textContent = 'Add Attraction';
         // Clear all fields for new attraction
         document.getElementById('attractionId').value = '';
@@ -2156,6 +2156,9 @@ function openAttractionModal(id = null) {
         document.getElementById('attractionImage').value = '';
         document.getElementById('currentAttractionImageContainer').style.display = 'none';
     }
+    
+    // Show modal AFTER data is loaded
+    document.getElementById('attractionModal').classList.add('active');
 }
 
 async function loadAttractionData(id) {
@@ -2465,17 +2468,18 @@ function clearTaskFilters() {
 
 async function openTaskModal(id = null) {
     await loadAttractionDropdown('taskAttraction');
-    document.getElementById('taskModal').classList.add('active');
-    document.getElementById('taskForm').reset();
-    
-    // Clear quiz questions
-    document.getElementById('quizQuestionsList').innerHTML = '';
-    document.getElementById('quizQuestionsSection').style.display = 'none';
-    document.getElementById('qrActionsContainer').style.display = 'none';
 
     if (id) {
-        loadTaskData(id);
+        // Don't reset form when editing - load data FIRST, then show modal
+        await loadTaskData(id);
     } else {
+        // Reset form only when adding new task
+        document.getElementById('taskForm').reset();
+        // Clear quiz questions
+        document.getElementById('quizQuestionsList').innerHTML = '';
+        document.getElementById('quizQuestionsSection').style.display = 'none';
+        document.getElementById('qrActionsContainer').style.display = 'none';
+        
         document.getElementById('taskModalTitle').textContent = 'Add Task';
         // Ensure this is a CREATE flow: clear hidden taskId if present
         const taskIdInput = document.getElementById('taskId');
@@ -2488,8 +2492,8 @@ async function openTaskModal(id = null) {
         document.getElementById('downloadQRBtn').disabled = true;
     }
     
-    // Add event listener for task type change
-    document.getElementById('taskType').addEventListener('change', handleTaskTypeChange);
+    // Show modal AFTER data is loaded
+    document.getElementById('taskModal').classList.add('active');
 }
 
 function handleTaskTypeChange() {
@@ -2507,6 +2511,7 @@ function handleTaskTypeChange() {
     if (directionSection) directionSection.style.display = 'none';
     if (timeBasedSection) timeBasedSection.style.display = 'none';
     if (qrActionsContainer) qrActionsContainer.style.display = 'none';
+    if (observationMatchSection) observationMatchSection.style.display = 'none';
     
     // Show relevant section based on task type
     if (taskType === 'observation_match') {
@@ -2522,7 +2527,7 @@ function handleTaskTypeChange() {
             observationQuestionCounter = 0;
             addObservationMatchQuestion();
         }
-    } else if (taskType === 'quiz' || taskType === 'observation_match') {
+    } else if (taskType === 'quiz') {
         quizSection.style.display = 'block';
         // Add at least one question by default
         if (document.getElementById('quizQuestionsList').children.length === 0) {
@@ -3175,6 +3180,13 @@ async function loadTaskData(id) {
         const data = await response.json();
 
         if (data.success) {
+            // Debug logging
+            console.log('=== EDIT TASK DATA ===');
+            console.log('Task Type:', data.task.type);
+            console.log('Task Questions:', data.task.questions);
+            console.log('Task Config:', data.task.task_config);
+            console.log('======================');
+            
             document.getElementById('taskModalTitle').textContent = 'Edit Task';
             document.getElementById('taskId').value = data.task.id;
             document.getElementById('taskName').value = data.task.name;
@@ -3213,10 +3225,261 @@ async function loadTaskData(id) {
             // Clear media file input
             document.getElementById('taskMediaFile').value = '';
             
-            // Populate task_config fields based on task type
+            // Trigger task type change to show relevant sections FIRST
+            handleTaskTypeChange();
+            
+            // Load quiz questions from data.task.questions (separate from task_config)
+            if (data.task.type === 'quiz' && data.task.questions && data.task.questions.length > 0) {
+                console.log('Loading quiz questions...');
+                const questionsList = document.getElementById('quizQuestionsList');
+                questionsList.innerHTML = ''; // Clear existing
+                questionCounter = 0; // Reset the counter used by addQuizQuestion
+                
+                data.task.questions.forEach((q, index) => {
+                    console.log(`Adding question ${index + 1}:`, q.question_text);
+                    addQuizQuestion(); // This increments questionCounter
+                });
+                
+                // Now populate the data after all questions are added (use setTimeout to ensure DOM is ready)
+                setTimeout(() => {
+                    const questionDivs = questionsList.querySelectorAll('.quiz-question');
+                    console.log(`Found ${questionDivs.length} question divs`);
+                    
+                    data.task.questions.forEach((q, index) => {
+                        const questionDiv = questionDivs[index];
+                        if (!questionDiv) {
+                            console.error(`Question div ${index} not found`);
+                            return;
+                        }
+                        
+                        console.log(`Populating question ${index + 1}:`, q.question_text);
+                        
+                        // Find the textarea within this question div
+                        const questionTextarea = questionDiv.querySelector('.quiz-question-text');
+                        if (questionTextarea) {
+                            questionTextarea.value = q.question_text || '';
+                            console.log(`Set question text for #${index + 1}`);
+                        } else {
+                            console.error(`Question textarea not found for #${index + 1}`);
+                        }
+                        
+                        // Find all option inputs within this question div
+                        const optionInputs = questionDiv.querySelectorAll('.quiz-option');
+                        const options = q.options || [];
+                        console.log(`Question ${index + 1} has ${optionInputs.length} option inputs, ${options.length} option data`);
+                        
+                        // Populate each option
+                        optionInputs.forEach((input, optIndex) => {
+                            if (options[optIndex]) {
+                                input.value = options[optIndex].option_text || '';
+                                console.log(`Set option ${optIndex + 1}: ${options[optIndex].option_text}`);
+                            }
+                        });
+                        
+                        // Find which option is correct and check the radio button
+                        const correctIndex = options.findIndex(opt => opt.is_correct == 1);
+                        if (correctIndex >= 0) {
+                            const radioButtons = questionDiv.querySelectorAll('input[type="radio"]');
+                            if (radioButtons[correctIndex]) {
+                                radioButtons[correctIndex].checked = true;
+                                console.log(`Set correct answer for #${index + 1}: Option ${correctIndex + 1}`);
+                            }
+                        }
+                    });
+                    console.log('Finished loading quiz questions');
+                }, 100); // 100ms delay to ensure DOM is ready
+            }
+            
+            // Load direction questions from data.task.questions (same structure as observation match)
+            if (data.task.type === 'direction') {
+                // Always clear direction fields first
+                const directionQuestionInput = document.getElementById('directionQuestion');
+                const directionInput = document.getElementById('directionCorrect');
+                
+                if (directionQuestionInput) directionQuestionInput.value = '';
+                if (directionInput) directionInput.value = '';
+                console.log('Cleared direction fields');
+                
+                if (data.task.questions && data.task.questions.length > 0) {
+                    console.log('Loading direction questions...');
+                    const question = data.task.questions[0]; // Direction tasks have only 1 question
+                
+                if (question && question.options) {
+                    console.log('Direction question:', question.question_text);
+                    console.log('Direction options:', question.options);
+                    
+                    // Set the direction question text
+                    const directionQuestionInput = document.getElementById('directionQuestion');
+                    if (directionQuestionInput) {
+                        directionQuestionInput.value = question.question_text || '';
+                        console.log('Set direction question:', question.question_text);
+                    }
+                    
+                    // Find the correct direction option
+                    const correctOption = question.options.find(opt => opt.is_correct == 1);
+                    if (correctOption) {
+                        const directionInput = document.getElementById('directionCorrect');
+                        if (directionInput) {
+                            directionInput.value = correctOption.option_text;
+                            console.log('Set direction:', correctOption.option_text);
+                        } else {
+                            console.error('directionCorrect input not found');
+                        }
+                    }
+                } // Close if (question && question.options)
+            } // Close if (data.task.questions && data.task.questions.length > 0)
+            else {
+                console.log('No direction questions found for this task');
+            }
+        } // Close if (data.task.type === 'direction')
+            
+            // Load observation match questions from data.task.questions
+            if (data.task.type === 'observation_match') {
+                const observationsList = document.getElementById('observationQuestionsList');
+                observationsList.innerHTML = ''; // Clear existing FIRST, regardless of question count
+                observationQuestionCounter = 0;
+                
+                if (data.task.questions && data.task.questions.length > 0) {
+                    console.log('Loading observation match questions...');
+                
+                data.task.questions.forEach((q, index) => {
+                    console.log(`Adding observation ${index + 1}:`, q.question_text);
+                    addObservationMatchQuestion();
+                });
+                
+                // Now populate the data after all observations are added (use setTimeout to ensure DOM is ready)
+                setTimeout(() => {
+                    const observationDivs = observationsList.querySelectorAll('.observation-question');
+                    console.log(`Found ${observationDivs.length} observation divs`);
+                    
+                    data.task.questions.forEach((q, index) => {
+                        const observationDiv = observationDivs[index];
+                        if (!observationDiv) {
+                            console.error(`Observation div ${index} not found`);
+                            return;
+                        }
+                        
+                        console.log(`Populating observation ${index + 1}:`, q.question_text);
+                        
+                        // Find the textarea within this observation div
+                        const observationTextarea = observationDiv.querySelector('.observation-question-text');
+                        if (observationTextarea) {
+                            observationTextarea.value = q.question_text || '';
+                            console.log(`Set observation text for #${index + 1}`);
+                        } else {
+                            console.error(`Observation textarea not found for #${index + 1}`);
+                        }
+                        
+                        // Find all option inputs within this observation div
+                        const optionInputs = observationDiv.querySelectorAll('.observation-option');
+                        const options = q.options || [];
+                        console.log(`Observation ${index + 1} has ${optionInputs.length} option inputs, ${options.length} option data`);
+                        
+                        // Populate each option
+                        optionInputs.forEach((input, optIndex) => {
+                            if (options[optIndex]) {
+                                input.value = options[optIndex].option_text || '';
+                                console.log(`Set observation option ${optIndex + 1}: ${options[optIndex].option_text}`);
+                            }
+                        });
+                        
+                        // Find which option is correct and check the radio button
+                        const correctIndex = options.findIndex(opt => opt.is_correct == 1);
+                        if (correctIndex >= 0) {
+                            const radioButtons = observationDiv.querySelectorAll('input[type="radio"]');
+                            if (radioButtons[correctIndex]) {
+                                radioButtons[correctIndex].checked = true;
+                                console.log(`Set correct observation answer for #${index + 1}: Option ${correctIndex + 1}`);
+                            }
+                        }
+                    });
+                    console.log('Finished loading observation match questions');
+                }, 100); // 100ms delay to ensure DOM is ready
+            } // Close if (data.task.questions && data.task.questions.length > 0)
+            else {
+                console.log('No observation match questions found for this task');
+            }
+        } // Close if (data.task.type === 'observation_match')
+            
+        // Clear and populate count_confirm fields
+            if (data.task.type === 'count_confirm') {
+                console.log('Processing count_confirm task...');
+                // Always clear fields first, regardless of task_config
+                const targetObjectInput = document.getElementById('countTargetObject');
+                const correctCountInput = document.getElementById('countCorrectCount');
+                const toleranceInput = document.getElementById('countTolerance');
+                
+                console.log('Found inputs:', {targetObjectInput, correctCountInput, toleranceInput});
+                
+                if (targetObjectInput) targetObjectInput.value = '';
+                if (correctCountInput) correctCountInput.value = '';
+                if (toleranceInput) toleranceInput.value = '0';
+                
+                console.log('Cleared all count_confirm fields');
+                
+                // Then populate with data if task_config exists
+                if (data.task.task_config) {
+                    console.log('task_config exists:', data.task.task_config);
+                    console.log('task_config type:', typeof data.task.task_config);
+                    try {
+                        let taskConfig = JSON.parse(data.task.task_config);
+                        console.log('First parse result:', JSON.stringify(taskConfig));
+                        console.log('First parse type:', typeof taskConfig);
+                        
+                        // Check if it's still a string (double-encoded), parse again
+                        if (typeof taskConfig === 'string') {
+                            console.log('task_config is double-encoded, parsing again...');
+                            taskConfig = JSON.parse(taskConfig);
+                            console.log('Second parse result:', JSON.stringify(taskConfig));
+                        }
+                        
+                        console.log('taskConfig.target_object:', taskConfig.target_object);
+                        console.log('taskConfig.correct_count:', taskConfig.correct_count);
+                        
+                        console.log('Checking target_object:', taskConfig.target_object, 'Input exists:', !!targetObjectInput);
+                        if (taskConfig.target_object && targetObjectInput) {
+                            targetObjectInput.value = taskConfig.target_object;
+                            console.log('Set target object:', taskConfig.target_object);
+                        } else {
+                            console.log('Skipped target_object');
+                        }
+                        
+                        console.log('Checking correct_count:', taskConfig.correct_count, 'Input exists:', !!correctCountInput);
+                        if (taskConfig.correct_count && correctCountInput) {
+                            correctCountInput.value = taskConfig.correct_count;
+                            console.log('Set correct count:', taskConfig.correct_count);
+                        } else {
+                            console.log('Skipped correct_count');
+                        }
+                        
+                        console.log('Checking tolerance:', taskConfig.tolerance, 'Input exists:', !!toleranceInput);
+                        if (taskConfig.tolerance && toleranceInput) {
+                            toleranceInput.value = taskConfig.tolerance;
+                            console.log('Set tolerance:', taskConfig.tolerance);
+                        } else {
+                            console.log('Skipped tolerance');
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse count_confirm task_config:', e);
+                    }
+                }
+            }
+            
+            // Populate task_config fields for other task types AFTER sections are visible
             if (data.task.task_config) {
                 try {
                     const taskConfig = JSON.parse(data.task.task_config);
+                    
+                    // For direction tasks
+                    if (data.task.type === 'direction' && taskConfig.correct_direction) {
+                        const directionInput = document.getElementById('directionCorrectDirection');
+                        if (directionInput) {
+                            directionInput.value = taskConfig.correct_direction;
+                            console.log('Set correct direction:', taskConfig.correct_direction);
+                        } else {
+                            console.error('directionCorrectDirection input not found');
+                        }
+                    }
                     
                     // For time_based tasks
                     if (data.task.type === 'time_based' && taskConfig.start_time && taskConfig.end_time) {
@@ -3231,17 +3494,11 @@ async function loadTaskData(id) {
                         }
                     }
                     
-                    // Add handlers for other task types here if needed
-                    // count_confirm, direction, etc.
-                    
                 } catch (parseError) {
                     console.error('Failed to parse task_config:', parseError);
                 }
-            }
-            
-            // Trigger task type change to show relevant sections
-            handleTaskTypeChange();
-        }
+            } // Close if (data.task.task_config)
+        } // Close if (data.success)
     } catch (error) {
         showAlert('Error loading task data', 'error');
     }
@@ -3610,14 +3867,18 @@ function clearGuideFilters() {
 
 async function openGuideModal(id = null) {
     await loadAttractionDropdown('guideAttraction');
-    document.getElementById('guideModal').classList.add('active');
-    document.getElementById('guideForm').reset();
 
     if (id) {
-        loadGuideData(id);
+        // Don't reset form when editing - load data FIRST, then show modal
+        await loadGuideData(id);
     } else {
+        // Reset form only when adding new guide
+        document.getElementById('guideForm').reset();
         document.getElementById('guideModalTitle').textContent = 'Add Guide';
     }
+    
+    // Show modal AFTER data is loaded
+    document.getElementById('guideModal').classList.add('active');
 }
 
 async function loadGuideData(id) {
@@ -4967,7 +5228,7 @@ function downloadQRCode() {
     // Method 1: Use backend API if task is saved
     if (taskId) {
         // Use backend endpoint (no CORS issues)
-        const backendUrl = `../../backend/api/qr/generate.php?task_id=${taskId}`;
+        const backendUrl = `../backend/api/qr/generate.php?task_id=${taskId}`;
         const a = document.createElement('a');
         a.href = backendUrl;
         a.download = `qr_${taskName.replace(/\s+/g, '_')}_${Date.now()}.png`;
