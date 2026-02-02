@@ -61,7 +61,7 @@ const CountConfirmTaskPage = () => {
   };
 
   const handleComplete = (responseData) => {
-    showToast(responseData.is_correct ? "Count submitted successfully!" : "Task completed", "success");
+    showToast(responseData.is_correct ? "Count submitted successfully !" : "Task completed", "success");
     
     // Handle reward notifications
     if (responseData?.rewards) {

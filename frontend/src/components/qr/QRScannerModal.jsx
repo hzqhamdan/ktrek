@@ -184,7 +184,7 @@ const QRScannerModal = ({
           return;
         }
         
-        showToast("QR Code verified!", "success");
+        showToast("QR Code verified !", "success");
         console.log('[QRScanner] Calling onSuccess with:', { task, qrCode });
         
         // Call success callback with task + scanned QR code

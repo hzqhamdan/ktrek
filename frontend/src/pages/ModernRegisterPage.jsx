@@ -23,7 +23,7 @@ const ModernRegisterPage = () => {
         if (response.success) {
           const { token, user } = response.data;
           setAuth(user, token);
-          showToast("Google sign-in successful!", "success");
+          showToast("Google sign-in successful !", "success");
 
           const next = user?.avatar_seed ? "/dashboard" : "/onboarding/avatar";
           setTimeout(() => {
@@ -62,7 +62,7 @@ const ModernRegisterPage = () => {
         if (loginRes.success) {
           const { token, user } = loginRes.data;
           setAuth(user, token);
-          showToast("Registration successful!", "success");
+          showToast("Registration successful !", "success");
           setTimeout(() => {
             navigate('/onboarding/avatar', { replace: true });
           }, 600);

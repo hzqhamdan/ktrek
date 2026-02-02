@@ -87,7 +87,7 @@ const PhoneLoginForm = () => {
         // Add is_first_login to user object
         const userWithLoginStatus = { ...user, is_first_login: response.data.is_first_login };
         setAuth(userWithLoginStatus, token);
-        showToast("Login successful!", "success");
+        showToast("Login successful !", "success");
         // Add a small delay to ensure state is updated
         setTimeout(() => {
           // Redirect to intended page or dashboard
@@ -128,7 +128,7 @@ const PhoneLoginForm = () => {
       
       if (response.success) {
         setResetEmailSent(true);
-        showToast("Password reset instructions sent to your email!", "success");
+        showToast("Password reset instructions sent to your email !", "success");
       } else {
         showToast(response.message || "Failed to send reset email", "error");
       }

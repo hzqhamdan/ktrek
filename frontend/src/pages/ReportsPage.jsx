@@ -55,7 +55,7 @@ const ReportsPage = () => {
         message: formData.message,
       });
       if (response.success) {
-        showToast("Report submitted successfully!", "success");
+        showToast("Report submitted successfully !", "success");
         setFormData({
           attraction_id: "",
           message: "",

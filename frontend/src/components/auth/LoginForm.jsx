@@ -74,7 +74,7 @@ const LoginForm = () => {
         // Store in Zustand store
         setAuth(userWithLoginStatus, token);
         console.log("After setAuth, check localStorage:", localStorage.getItem('user')); // DEBUG
-        showToast("Login successful!", "success");
+        showToast("Login successful !", "success");
         // Add a small delay to ensure state is updated
         setTimeout(() => {
           // Redirect to intended page or dashboard
@@ -117,7 +117,7 @@ const LoginForm = () => {
       
       if (response.success) {
         setResetEmailSent(true);
-        showToast("Password reset instructions sent to your email!", "success");
+        showToast("Password reset instructions sent to your email !", "success");
         // Show token in console for testing (remove in production)
         if (response.data?.token) {
           console.log("Reset token:", response.data.token);

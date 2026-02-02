@@ -27,7 +27,7 @@ const ModernLoginPage = () => {
       if (response.success) {
         const { token, user } = response.data;
         setAuth(user, token);
-        showToast("Login successful!", "success");
+        showToast("Login successful !", "success");
         setTimeout(() => {
           navigate(from, { replace: true });
         }, 100);
@@ -60,7 +60,7 @@ const ModernLoginPage = () => {
         if (response.success) {
           const { token, user } = response.data;
           setAuth(user, token);
-          showToast("Google sign-in successful!", "success");
+          showToast("Google sign-in successful !", "success");
 
           const next = user?.avatar_seed
             ? from

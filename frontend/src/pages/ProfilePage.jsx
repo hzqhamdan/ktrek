@@ -165,7 +165,7 @@ const ProfilePage = () => {
       );
       
       if (response.success) {
-        showToast("Password changed successfully!", "success");
+        showToast("Password changed successfully !", "success");
         setShowPasswordModal(false);
         setPasswordData({
           currentPassword: "",
@@ -414,7 +414,7 @@ const ProfilePage = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     console.log("Notification preferences clicked");
-                    showToast("Notification preferences coming soon!", "info");
+                    showToast("Notification preferences coming soon !", "info");
                   }}
                   className="glass-button w-full text-left px-4 py-3 rounded-xl font-medium"
                 >
@@ -429,7 +429,7 @@ const ProfilePage = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     console.log("Privacy settings clicked");
-                    showToast("Privacy settings coming soon!", "info");
+                    showToast("Privacy settings coming soon !", "info");
                   }}
                   className="glass-button w-full text-left px-4 py-3 rounded-xl font-medium"
                 >

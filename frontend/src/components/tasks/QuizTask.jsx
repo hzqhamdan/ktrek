@@ -273,10 +273,10 @@ const QuizTask = ({ task, onComplete }) => {
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-16">
             {isPerfect
-              ? "Perfect Score!"
+              ? "Perfect Score !"
               : percentage >= 70
-                ? "Good Job!"
-                : "Keep Trying!"}
+                ? "Good Job !"
+                : "Keep Trying !"}
           </h2>
           <div className="text-5xl font-bold text-[#120c07] mb-8">
             {percentage}%

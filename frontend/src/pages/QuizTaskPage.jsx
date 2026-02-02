@@ -58,7 +58,7 @@ const QuizTaskPage = () => {
     }
   };
   const handleComplete = (responseData) => {
-    showToast("Quiz completed successfully!", "success");
+    showToast("Quiz completed successfully !", "success");
     
     // Handle reward notifications
     if (responseData?.rewards) {

@@ -187,7 +187,7 @@ const ResetPasswordPage = () => {
 
       if (response.success) {
         setResetSuccess(true);
-        showToast("Password reset successfully!", "success");
+        showToast("Password reset successfully !", "success");
         // Redirect to login after 3 seconds
         setTimeout(() => {
           navigate("/login");

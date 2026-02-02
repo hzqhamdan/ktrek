@@ -57,7 +57,7 @@ const TimeBasedTaskPage = () => {
   };
 
   const handleComplete = (responseData) => {
-    showToast("Perfect timing! Task completed!", "success");
+    showToast("Perfect timing! Task completed !", "success");
     
     if (responseData?.rewards) {
       useRewardStore.getState().updateStatsFromTaskCompletion(responseData.rewards);

@@ -81,7 +81,7 @@ const CheckinTaskPage = () => {
   };
   const handleComplete = (response) => {
     console.log('[CheckIn] handleComplete called with response:', response);
-    showToast("Check-in completed successfully!", "success");
+    showToast("Check-in completed successfully !", "success");
     
     // Handle reward notifications
     const responseData = response?.data || response;

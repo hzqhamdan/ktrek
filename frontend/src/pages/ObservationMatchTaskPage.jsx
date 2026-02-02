@@ -57,7 +57,7 @@ const ObservationMatchTaskPage = () => {
   };
 
   const handleComplete = (responseData) => {
-    showToast(responseData.is_correct ? "Perfect matches!" : "Task completed", "success");
+    showToast(responseData.is_correct ? "Perfect matches !" : "Task completed", "success");
 
     if (responseData?.rewards) {
       useRewardStore.getState().updateStatsFromTaskCompletion(responseData.rewards);

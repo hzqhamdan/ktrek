@@ -5,7 +5,7 @@ const NotFoundPage = () => {
   return (
     <NotFoundPageComponent
       title="Oops! You've Gone Off the Map"
-      description="The page you're looking for doesn't exist or has been moved. Let's get you back on track!"
+      description="The page you're looking for doesn't exist or has been moved. Let's get you back on track !"
       showBackButton={true}
       showHomeButton={true}
     />

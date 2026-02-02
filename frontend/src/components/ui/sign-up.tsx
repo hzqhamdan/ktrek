@@ -1,4 +1,4 @@
-﻿import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle, useMemo, useCallback, createContext, Children } from "react";
@@ -153,7 +153,7 @@ const modalSteps = [
     { message: "Signing you up...", icon: <Loader className="w-12 h-12 text-primary animate-spin" /> },
     { message: "Onboarding you...", icon: <Loader className="w-12 h-12 text-primary animate-spin" /> },
     { message: "Finalizing...", icon: <Loader className="w-12 h-12 text-primary animate-spin" /> },
-    { message: "Welcome Aboard!", icon: <PartyPopper className="w-12 h-12 text-green-500" /> }
+    { message: "Welcome Aboard !", icon: <PartyPopper className="w-12 h-12 text-green-500" /> }
 ];
 const TEXT_LOOP_INTERVAL = 1.5;
 
@@ -204,7 +204,7 @@ export const AuthComponent = ({ logo = <DefaultLogo />, brandName = "K-Trek", on
     if (modalStatus !== 'closed' || authStep !== 'confirmPassword') return;
 
     if (password !== confirmPassword) {
-        setModalErrorMessage("Passwords do not match!");
+        setModalErrorMessage("Passwords do not match !");
         setModalStatus('error');
         return;
     }
@@ -219,11 +219,11 @@ export const AuthComponent = ({ logo = <DefaultLogo />, brandName = "K-Trek", on
                 fireSideCanons();
                 setModalStatus('success');
             } else {
-                setModalErrorMessage(result.message || "Registration failed!");
+                setModalErrorMessage(result.message || "Registration failed !");
                 setModalStatus('error');
             }
         } catch (error: any) {
-            setModalErrorMessage(error.message || "Registration failed!");
+            setModalErrorMessage(error.message || "Registration failed !");
             setModalStatus('error');
         }
     } else {
