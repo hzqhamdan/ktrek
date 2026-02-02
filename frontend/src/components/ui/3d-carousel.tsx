@@ -133,13 +133,13 @@ const Carousel = memo(
           onDrag={(_, info) => {
             if (!isCarouselActive) return
             // Increased sensitivity: higher multiplier for more responsive dragging
-            const DRAG_ROTATION_MULTIPLIER = 0.025
+            const DRAG_ROTATION_MULTIPLIER = 0.035
             rotation.set(rotation.get() + info.delta.x * DRAG_ROTATION_MULTIPLIER)
           }}
           onDragEnd={(_, info) => {
             if (!isCarouselActive) return
             // Increased inertia / throw sensitivity for more momentum
-            const INERTIA_ROTATION_MULTIPLIER = 0.02
+            const INERTIA_ROTATION_MULTIPLIER = 0.028
             const target = rotation.get() + info.velocity.x * INERTIA_ROTATION_MULTIPLIER
             animate(rotation, target, {
               type: "spring",
